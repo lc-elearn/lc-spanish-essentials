@@ -8,6 +8,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { test, expect } from 'vitest';
 import { getBlockRenderer } from './block-renderers';
+import { TARGET_LANG } from '@/lib/lang';
 
 /** Render one block body through the registry, as the adapter does. */
 function renderBlock(type: string, content: unknown): string {
@@ -43,7 +44,7 @@ test('intro block carries a leading-edge rule, and is not a <blockquote>', () =>
 test('grammar block wraps its examples in the target language', () => {
   const html = renderBlock('grammar', { text: ['Yo soy de Madrid.'] });
 
-  expect(html).toContain('lang="es"');
+  expect(html).toContain(`lang="${TARGET_LANG}"`);
   expect(html).toContain('Yo soy de Madrid.');
 });
 
@@ -55,10 +56,10 @@ test('vocabulary block renders a <dl>, term in target language and gloss in UI l
   expect(html).toContain('<dl');
   expect(html).toContain('<dt');
   expect(html).toContain('<dd');
-  expect(html).toMatch(/<dt[^>]*lang="es"/);
+  expect(html).toMatch(new RegExp(`<dt[^>]*lang="${TARGET_LANG}"`));
   expect(html).toContain('buenos días');
   expect(html).toContain('good morning');
-  expect(html).not.toMatch(/<dd[^>]*lang="es"/);
+  expect(html).not.toMatch(new RegExp(`<dd[^>]*lang="${TARGET_LANG}"`));
 });
 
 test('a vocabulary term can carry a clip, rendered beside the word it belongs to', () => {
