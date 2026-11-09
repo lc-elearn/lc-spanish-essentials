@@ -2,8 +2,11 @@
  * culp-syllabi.ts — checks on the CULP syllabus notes in `docs/culp-syllabi/` (E32).
  *
  * THE BUG CLASS. The notes are supplied by hand, as Markdown files, and they are a web:
- * every note names its language hub, the levels before and after it and its programme
- * specification, and the hubs and the index list the notes. A new or corrected file
+ * every note names its language hub and the levels before and after it, and the hubs
+ * and the index list the notes. Beside them sits the CEFR self-assessment grid
+ * (`european-framework-assessment.md`), which the skill reads for what a CEFR level
+ * means; a grid that loses a level, or a `cefr` value it does not hold, leaves the skill
+ * describing a level from nothing. A new or corrected file
  * that gets one strand of that web wrong breaks it quietly: the `culp-syllabus` skill
  * follows a link to a note that is not there, or never finds a level. Nothing else
  * reads these files closely. Prettier skips the folder on purpose (`.prettierignore`),
@@ -47,10 +50,14 @@ type Doc = Note & { readonly meta: Meta };
 export const SYLLABI_DIR = path.join(REPO_ROOT, 'docs', 'culp-syllabi');
 
 const INDEX = 'CULP Syllabi';
-const DOC_TYPES = ['syllabus', 'programme-spec', 'assessment-framework'];
+const DOC_TYPES = ['syllabus', 'assessment-framework'];
 /** The one document for all languages, which therefore has no `language_code`. */
 const FRAMEWORK = 'assessment-framework';
 const REQUIRED = ['title', 'language', 'doc_type', 'strand', 'source_date', 'tags'];
+/** The Council of Europe's self-assessment grid: one `###` table per skill, a row per level. */
+const CEFR_GRID = 'european-framework-assessment';
+const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const CEFR_SKILLS = ['Listening', 'Reading', 'Spoken Interaction', 'Spoken Production', 'Writing'];
 /** A printed date may give the month only (two documents do). */
 const DATE = /^\d{4}-\d{2}(-\d{2})?$/;
 const FILE_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -171,9 +178,6 @@ function docProblems(doc: Doc, levels: ReadonlyMap<string, string>): string[] {
     ...(docType === FRAMEWORK || meta.language_code !== undefined
       ? []
       : [`${file}: no language_code`]),
-    ...((docType === 'programme-spec') === doc.name.endsWith('-programme-spec')
-      ? []
-      : [`${file}: only a programme-spec's file name ends in -programme-spec`]),
     ...levelProblems(doc, levels),
     ...dates,
     ...(meta.document_language === 'en'
@@ -221,29 +225,16 @@ function mutual(docs: ReadonlyMap<string, Doc>, field: string, back: string): st
   });
 }
 
-function specProblems(docs: ReadonlyMap<string, Doc>): string[] {
-  return [...docs.values()].flatMap((doc) => {
-    const spec = target(doc.meta.programme_spec);
-    const specDoc = spec === undefined ? undefined : docs.get(spec);
-    const forward =
-      specDoc && !targets(specDoc.meta.syllabi).includes(doc.name)
-        ? [`${doc.name}: programme_spec is ${spec}, which does not list it`]
-        : [];
-    const backward = targets(doc.meta.syllabi).flatMap((name) => {
-      const listed = docs.get(name);
-      const pointsAt = listed === undefined ? doc.name : target(listed.meta.programme_spec);
-      return pointsAt === doc.name
-        ? []
-        : [`${doc.name}: lists ${name}, whose programme_spec is ${pointsAt ?? 'none'}`];
-    });
-    const related = targets(doc.meta.related).flatMap((name) => {
+/** A `related` link runs both ways. */
+function relatedProblems(docs: ReadonlyMap<string, Doc>): string[] {
+  return [...docs.values()].flatMap((doc) =>
+    targets(doc.meta.related).flatMap((name) => {
       const other = docs.get(name);
       return other && !targets(other.meta.related).includes(doc.name)
         ? [`${doc.name}: related to ${name}, which is not related back`]
         : [];
-    });
-    return [...forward, ...backward, ...related];
-  });
+    }),
+  );
 }
 
 /** A level chain stays in one language, and its `level_order` rises. */
@@ -278,7 +269,7 @@ export function checkLinks(notes: readonly Note[]): string[] {
     ...dangling,
     ...mutual(docs, 'next_level', 'previous_level'),
     ...mutual(docs, 'previous_level', 'next_level'),
-    ...specProblems(docs),
+    ...relatedProblems(docs),
     ...chainProblems(docs),
   ];
 }
@@ -305,6 +296,49 @@ export function checkHubs(notes: readonly Note[]): string[] {
   return [...inHubs, ...inIndex];
 }
 
+/** The CEFR levels each `###` skill table of the grid has a `| **A1** |` row for. */
+function gridLevels(body: string): ReadonlyMap<string, ReadonlySet<string>> {
+  const levels = new Map<string, Set<string>>();
+  let skill: string | null = null;
+  for (const line of body.split('\n')) {
+    const heading = /^###\s+(.+?)\s*$/.exec(line)?.[1];
+    if (heading !== undefined) {
+      skill = heading;
+      levels.set(skill, new Set());
+      continue;
+    }
+    const level = /^\|\s*\*\*([ABC][12])\*\*\s*\|/.exec(line)?.[1];
+    if (skill !== null && level !== undefined) levels.get(skill)?.add(level);
+  }
+  return levels;
+}
+
+/** The CEFR grid is whole and in the index, and every `cefr` value is one of its levels. */
+export function checkCefrGrid(notes: readonly Note[]): string[] {
+  const grid = notes.find((note) => note.name === CEFR_GRID);
+  if (grid === undefined) return [`no ${CEFR_GRID}.md in docs/culp-syllabi/`];
+  const levels = gridLevels(grid.body);
+  const incomplete = CEFR_SKILLS.flatMap((skill) => {
+    const found = levels.get(skill);
+    if (found === undefined) return [`${grid.file}: no ### ${skill} section`];
+    return CEFR_LEVELS.filter((level) => !found.has(level)).map(
+      (level) => `${grid.file}: no ${level} row under ${skill}`,
+    );
+  });
+  const index = notes.find((note) => note.name === INDEX);
+  const unindexed =
+    index && !wikilinks(index.body).includes(CEFR_GRID)
+      ? [`${INDEX} does not list [[${CEFR_GRID}]]`]
+      : [];
+  const badCefr = notes.filter(isDoc).flatMap((doc) => {
+    const cefr = str(doc.meta.cefr);
+    return cefr === undefined || CEFR_LEVELS.includes(cefr)
+      ? []
+      : [`${doc.file}: cefr "${cefr}" is not a CEFR level (${CEFR_LEVELS.join(', ')})`];
+  });
+  return [...incomplete, ...unindexed, ...badCefr];
+}
+
 /** No email address, and no HTML. */
 export function checkPrivacy(notes: readonly Note[]): string[] {
   return notes.flatMap((note) => [
@@ -318,8 +352,8 @@ const README_NUMBERS: readonly { readonly pattern: RegExp; readonly counts: read
   [
     { pattern: /(\d+)\s+documents\s+in\s+(\d+)\s+languages/, counts: ['documents', 'languages'] },
     {
-      pattern: /(\d+)\s+notes,\s+one\s+per\s+document:\s+(\d+)\s+syllabi,\s+(\d+)\s+programme/,
-      counts: ['documents', 'syllabi', 'programme specifications'],
+      pattern: /(\d+)\s+notes,\s+one\s+per\s+document:\s+(\d+)\s+syllabi\s+and\s+one\s+assessment/,
+      counts: ['documents', 'syllabi'],
     },
     { pattern: /(\d+)\s+hubs,\s+one\s+per\s+language/, counts: ['languages'] },
     { pattern: /(\d+)\s+hubs:/, counts: ['strand hubs'] },
@@ -337,7 +371,6 @@ export function checkReadmeCounts(notes: readonly Note[], readme: string): strin
     documents: docs.length,
     languages: notes.filter((note) => note.file.startsWith('languages/')).length,
     syllabi: ofType('syllabus'),
-    'programme specifications': ofType('programme-spec'),
     'strand hubs': notes.filter((note) => note.file.startsWith('strands/')).length,
     'documents without a document_date': docs.filter((doc) => !doc.meta.document_date).length,
   };

@@ -7,7 +7,6 @@ level_order: 40
 strand: General
 previous_level: "[[chinese-elementary-1]]"
 next_level: "[[chinese-intermediate]]"
-programme_spec: "[[chinese-elementary-programme-spec]]"
 doc_type: syllabus
 weeks: 15
 source_date: 2013-09-23

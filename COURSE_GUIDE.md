@@ -108,7 +108,11 @@ in the template for every course. The full rule:
 
 ## When the template changes
 
-The maintainer improves the template (a new exercise type, a fix) and tells you. The
+The maintainer improves the template (a new exercise type, a fix) and opens an issue,
+"Template update ready", in your course repo, assigned to you; GitHub emails you. The
+issue has the steps and the pull request link, which fills in the title ("Template
+update" and the date) and `Closes #N`, so the issue closes when you merge. Issues are public, like the repo: no unpublished lesson text,
+images or audio in a comment. The
 update reaches your course through a pull request **from an update branch inside your
 course repo**, never from the template's `main` and never through the **Sync fork**
 button:
@@ -195,6 +199,9 @@ option`: each message and its fix are in
 - **It names a question, row or item**, such as `question 2 offers "sí" twice`: each
   message and its fix are in
   [`CONTRIBUTING.md` → "Answers in their own fields"](CONTRIBUTING.md#answers-in-their-own-fields).
-- **It fails anywhere else**, or the message does not make sense: ask the maintainer
-  rather than changing files outside your folders.
+- **It fails anywhere else**, or the message does not make sense: do not change files
+  outside your folders. Report it on the template: its **Issues** → **New issue** →
+  **Bug report**
+  ([the form](https://github.com/lc-elearn/lc-base-template/issues/new?template=bug-report.yml)).
+  The form asks for what the maintainer needs, and reminds you that issues are public.
 - **What a folder is for:** [`STRUCTURE.md`](STRUCTURE.md).

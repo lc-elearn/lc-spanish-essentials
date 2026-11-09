@@ -7,9 +7,10 @@ repos and the colleagues) follow, top to bottom, on the course day.
 > Status: 🟡 **In progress — steps 1–5 done 2026-11-04** (work iMac, starting commit
 > `d8008f8`); **steps 6–7 done 2026-11-05** (work iMac, course repos from `c2e6cbe`): three
 > course repos, their rules read back, one team each, the authors invited; **2026-11-06**: the authors accepted, each team holds its author alone,
-> and the update to template `7bfb378` was pushed to all three courses as `sync-template`. Next:
-> the authors open those update pull requests (Spanish's is pilot R13), then the rest of the rules pilot. A fourth course, `lc-russian-basic-vocabulary`,
-> was set up the same way on 2026-11-06 from `bfa98f5` and needs no update.
+> and the update to template `7bfb378` was pushed to all three courses as `sync-template`. A fourth course, `lc-russian-basic-vocabulary`,
+> was set up the same way on 2026-11-06 from `bfa98f5`. **2026-11-09**: template `2687c8f` (tests follow the
+> course's language) was merged into `sync-template` on all four courses (TODO, update of that day). Next:
+> the authors open those update pull requests (Spanish's is pilot R13), then the rest of the rules pilot.
 >
 > **Decided 2026-10-12:** the template stayed under `pedbad` until the remaining template
 > work was finished. Tick to ✅ once the first course repo is working.
@@ -60,7 +61,8 @@ branch rules on every course repo, and nobody else can switch them off.
   - **Colleagues join as members**, base permission Read, with **one team per course**
     holding Write on that course's repo only, one person per team to start (step 7).
   - **Template updates when there is something to share**, no fixed rhythm: the
-    maintainer announces one and each author opens the course's update PR (step 9).
+    maintainer opens an assigned issue in each course and each author opens the course's
+    update PR (step 9). Decided 2026-11-09: issues, not email, so the record stays on the course.
   - **Deployments are recorded** in one pinned "Deployments" issue per course repo, a
     comment per release; never a password, key or sensitive server path
     ([`DEPLOY.md`](../DEPLOY.md), step 9).
@@ -282,7 +284,10 @@ Right after creating it, in the new course repo:
    CI never runs on the course. GitHub's API has no call for this button (a fork's workflows
    stay unregistered until it is clicked; seen 2026-11-05), so it is done on the website.
 2. **Settings → General:** untick "Template repository" if it was carried over — a course
-   is not a template.
+   is not a template. Under **Features**, tick **Issues**: forks start with them off, and
+   the course needs them for update issues (step 9) and the pinned "Deployments" issue
+   (`gh repo edit lc-elearn/<course> --enable-issues`; the first four courses were
+   switched on 2026-11-09).
 3. **Two branch rulesets on `main`**, each from **Settings → Rules → Rulesets → New
    ruleset → New branch ruleset**, enforcement **Active**, target **Include default
    branch**. GitHub applies every rule of every ruleset on a branch, so the two add up.
@@ -346,12 +351,13 @@ Right after creating it, in the new course repo:
    ```bash
    gh api repos/lc-elearn/<course> --jq '{merge: .allow_merge_commit,
      squash: .allow_squash_merge, rebase: .allow_rebase_merge,
-     delete_branch: .delete_branch_on_merge, template: .is_template}'
+     delete_branch: .delete_branch_on_merge, template: .is_template,
+     issues: .has_issues}'
    gh api repos/lc-elearn/<course>/rulesets --jq '.[] | {id, name, enforcement}'
    gh api repos/lc-elearn/<course>/rules/branches/main --jq '.[] | {type, parameters}'
    ```
 
-   Expected: merge `true`, squash and rebase `false`; rulesets A and B `active`; the
+   Expected: merge `true`, squash and rebase `false`, issues `true`; rulesets A and B `active`; the
    effective rules on `main` include deletion, non_fast_forward, pull_request (with
    `require_code_owner_review` and `dismiss_stale_reviews_on_push` true) and
    required_status_checks with the five checks; no `required_linear_history`.
@@ -421,8 +427,8 @@ What the settings cannot do: enforce P1 for colleagues while letting the maintai
 merge their own core PRs alone. Path 3 gives the maintainer the same power over
 colleagues' PRs, so P1 then rests on practice, not on GitHub. Path 1 enforces P1 but
 depends on the author opening each update PR. **Decided 2026-11-02: P1 with path 1**, bypass
-list empty. In practice the author's part is small: the maintainer announces a template
-update, and the author opens the update PR on GitHub's website (step 9), which the
+list empty. In practice the author's part is small: the maintainer opens an update issue
+assigned to the author, and the author opens the update PR on GitHub's website (step 9), which the
 maintainer reviews and approves.
 
 Never treat `gh pr merge --admin`, or a bypass, as a routine way to merge: it merges a
@@ -531,8 +537,18 @@ When the template changes, each course repo pulls it in:
   it once in any other clone, as for a fork.
 
 **When:** whenever the template has something to share (decided 2026-11-02): the
-maintainer merges it in the template, then tells the authors ("a new exercise is in,
-please update your course").
+maintainer merges it in the template, prepares each course's update branch, then opens
+an issue in each course repo, "Template update ready", assigned to its author (GitHub
+emails them), titled with the date, as in "Template update ready (9 Nov 2026)". The issue
+gives the steps and the pull request link
+`https://github.com/lc-elearn/<course>/compare/main...sync-template?expand=1&title=Template%20update%20(<date>)&body=Closes%20%23<N>`,
+where N is that issue's number, so merging the update closes it, and the course's
+issues show which updates are still waiting. `<date>` is the issue's date with each
+space as `%20` (`9%20Nov%202026`), so each update's pull request is named
+"Template update (9 Nov 2026)" instead of the branch's "Sync template", and a course's
+pull requests tell its updates apart. Decided 2026-11-09, after the first ones were
+all "Sync template". Issues are public like the repo: no
+unpublished lesson text, images or audio. First used 2026-11-09 (issue 1 in each course).
 
 **The procedure: an update branch inside the course repo.** Not a pull request from the
 template's `main` straight into the course's `main`: the course's rules require the

@@ -8,7 +8,6 @@ level_order: 20
 strand: General
 previous_level: "[[german-basic-1]]"
 next_level: "[[german-intermediate-1]]"
-programme_spec: "[[german-basic-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2023-10-30

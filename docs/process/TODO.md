@@ -10,7 +10,7 @@ session, on either machine.
 | `2026-08-06-post-phase-d-handover.md` | state snapshot at end of Phase D, plus the §5 decision log |
 | [`../ROADMAP.md`](../ROADMAP.md)      | larger work beyond this queue, each with its trigger       |
 
-**Last updated:** 2026-11-06 · **HEAD:** see `git log` · **Suite:** 203 files · 2377 tests green
+**Last updated:** 2026-11-09 · **HEAD:** see `git log` · **Suite:** 203 files · 2382 tests green
 (Vitest) · 108 Playwright tests (36 × 3 browsers, `bun run test:e2e`) plus 99 on a `DEBUG=1` build (33 × 3, `e2e/debug/`) · CI green · `main` protected since 2026-10-21 (job E1).
 
 Non-negotiable constraints for every job below live in
@@ -158,7 +158,7 @@ left, in order:
     deleting it loses nothing). The authors' GitHub usernames are collected, kept outside
     this repo; each still confirms their Cambridge email is verified.
 
-**Update, 2026-11-09 (work iMac): template tests now follow the course's language.** The Russian course's author found that four template tests fail once `course.json` sets a `languageCode` other than `es` (Russian is the first course to do so): `FlashcardsExercise.test.tsx` expected "Spanish" and `block-renderers.test.tsx` expected `lang="es"`, though the components already read `TARGET_LANG`. Reproduced on `main` with `"ru"`: exactly those 4 failed, 2,373 passed. Their patch, applied unchanged with `git am` (they stay the author), derives the expected code and name as the components do; the full suite passes with both `es` and `ru`. **Next:** once it merges, prepare `sync-template` in all four courses (ORGANIZATION step 9), Russian first, since its first lesson's pull request stays red until then; the author then merges `main` into the open lesson branch. Known edge, left as is: the language name goes into `new RegExp(...)` unescaped, so a name with brackets, such as "Serbian (Latin)", would break those two assertions.
+**Update, 2026-11-09 (work iMac): template tests now follow the course's language.** The Russian course's author found that four template tests fail once `course.json` sets a `languageCode` other than `es` (Russian is the first course to do so): `FlashcardsExercise.test.tsx` expected "Spanish" and `block-renderers.test.tsx` expected `lang="es"`, though the components already read `TARGET_LANG`. Reproduced on `main` with `"ru"`: exactly those 4 failed, 2,373 passed. Their patch, applied unchanged with `git am` (they stay the author), derives the expected code and name as the components do; the full suite passes with both `es` and `ru`. Merged as PR 78 (`f45a1c8`, then this note as `2687c8f`; its tree is the one PR CI tested). **Update branches pushed 2026-11-09**, each merging `2687c8f` with a merge commit and each passing the full gate first (2,377 tests, 108 e2e): `lc-russian-basic-vocabulary` got a new `sync-template` (`4fb1cd1`), also tested with `"ru"`. Spanish (`a0b8226`), French (`c3dd13f`) and German (`c56bc7f`) had the 2026-11-06 `sync-template` still unopened, so the new merge went on top of it as a plain push. One pull request per course now brings both `7bfb378` and `2687c8f`, from the same link. All merges were clean. **Next:** each author opens their course's pull request (`https://github.com/lc-elearn/<course>/compare/main...sync-template`; Spanish's is still R13), the maintainer approves, and the author merges with a merge commit; the Russian author then merges `main` into the open lesson branch. **Decided later the same day: update notices are GitHub issues, not email.** Issues were off on all four courses (forks start that way, though ORGANIZATION already planned a pinned "Deployments" issue per course); switched on, and issue 1, "Template update ready (9 Nov 2026)", opened in each course and assigned to its author, its pull request link pre-filling `Closes #1`. ORGANIZATION step 6 (switch Issues on, and read it back), step 9, COURSE_GUIDE and the sync recipe now say so; a template problem is an issue on the template. All five repos are public, so course issues are too. **Done later the same day:** a **Bug report** issue form on the template (`.github/ISSUE_TEMPLATE/bug-report.yml`, label `bug`), and blank issues switched off (`config.yml`, the maintainer's decision), so New issue offers only the two forms; COURSE_GUIDE's "When you are stuck" sends authors to it. The template now deletes a pull request's branch when it merges (repo setting, E33's open note). The first update pull requests were all named "Sync template", after the branch; the issue's link now also fills in a dated title, "Template update (9 Nov 2026)" (ORGANIZATION step 9, the sync recipe), from the next update on. Known edge, left as is: the language name goes into `new RegExp(...)` unescaped, so a name with brackets, such as "Serbian (Latin)", would break those two assertions.
 
 **Update, 2026-11-06 (work iMac): a fourth course.** `lc-russian-basic-vocabulary`, forked from `bfa98f5` (push CI run 42234696595 green) and set up as ORGANIZATION steps 6–7 ("Done 2026-11-06" there). Read back identical to `lc-spanish-essentials`: merge settings, rulesets A and B, the effective rules on `main`, no `CODEOWNERS` errors. Team `russian-basic-vocabulary` with Write on that repo only; its author is the French course's author, who keeps the French team. No `sync-template` needed: it already has the lesson-image fix and the update-link docs.
 
@@ -2534,7 +2534,8 @@ rather than the Language Centre's course factory; the maintainer took three smal
   refuses. Written from GitHub's docs, not yet tried: step 6's three test PRs on the
   first course are the proof, the third a maintainer sync that must still wait for its
   checks. Left to the maintainer, as repo settings: deleting head branches on merge is
-  off, and squash merges are allowed although pull requests rebase-merge.
+  off (turned on 2026-11-09 by the maintainer, after two merged branches were left
+  behind), and squash merges are allowed although pull requests rebase-merge.
 - **E34 — the fourth external review: answers no learner could give, and a playlist
   that would not stay paused. DONE 2026-10-23** (maintainer's request, branch
   `fix/e34-answers-and-audio` from `main` at `f0c6a71`; the review read `71f65e6`, and
@@ -2847,6 +2848,21 @@ rather than the Language Centre's course factory; the maintainer took three smal
   do, and a deliberate, recorded ruleset change as the only exception (untested).
   Display name **LC eLearning** (corrected 2026-11-03: LC means Language Centre;
   the `lc-elearn` handle is unchanged). **Not tested:** all of it; no organisation exists.
+- **E52 — the CULP programme specifications out, the CEFR grid in. DONE 2026-11-09**
+  (maintainer's request, branch `refactor/culp-cefr-grid`). The 21 programme
+  specifications (the `*_PS.pdf` sources, 2011–2012, `*-programme-spec.md` here) were
+  out of date and are deleted, with every link to them: the `programme_spec` line in 28
+  syllabi, the "Programme specifications" table in seven language hubs (their document
+  counts with it) and the index's column. The maintainer supplied the Council of
+  Europe's CEFR self-assessment grid, now
+  [`docs/culp-syllabi/european-framework-assessment.md`](../culp-syllabi/european-framework-assessment.md):
+  its body byte-identical to the file supplied, with a three-line frontmatter added
+  (`doc_type: cefr-grid`) so the index can link it and the test can read it. The README,
+  the `culp-syllabus` skill and the design spec (a dated "since" note) now read a
+  level's meaning from the grid's rows for the note's `cefr`, never inferred. The
+  test lost the programme-spec checks and gained `checkCefrGrid` (the grid has all six
+  levels in all five skill tables, the index lists it, every `cefr` value is A1–C2),
+  written failing first. 103 documents remain.
 - **E16 — after the organisation move, file `ORGANIZATION.md` under `docs/process/`.**
   Once steps 1–9 are done it is a record, not a guide; course repos inherit the file,
   so moving it keeps their top-level docs to what a course needs. Fix the links that

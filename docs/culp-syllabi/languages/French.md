@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # French
 
-Hub note for CULP French: 21 documents. Part of [[CULP Syllabi]].
+Hub note for CULP French: 17 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -51,12 +51,3 @@ Strand: [[Medics]]
 | --- | --- | --- |
 | [[french-medics-intermediate-1]] | Intermediate 1 | SSC French for Medics Intermediate 1 Syllabus |
 | [[french-medics-intermediate-2]] | Intermediate 2 | Programme du cours SSC French for Medics Intermédiaire 2 |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[french-basic-programme-spec]] | Basic | CULP Basic in French: Programme Specification |
-| [[french-intermediate-1-programme-spec]] | Intermediate 1 | CULP Intermediate 1 in French: Programme Specification |
-| [[french-intermediate-2-programme-spec]] | Intermediate 2 | CULP Intermediate 2 in French: Programme Specification |
-| [[french-advanced-programme-spec]] | Advanced | CULP Advanced in French: Programme Specification |
