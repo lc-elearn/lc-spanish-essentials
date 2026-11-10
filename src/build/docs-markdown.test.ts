@@ -24,8 +24,12 @@ import {
   sandboxDocPaths,
   slugify,
 } from './docs-markdown';
+import { toPosixPath } from './posix-path';
 
 const render = (markdown: string, docId = 'designer') => renderDocMarkdown(markdown, docId);
+// The watched docs with forward slashes, so the `endsWith('docs/…')` checks below hold on
+// Windows too (issue #85). The plugin itself hands Vite the native paths.
+const watchedDocs = (): string[] => sandboxDocPaths().map((file) => toPosixPath(file));
 
 describe('slugify', () => {
   it('lowercases, strips punctuation and joins on hyphens', () => {
@@ -260,7 +264,7 @@ describe('the Code style page', () => {
   });
 
   it('is watched like the hub docs, so an edit reloads the page', () => {
-    expect(sandboxDocPaths().some((file) => file.endsWith('docs/STYLE.md'))).toBe(true);
+    expect(watchedDocs().some((file) => file.endsWith('docs/STYLE.md'))).toBe(true);
   });
 });
 
@@ -294,9 +298,7 @@ describe('the CULP syllabi page', () => {
   });
 
   it('is watched like the hub docs, so an edit reloads the page', () => {
-    expect(sandboxDocPaths().some((file) => file.endsWith('docs/culp-syllabi/README.md'))).toBe(
-      true,
-    );
+    expect(watchedDocs().some((file) => file.endsWith('docs/culp-syllabi/README.md'))).toBe(true);
   });
 });
 
@@ -395,7 +397,7 @@ describe('the Claude skills page', () => {
   });
 
   it('is watched like the hub docs, so an edit reloads the page', () => {
-    expect(sandboxDocPaths().some((file) => file.endsWith('.claude/skills/README.md'))).toBe(true);
+    expect(watchedDocs().some((file) => file.endsWith('.claude/skills/README.md'))).toBe(true);
   });
 });
 

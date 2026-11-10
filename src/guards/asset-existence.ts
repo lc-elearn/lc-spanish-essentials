@@ -28,6 +28,7 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { toPosixPath } from '@/build/posix-path';
 import { courseConfig } from '@/config/course.config';
 import { SHOWCASE_FIXTURES } from '@/showcase/fixtures';
 
@@ -149,7 +150,9 @@ export function authoredAssetPaths(repoRoot: string): AuthoredAsset[] {
   const authored: AuthoredAsset[] = [];
 
   for (const file of loConfigFiles(repoRoot)) {
-    const source = path.relative(repoRoot, file);
+    // Forward slashes on every OS, so `source` reads the same in a report from Windows
+    // and compares with `lo-config/…` there too (issue #85).
+    const source = toPosixPath(path.relative(repoRoot, file));
     const parsed: unknown = JSON.parse(readFileSync(file, 'utf-8'));
     for (const value of collectAssetPaths(parsed)) authored.push({ source, value });
   }

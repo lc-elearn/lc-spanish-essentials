@@ -10,7 +10,7 @@ session, on either machine.
 | `2026-08-06-post-phase-d-handover.md` | state snapshot at end of Phase D, plus the §5 decision log |
 | [`../ROADMAP.md`](../ROADMAP.md)      | larger work beyond this queue, each with its trigger       |
 
-**Last updated:** 2026-11-09 · **HEAD:** see `git log` · **Suite:** 203 files · 2382 tests green
+**Last updated:** 2026-11-10 · **HEAD:** see `git log` · **Suite:** 204 files · 2386 tests green
 (Vitest) · 108 Playwright tests (36 × 3 browsers, `bun run test:e2e`) plus 99 on a `DEBUG=1` build (33 × 3, `e2e/debug/`) · CI green · `main` protected since 2026-10-21 (job E1).
 
 Non-negotiable constraints for every job below live in
@@ -2863,6 +2863,21 @@ rather than the Language Centre's course factory; the maintainer took three smal
   test lost the programme-spec checks and gained `checkCefrGrid` (the grid has all six
   levels in all five skill tables, the index lists it, every `cefr` value is A1–C2),
   written failing first. 103 documents remain.
+- **E53 — the guards and tests pass on Windows. DONE 2026-11-10** (issue 85, branch
+  `fix/windows-path-separators`). The Russian course's author found, on Windows 11, that
+  `bun run guards`, and so the pre-push hook, failed on a clean `main`, with four more
+  tests: Node's `path.relative` and `path.join` return backslashes there, and guard d's
+  `lo-config/` check, the three "is watched like the hub docs" tests and "registers every
+  doc as a watched file" compared those paths with `/` strings. Linux CI cannot see it.
+  Their diagnosis and fix, applied here: `toPosixPath()` (`src/build/posix-path.ts`)
+  gives guard d's `source` and the paths those tests compare forward slashes; the plugin
+  still hands Vite native paths. Its colocated test builds the Windows path with
+  `path.win32`, so the conversion is checked on any OS; written failing first. A sweep of
+  `src/` for other native paths compared with `/` strings found none (`token-integrity`
+  already accepts either separator, and five places already convert inline, left as they
+  are). **Tested:** on Windows by the author, with this fix: 2377 of 2377 tests, 214 of
+  214 guards; here, the full gate on macOS. **Not tested:** this branch on Windows. Until
+  a course takes it (step 9), authors on Windows use WSL.
 - **E16 — after the organisation move, file `ORGANIZATION.md` under `docs/process/`.**
   Once steps 1–9 are done it is a record, not a guide; course repos inherit the file,
   so moving it keeps their top-level docs to what a course needs. Fix the links that
