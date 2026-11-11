@@ -89,8 +89,9 @@ automatically — see [If a test goes red](#if-a-test-goes-red) below.
 | `tokens-variant-b-dark-blue.css`      | preset (default)      | switching the primary / CTA colour                        |
 | `tokens-variant-c-warm-blue.css`      | preset                | switching the primary / CTA colour                        |
 | `layout.css`                          | layout (not colour)   | changing the page width, gutter or reading measure        |
+| `tokens-variant-z-test.css`           | preview test card     | never — see "Preview a palette"                           |
 
-All six are in **`src/styles/`**. `app.css` (beside them, imported by both the course
+All seven are in **`src/styles/`**. `app.css` (beside them, imported by both the course
 stylesheet `src/index.css` and the debug pages' `src/debug.css`) imports `palette.css`,
 then `tokens.css`, then `layout.css`; the three variant files sit beside them as
 switchable presets. `layout.css` is not part of the colour chain and no preset
@@ -289,7 +290,8 @@ variant files — switching the `--primary` preset must never change the fonts:
 `src/styles/app.css` maps Tailwind's `--font-sans → --font-body` and
 `--font-heading → --font-display`, which re-types every component at once. Those
 mappings live in `@theme inline`. The build does emit `--font-heading` and
-`--radius-sm` today (the home page and the debug sandbox read them), but the header and
+`--radius-sm` today (the home page, the lesson headings through the `font-heading` utility, and the debug
+sandbox read them), but the header and
 footer write out what they stand for, `var(--font-display)` and
 `calc(var(--radius) * 0.6)`, so they never depend on it.
 
@@ -356,6 +358,13 @@ be flagged on `border*`, `outline*`, `box-shadow`, `backdrop-filter`,
 inside a `calc()` that references a token, like `calc(var(--radius) + 4px)`, and
 in a `@media` breakpoint like `@media (width >= 980px)`, which is a condition
 rather than a value.
+
+### "arbitrary-value" or "inline-style" — a raw value in a component
+
+A raw value in a Tailwind bracket class (`p-[12px]`, `bg-[#fff]`) or in a
+`style={{…}}` literal. Like a raw hex, it would be invisible to the next re-skin.
+
+**Fix:** use a token, or a step on Tailwind's own scale (`p-3`).
 
 ### "unlayered rule" or "!important"
 

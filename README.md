@@ -77,7 +77,7 @@ optimisation): [`public/fonts/feijoa/README.md`](public/fonts/feijoa/README.md).
 ## Build
 
 ```bash
-bun run build     # type-check, bundle, then prerender the landing page + one HTML file per LO
+bun run build     # type-check, bundle, then prerender the front page + one HTML file per LO
 bun run preview   # serve the built output locally
 ```
 
@@ -122,7 +122,7 @@ The build emits **one real HTML file per folder in `lo-config/`** (`lo-00-exampl
 `dist/example.html`) plus **`dist/index.html`, the course landing page** — hero copy
 from `course.json` and one card per LO, linking to that LO's page. The
 example lesson's card shows only while it is the only LO: a course with lessons of its
-own leaves it out (CONTRIBUTING, "Authoring a Learning Object").
+own leaves it out (CONTRIBUTING, "Authoring a Learning Object"). A course of one lesson can set `"home": "lesson"` in `course.json`: `dist/index.html` is then that lesson's page, with no landing page (COURSE_GUIDE, "One lesson, or several").
 Each page's body is already rendered, so a course reads and navigates with JavaScript
 disabled, and hydrates into the interactive app when JavaScript runs. Exercises need
 JavaScript and say so on the static page.
@@ -134,7 +134,7 @@ drift from the folders. Move a lesson by renaming its folder.
 
 ### Previewing a course while you author it
 
-`bun run dev` serves the whole course with hot reload — the landing page at `/`, and
+`bun run dev` serves the whole course with hot reload — the landing page (or, with `"home": "lesson"`, the lesson) at `/`, and
 each LO at `/<slug>.html`, so lesson cards and the lesson nav work as they do in
 production. `<slug>.html` files themselves only exist after a build, so a small
 Vite plugin answers those URLs by stamping the LO's folder onto the dev `index.html`,
@@ -171,7 +171,7 @@ BASE_URL=/course/ bun run build
 | [`.claude/skills/`](.claude/skills/)                | Claude Code's recipes; the code ones start from a test                            |
 | [`docs/STYLE.md`](docs/STYLE.md)                    | developers — how the code is written, and what tools check                        |
 | [`docs/TOOLING.md`](docs/TOOLING.md)                | why each tool was chosen, and every build decision                                |
-| [`docs/ORGANIZATION.md`](docs/ORGANIZATION.md)      | maintainer — the move to the team organisation (steps 1–5 done)                   |
+| [`docs/ORGANIZATION.md`](docs/ORGANIZATION.md)      | maintainer — the move to the team organisation (steps 1–7 done)                   |
 | [`docs/process/TODO.md`](docs/process/TODO.md)      | what is still open — start here in a new session                                  |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md)                | larger work beyond the queue, and what starts each                                |
 | [`docs/culp-syllabi/`](docs/culp-syllabi/README.md) | course developers — the CULP syllabi and the CEFR grid, to check a lesson's level |

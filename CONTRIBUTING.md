@@ -53,8 +53,8 @@ Once per machine, for the browser tests:
 
 | Command                 | What it does                                                                                           |
 | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| `bun run dev`           | Vite dev server, hot reload — landing page and every LO page                                           |
-| `bun run build`         | Type-check + bundle + prerender the landing page and one HTML per LO                                   |
+| `bun run dev`           | Vite dev server, hot reload — the front page and every LO page                                         |
+| `bun run build`         | Type-check + bundle + prerender the front page (landing page, or the one lesson) and one HTML per LO   |
 | `bun run preview`       | Serve the production build locally                                                                     |
 | `bun run test`          | Run the test suite (Vitest, one-shot)                                                                  |
 | `bun run test:coverage` | The suite plus per-file coverage bars — what CI runs                                                   |
@@ -90,7 +90,9 @@ Publishing a course (fonts, the address, the checks before it goes live, the upl
 
 An LO is a folder under `lo-config/`; it exists because the folder exists. Nothing in
 the app enumerates LOs — adding a folder adds its page **and its card on the landing
-page**, with no code change.
+page**, with no code change. A course of one lesson may set `"home": "lesson"` in
+`course.json` and have no landing page; it switches back before a second lesson
+([`COURSE_GUIDE.md` → "One lesson, or several"](COURSE_GUIDE.md#one-lesson-or-several)).
 
 1. Copy `lo-config/lo-00-example/` to `lo-config/lo-NN-your-slug/` — the `lo-NN-`
    ordinal is the course order (see below), and the URL drops it (`your-slug.html`).
@@ -107,7 +109,7 @@ page**, with no code change.
 suites and browser tests run on it, and template updates change it, so a course that
 edits or deletes it gets red CI and clashing updates. Learners never meet it: once
 `lo-config/` holds a lesson of its own, the landing page leaves the example's card out
-by itself (`EXAMPLE_LO_FOLDER` in `src/lo/lo-index.ts`). Its page is still built, with
+by itself (`EXAMPLE_LO_FOLDER` in `src/lo/course-lessons.ts`). Its page is still built, with
 nothing linking to it, so the browser tests keep a page to drive.
 
 > **Only add pictures and audio that we made, or that we are clearly allowed to
@@ -297,16 +299,27 @@ something is still wrong. Each type's `content` shape is its
 Design: [`docs/specs/2026-06-19-exercise-engines-design.md`](docs/specs/2026-06-19-exercise-engines-design.md)
 §5–6; the schema is `ExerciseOptionsSchema` in `src/config/lo-schema.ts`.
 
+### More than one right answer
+
+In a typed answer (inline-gap, typed-transform, dictation, conjugation), `|` means "or":
+`[в семейном кругу|в кругу семьи|в семье::in the family circle]` in a sentence,
+`"answer": "обеспеченные|состоятельные|богатые"` in its own field. Any number of answers
+may be given, and any of them is marked right; the first is the preferred one. Show
+answers fills in the first, and a wrong answer, once revealed, is shown as the one
+closest to what the learner typed, with the others under "Also accepted:". None may be
+empty, and no two may grade the same: capitals count only with `caseSensitive`, and
+dictation also ignores punctuation (TODO §E54).
+
 ### Blanks in a sentence
 
 Three exercise types write their blanks inside the sentence, in square brackets. The
 build reads each blank the way the exercise will, and refuses one no learner could
 answer, before any page is written (TODO §E34).
 
-| Type                  | A blank             | Rules                                                                                     |
-| --------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| select, inline-choice | `[*soy\|eres\|es]`  | Options split by `\|`. Exactly one is marked `*` as correct. No empty option, none twice. |
-| inline-gap            | `[llamo::llamarse]` | The answer, then optionally `::` and a hint shown in the empty box. The answer is needed. |
+| Type                  | A blank                                             | Rules                                                                                                                                                                                      |
+| --------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| select, inline-choice | `[*soy\|eres\|es]`                                  | Options split by `\|`. Exactly one is marked `*` as correct. No empty option, none twice.                                                                                                  |
+| inline-gap            | `[llamo::llamarse]`, `[profesor\|maestro::trabajo]` | The answer, then optionally `::` and a hint shown in the empty box. The answer is needed. `\|` separates several right answers: [More than one right answer](#more-than-one-right-answer). |
 
 Brackets only make blanks: each `[` closes with a `]`, with no bracket inside. To show a
 bracket as text, write it as an HTML entity, `&#91;` or `&#93;`. A sentence
@@ -323,6 +336,10 @@ answers as the learner sees them, decoded: `[*é|&eacute;]` offers `é` twice, a
 an accent is encoded and the apostrophe's shape (`l'eau`, `l’eau`) do not make two options
 differ; a capital or an accent does (TODO §E35).
 
+In an inline-gap, `|` separates several right answers
+([More than one right answer](#more-than-one-right-answer)). The box is as wide as the longest
+of them, and `&#124;` is a `|` the learner types, never an "or".
+
 When a blank is wrong, the build stops and says where and what:
 
 ```text
@@ -334,18 +351,20 @@ lo-config/lo-01-greetings/exercises/01-select/exercise.json is invalid:
 `content.items[0].text` is the first sentence of `items` (counting starts at 0). Each
 message, with a blank that causes it and the fix:
 
-| The message says…               | For example                 | Fix                                    |
-| ------------------------------- | --------------------------- | -------------------------------------- |
-| `has no correct option`         | `[soy\|eres\|es]`           | mark one: `[*soy\|eres\|es]`           |
-| `marks 2 options correct`       | `[*soy\|*eres\|es]`         | keep `*` on one only                   |
-| `has an empty option`           | `[soy\|\|*es]`              | remove the extra `\|`: `[soy\|*es]`    |
-| `shows as nothing`              | `[soy\|&nbsp;\|*es]`        | write the option, or remove it         |
-| `marks an empty option correct` | `[*\|es]`                   | write it after the `*`: `[*soy\|es]`   |
-| `offers "es" twice`             | `[es\|*es]`                 | make every option different            |
-| `has no answer`                 | `[::llamarse]`              | answer first: `[llamo::llamarse]`      |
-| `is written as a choice`        | `[*soy\|es]` in inline-gap  | the answer is typed: `[soy::ser]`      |
-| `brackets that do not pair up`  | `Yo [*soy\|eres de Madrid.` | close it: `Yo [*soy\|eres] de Madrid.` |
-| `no sentence has a blank`       | no `[ ]` anywhere           | add at least one blank                 |
+| The message says…               | For example                 | Fix                                             |
+| ------------------------------- | --------------------------- | ----------------------------------------------- |
+| `has no correct option`         | `[soy\|eres\|es]`           | mark one: `[*soy\|eres\|es]`                    |
+| `marks 2 options correct`       | `[*soy\|*eres\|es]`         | keep `*` on one only                            |
+| `has an empty option`           | `[soy\|\|*es]`              | remove the extra `\|`: `[soy\|*es]`             |
+| `shows as nothing`              | `[soy\|&nbsp;\|*es]`        | write the option, or remove it                  |
+| `marks an empty option correct` | `[*\|es]`                   | write it after the `*`: `[*soy\|es]`            |
+| `offers "es" twice`             | `[es\|*es]`                 | make every option different                     |
+| `has no answer`                 | `[::llamarse]`              | answer first: `[llamo::llamarse]`               |
+| `has an empty answer`           | `[soy\|\|eres::ser]`        | remove the extra `\|`: `[soy\|eres::ser]`       |
+| `accepts "Soy" twice`           | `[soy\|Soy::ser]`           | keep each answer once                           |
+| `is written as a choice`        | `[*soy\|es]` in inline-gap  | drop the `*`: the answer is typed, `[soy::ser]` |
+| `brackets that do not pair up`  | `Yo [*soy\|eres de Madrid.` | close it: `Yo [*soy\|eres] de Madrid.`          |
+| `no sentence has a blank`       | no `[ ]` anywhere           | add at least one blank                          |
 
 ### Answers in their own fields
 
@@ -356,15 +375,19 @@ fields are shown exactly as written, so an entity such as `&eacute;` is not deco
 and counts as different from `é`. Spacing and the apostrophe's shape do not make two
 labels differ; a capital or an accent does.
 
-| Type                                    | Field                     | Refused                                                          |
-| --------------------------------------- | ------------------------- | ---------------------------------------------------------------- |
-| radio-quiz, reading (radio questions)   | `options`                 | an option that shows as nothing; two that look the same          |
-| reading                                 | `trueLabel`, `falseLabel` | the two looking the same                                         |
-| line-match, memory-match                | `label`, `text`           | one that shows as nothing; two that look the same, even with ids |
-| typed-transform, conjugation, dictation | `answer`                  | an answer of spaces; for dictation, one of only punctuation      |
-| word-order, phrase-reorder              | `words`, `phrase`         | one that shows as nothing; every one the same (no order to find) |
-| drag-fill-gaps, word-spot               | `[word]` in `text`        | an empty `[ ]`                                                   |
-| conjugation                             | `answerMode`              | `"choice"`: not built yet, so a learner would see only a notice  |
+| Type                                    | Field                     | Refused                                                                                                               |
+| --------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| radio-quiz, reading (radio questions)   | `options`                 | an option that shows as nothing; two that look the same                                                               |
+| reading                                 | `trueLabel`, `falseLabel` | the two looking the same                                                                                              |
+| line-match, memory-match                | `label`, `text`           | one that shows as nothing; two that look the same, even with ids                                                      |
+| typed-transform, conjugation, dictation | `answer`                  | an answer of spaces; an empty `\|` alternative; one accepted twice; for dictation, an alternative of only punctuation |
+| word-order, phrase-reorder              | `words`, `phrase`         | one that shows as nothing; every one the same (no order to find)                                                      |
+| drag-fill-gaps, word-spot               | `[word]` in `text`        | an empty `[ ]`                                                                                                        |
+| conjugation                             | `answerMode`              | `"choice"`: not built yet, so a learner would see only a notice                                                       |
+
+A typed `answer` may hold several right answers split by `|`
+([More than one right answer](#more-than-one-right-answer)). These fields are judged as
+written, so an answer here cannot hold a literal `|`.
 
 Repeated words are fine where real sentences repeat them: in word-order, phrase-reorder
 and drag-fill-gaps a card or tile is marked right wherever it shows the right word, so
@@ -384,6 +407,8 @@ lo-config/lo-01-greetings/exercises/02-radio-quiz/exercise.json is invalid:
 | `marks an empty option correct`       | `["*", "no"]`                | write it after the `*`: `["*sí", "no"]` |
 | `has an option that shows as nothing` | `["*sí", " "]`               | write the option, or remove it          |
 | `has no answer`                       | `"answer": " "`              | write what the learner should type      |
+| `has an empty answer`                 | `"answer": "soy\|"`          | remove the extra `\|`                   |
+| `accepts "Soy" twice`                 | `"answer": "soy\|Soy"`       | keep each answer once                   |
 | `has nothing to type`                 | dictation `"answer": "¿?"`   | the answer needs words                  |
 | `shows "gato", as item 1 does`        | two pictures labelled `gato` | make the words differ                   |
 | `needs at least two different words`  | `["sí", "sí"]`               | give the sentence an order to find      |
@@ -535,7 +560,10 @@ course loses track of which template commits it has
 > Note: adding a new **exercise engine** (not just content) follows the engine recipe —
 > schema + pure grading + colocated tests + thin view + fixture + two registry entries:
 > the view in `EXERCISE_REGISTRY` (`src/exercises/lazy-registry.ts`) and the schema in
-> `EXERCISE_CONFIG_SCHEMAS` (`src/exercises/exercise-schemas.ts`). See a recent engine
+> `EXERCISE_CONFIG_SCHEMAS` (`src/exercises/exercise-schemas.ts`). The fixture is
+> registered in `SHOWCASE_FIXTURES` (`src/showcase/fixtures.ts`; guard e fails without
+> it), and the key needs its copy in `EXERCISE_INSTRUCTIONS`
+> (`src/exercises/lib/instructions.ts`; the build does not compile without it). See a recent engine
 > (`src/exercises/reading/`) as the reference shape.
 
 **Claude skills.** The recurring jobs (a lesson, an engine, a block type, the theme, a

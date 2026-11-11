@@ -30,6 +30,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { toPosixPath } from '../build/posix-path';
 import { REPO_ROOT, trackedFiles } from './docs-tree';
 
 /** A note's frontmatter: each value a string, or a list of strings. */
@@ -389,7 +390,7 @@ export function checkReadmeCounts(notes: readonly Note[], readme: string): strin
 /** Every note in the folder, read from disk so a new one is checked before it is staged. */
 export function loadNotes(dir: string = SYLLABI_DIR): Note[] {
   return readdirSync(dir, { recursive: true, encoding: 'utf8' })
-    .map((file) => file.split(path.sep).join('/'))
+    .map((file) => toPosixPath(file))
     .filter((file) => file.endsWith('.md') && file !== 'README.md')
     .filter((file) => !file.split('/').some((part) => part.startsWith('.')))
     .sort()

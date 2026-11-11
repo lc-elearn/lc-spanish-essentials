@@ -15,7 +15,8 @@
  *
  * Every folder under `lo-config/` gets one file, and the landing page lists them all.
  * Nothing here enumerates LOs by hand — an LO exists because its folder exists, and
- * `dist/index.html` gains a card for it with no code change.
+ * `dist/index.html` gains a card for it with no code change. A course with
+ * `home: "lesson"` in course.json writes its one lesson to index.html as well (TODO §E55).
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -26,6 +27,7 @@ import { findPageCollisions } from '@/build/page-names';
 import { buildPrerenderedHtml } from '@/build/prerender-html';
 import CourseHome from '@/components/home/CourseHome';
 import { courseConfig } from '@/config/course.config';
+import { frontPageLesson } from '@/lo/course-lessons';
 import { buildLoIndex } from '@/lo/lo-index';
 import { listLoSlugs, loadLo } from '@/lo/load-lo-disk';
 import { loSlugsByFolder, sortLoFolders } from '@/lo/lo-slug';
@@ -92,6 +94,10 @@ const loFolders = sortLoFolders(listLoSlugs());
 const slugsByFolder = loSlugsByFolder(loFolders);
 if (slugsByFolder.size === 0) throw new Error('prerender: no LO folders found under lo-config/');
 
+// `home: "lesson"` (TODO §E55): the course's one lesson is also its front page. Asked
+// before anything renders, so "lesson" with two lessons fails with nothing written.
+const frontLesson = frontPageLesson(loFolders, courseConfig.home);
+
 // Every page is rendered in memory first, so an invalid LO anywhere in the course stops
 // the build with nothing written: no lesson page beside a stale one (review 2026-10-21).
 const lessonPages = [...slugsByFolder].map(([loFolder, slug]) => ({
@@ -99,7 +105,12 @@ const lessonPages = [...slugsByFolder].map(([loFolder, slug]) => ({
   file: `${slug}.html`,
   html: renderLoPage(template, loFolder),
 }));
-const landingHtml = renderLandingPage(template, loFolders);
+// The lesson's own page above is still written: its address stays the same when the
+// course later switches to "landing" (spec §7).
+const frontHtml =
+  frontLesson === undefined
+    ? renderLandingPage(template, loFolders)
+    : renderLoPage(template, frontLesson);
 
 // The complete output list, checked against what Vite already wrote (a debug page, a
 // public/*.html), before the first write.
@@ -121,5 +132,9 @@ for (const { loFolder, file, html } of lessonPages) {
 
 // LAST, deliberately: it replaces the template file, which every LO page was rendered
 // from.
-writeFileSync(TEMPLATE_PATH, landingHtml, 'utf-8');
-process.stdout.write(`prerendered course landing page → dist/index.html\n`);
+writeFileSync(TEMPLATE_PATH, frontHtml, 'utf-8');
+process.stdout.write(
+  frontLesson === undefined
+    ? `prerendered course landing page → dist/index.html\n`
+    : `prerendered ${frontLesson} → dist/index.html (home: lesson)\n`,
+);

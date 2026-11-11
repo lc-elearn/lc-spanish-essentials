@@ -1,16 +1,20 @@
 # GitHub Organisation — `lc-elearn`
 
 **The plan for moving this template into a GitHub organisation and giving each course its
-own repo.** Steps 1–5 (the organisation and the template) are done; steps 6–9 (the course
-repos and the colleagues) follow, top to bottom, on the course day.
+own repo.** Steps 1–7 (the organisation, the template, the course repos and their teams) are done,
+and step 9 (template updates into a course) is in use; the status below says what is
+next.
 
 > Status: 🟡 **In progress — steps 1–5 done 2026-11-04** (work iMac, starting commit
 > `d8008f8`); **steps 6–7 done 2026-11-05** (work iMac, course repos from `c2e6cbe`): three
 > course repos, their rules read back, one team each, the authors invited; **2026-11-06**: the authors accepted, each team holds its author alone,
 > and the update to template `7bfb378` was pushed to all three courses as `sync-template`. A fourth course, `lc-russian-basic-vocabulary`,
 > was set up the same way on 2026-11-06 from `bfa98f5`. **2026-11-09**: template `2687c8f` (tests follow the
-> course's language) was merged into `sync-template` on all four courses (TODO, update of that day). Next:
-> the authors open those update pull requests (Spanish's is pilot R13), then the rest of the rules pilot.
+> course's language) was merged into `sync-template` on all four courses (TODO, update of that day), and French and
+> Russian merged it (PR 2 in each). **2026-11-10**: template `0ca46ea` (the CEFR grid) went onto `sync-template`
+> in all four courses, a fresh one in French and Russian, whose author opened PR 4 in each; the Windows fix
+> (template issue 85, `0409ff9`) went onto the same branches later that day (TODO, update of that day). Next: the authors
+> open and merge those update pull requests (Spanish's is pilot R13), then the rest of the rules pilot.
 >
 > **Decided 2026-10-12:** the template stayed under `pedbad` until the remaining template
 > work was finished. Tick to ✅ once the first course repo is working.

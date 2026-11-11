@@ -187,11 +187,11 @@ is too low`, and the guard fails closed, so every Claude edit was blocked — an
   Every source file counts (`include: src/**`), even one no test imports.
 - **The bars (lines)**, from a measurement on `31f3b91`:
 
-  | Group                                                                               | Bar  | Then  |
-  | ----------------------------------------------------------------------------------- | ---- | ----- |
-  | Logic — every `.ts` outside the glue below                                          | 80%  | 96.4% |
-  | Views — every `.tsx` (the suite renders static markup, so event handlers never run) | 20%  | 54.8% |
-  | Browser glue — `src/hooks/`, `src/audio/`, `use*.ts`, `reorder-animation.ts`        | none | 25.9% |
+  | Group                                                                                 | Bar  | Then  |
+  | ------------------------------------------------------------------------------------- | ---- | ----- |
+  | Logic — every `.ts` outside the glue below                                            | 80%  | 96.4% |
+  | Views — every `.tsx` (the suite renders static markup, so event handlers never run)   | 20%  | 54.8% |
+  | Browser glue — `.ts` in `src/hooks/`, `src/audio/`, `use*.ts`, `reorder-animation.ts` | none | 25.9% |
 
   Glue needs a DOM to test, so it is counted and reported with no bar until a DOM
   test environment is decided. Raise the views floor as their tests grow.
@@ -224,7 +224,9 @@ is too low`, and the guard fails closed, so every Claude edit was blocked — an
   axe passes with every accordion open, each popup open, a select dropdown open and the
   hover card open, in light and dark (`axe-open-states.spec.ts`); an engine whose chunk
   fails to load shows a reload notice while the other exercise still works
-  (`exercise-failure.spec.ts`). Shared helpers:
+  (`exercise-failure.spec.ts`); `index.html` is the landing page or, with
+  `"home": "lesson"`, the one lesson (`home-page.spec.ts`); a normal build carries none
+  of the palette preview (`preset-preview.spec.ts`). Shared helpers:
   `e2e/support.ts`.
 - **The debug pages (E12c), a second suite in `e2e/debug/`:** only a `DEBUG=1` build
   has the showcases and the sandbox (AGENTS.md hard constraint 6), so these specs run
@@ -237,6 +239,8 @@ is too low`, and the guard fails closed, so every Claude edit was blocked — an
   Reset restores it; the flip cue retires after three turns, stays retired after a
   reload, comes back with flashcards' Clear saved progress, and fades under reduced
   motion; a finished flashcards deck shows its done card and Reset does not move;
+  a typed gap marks a non-preferred answer right and a revealed miss lists the other
+  accepted answers, axe clean (`typed-answer-alternatives`);
   every debug page's nav lists all six and marks the current one (`debug-nav`); and the
   code style, CULP syllabi and Claude skills pages load cleanly and pass axe in both
   themes.
@@ -691,7 +695,7 @@ needs the number points here rather than restating it.
      `@tailwind base/components/utilities` directives.
   3. **First-party Vite plugin** — `@tailwindcss/vite` (faster than the v3 PostCSS path);
      wired in `vite.config.ts` as `plugins: [react(), tailwindcss(), …]` (the repo's own
-     `loDevPages()` and `sandboxDocs()` follow it — see below).
+     `loDevPages()`, `sandboxDocs()`, `feijoaFonts()` and `presetPreview()` follow it — see below).
 - **How it helps:** utilities are generated **on demand** by scanning source files, so the
   output CSS only contains classes actually used. Verified Step 8: a probe element
   (`bg-purple-600 rounded-lg text-2xl …`) produced exactly those rules in the built CSS.
@@ -995,8 +999,8 @@ stays on).`eslint.config.js` is locked by the config-protection hook, so it was
 - **Engine-local decisions:** per-blank metadata is a render-local value (not a
   ref) so the grading handlers close over it — avoids react-hooks/refs; the RNG
   seed is derived from `useId` (pure, distinct per instance) and bumped on reset.
-- **Design token added:** `--success` (→ Cambridge green `--cam-green`) +
-  `--success-foreground`, bridged to `text-success`/`bg-success`. Every
+- **Design token added:** `--success` (→ `--cam-green-deep` in light, `--cam-green-soft` in
+  dark) + `--success-foreground`, bridged to `text-success`/`bg-success`. Every
   blank-grading engine needs a "correct" colour; added once at the token layer
   (tokens.css + the `@theme inline` bridge, now in `src/styles/app.css`), not hardcoded
   per engine.
@@ -1203,6 +1207,10 @@ stays on).`eslint.config.js` is locked by the config-protection hook, so it was
   `index.html` is the template for **every** page it writes, so its script has to be
   able to render either. Hence `buildPrerenderedHtml` takes `loFolder` as optional
   rather than growing a second function to drift from.
+- **A course of one lesson (§E55):** with `"home": "lesson"` in `course.json`,
+  `dist/index.html` is that lesson's page (`renderLoPage`, stamped with its folder)
+  instead of `CourseHome`; `frontPageLesson()` in `src/lo/course-lessons.ts` picks it and
+  stops the build when there is more than one lesson.
 - **Write order matters:** the landing page overwrites the very file being used as the
   template, so it is written last, after every LO page has been rendered from the
   untouched original.

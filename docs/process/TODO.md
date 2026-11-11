@@ -158,6 +158,8 @@ left, in order:
     deleting it loses nothing). The authors' GitHub usernames are collected, kept outside
     this repo; each still confirms their Cambridge email is verified.
 
+**Update, 2026-11-10 (work iMac): the CEFR grid goes to the courses, and a Windows fix follows.** **Done 2026-11-09, recorded here:** the Russian course's author took the 9 Nov update in both their courses: PR 2 in each, which they opened, the maintainer approved (14:31 UTC) and they merged with a merge commit (14:37 UTC; French `main` `5fed0d5`, Russian `4a93a61`). These are the first template updates merged in a course by step 9's route; R13 (Spanish's) has not run. **Update branches pushed 2026-11-10**, each merging template `0ca46ea` (E52) and each passing the full gate first (2,382 tests, 108 e2e): German (`f9077f0`) and Spanish (`626bb2a`) on top of their unopened `sync-template`, with a comment on each course's open issue 1; French (`459c73c`) and Russian (`bc0c3d1`) on a fresh `sync-template`, each with a new issue 3, "Template update ready (10 Nov 2026)", assigned to their author, who opened PR 4 in both that morning ("Template update (10 Nov 2026)", `Closes #3`). Russian's issue 3 was closed by hand (09:24 UTC) while its PR 4 is still open. **Template issue 85**, from the same author on Windows 11: `bun run guards`, and so the pre-push hook, fails on Windows (backslash paths). The fix is E53, PR 86, merged with Rebase and merge (11:24 UTC) as `0409ff9` once its CI passed; on `main` it has a new SHA, so use `0409ff9`, not the branch's `95aac09`. Until a course has it, authors on Windows use WSL; the two Windows guides in the shared folder said so that morning, and both carry Russian's update link. **Done later the same day:** `0409ff9` went onto `sync-template` in all four courses, merged with `--no-ff` on top of the branch each already had (no new branch or issue), each passing the full gate first (2,386 tests, 108 e2e): German `47b6737`, Spanish `9549723`, French `316cc50`, Russian `09be8e2`. All four merges were clean, and French's and Russian's PR 4 took the new commit as their head. A comment saying the same link now also brings the Windows fix, its wording approved by the maintainer, went on German issue 1, Spanish issue 1, French issue 3 and Russian PR 4 (its issue is closed). The maintainer approved both PR 4 (11:48 UTC) once their checks passed on the new commit; neither is merged yet. Issue 85 closed when PR 86 merged. PR 88 (`987c823`, `8ed9ef7`) switched the five inline path conversions to `toPosixPath()` and added ROADMAP item 8, a Windows CI job; no change in behaviour, so it waits for the next update to reach the courses. **The guides in the shared folder:** the WSL notice came out of both Windows guides (the maintainer's decision, before PR 4 merged); their section 0 now says that until the update is merged, `git push` from PowerShell is refused, and merging it needs only the browser. The Mac GitHub guide lists Russian's update link, not "nothing to do there". **Next, in order:** (1) The author merges each PR 4 with a merge commit; German and Spanish still open theirs from the issue's link (Spanish's is R13). (2) Once both PR 4 are merged, the Windows guides' section 0 can drop its PowerShell line. (3) The maintainer may post a one-line comment on issue 85 (closed) pointing its author to PR 4.
+
 **Update, 2026-11-09 (work iMac): template tests now follow the course's language.** The Russian course's author found that four template tests fail once `course.json` sets a `languageCode` other than `es` (Russian is the first course to do so): `FlashcardsExercise.test.tsx` expected "Spanish" and `block-renderers.test.tsx` expected `lang="es"`, though the components already read `TARGET_LANG`. Reproduced on `main` with `"ru"`: exactly those 4 failed, 2,373 passed. Their patch, applied unchanged with `git am` (they stay the author), derives the expected code and name as the components do; the full suite passes with both `es` and `ru`. Merged as PR 78 (`f45a1c8`, then this note as `2687c8f`; its tree is the one PR CI tested). **Update branches pushed 2026-11-09**, each merging `2687c8f` with a merge commit and each passing the full gate first (2,377 tests, 108 e2e): `lc-russian-basic-vocabulary` got a new `sync-template` (`4fb1cd1`), also tested with `"ru"`. Spanish (`a0b8226`), French (`c3dd13f`) and German (`c56bc7f`) had the 2026-11-06 `sync-template` still unopened, so the new merge went on top of it as a plain push. One pull request per course now brings both `7bfb378` and `2687c8f`, from the same link. All merges were clean. **Next:** each author opens their course's pull request (`https://github.com/lc-elearn/<course>/compare/main...sync-template`; Spanish's is still R13), the maintainer approves, and the author merges with a merge commit; the Russian author then merges `main` into the open lesson branch. **Decided later the same day: update notices are GitHub issues, not email.** Issues were off on all four courses (forks start that way, though ORGANIZATION already planned a pinned "Deployments" issue per course); switched on, and issue 1, "Template update ready (9 Nov 2026)", opened in each course and assigned to its author, its pull request link pre-filling `Closes #1`. ORGANIZATION step 6 (switch Issues on, and read it back), step 9, COURSE_GUIDE and the sync recipe now say so; a template problem is an issue on the template. All five repos are public, so course issues are too. **Done later the same day:** a **Bug report** issue form on the template (`.github/ISSUE_TEMPLATE/bug-report.yml`, label `bug`), and blank issues switched off (`config.yml`, the maintainer's decision), so New issue offers only the two forms; COURSE_GUIDE's "When you are stuck" sends authors to it. The template now deletes a pull request's branch when it merges (repo setting, E33's open note). The first update pull requests were all named "Sync template", after the branch; the issue's link now also fills in a dated title, "Template update (9 Nov 2026)" (ORGANIZATION step 9, the sync recipe), from the next update on. Known edge, left as is: the language name goes into `new RegExp(...)` unescaped, so a name with brackets, such as "Serbian (Latin)", would break those two assertions.
 
 **Update, 2026-11-06 (work iMac): a fourth course.** `lc-russian-basic-vocabulary`, forked from `bfa98f5` (push CI run 42234696595 green) and set up as ORGANIZATION steps 6–7 ("Done 2026-11-06" there). Read back identical to `lc-spanish-essentials`: merge settings, rulesets A and B, the effective rules on `main`, no `CODEOWNERS` errors. Team `russian-basic-vocabulary` with Write on that repo only; its author is the French course's author, who keeps the French team. No `sync-template` needed: it already has the lesson-image fix and the update-link docs.
@@ -2863,8 +2865,8 @@ rather than the Language Centre's course factory; the maintainer took three smal
   test lost the programme-spec checks and gained `checkCefrGrid` (the grid has all six
   levels in all five skill tables, the index lists it, every `cefr` value is A1–C2),
   written failing first. 103 documents remain.
-- **E53 — the guards and tests pass on Windows. DONE 2026-11-10** (issue 85, branch
-  `fix/windows-path-separators`). The Russian course's author found, on Windows 11, that
+- **E53 — the guards and tests pass on Windows. DONE 2026-11-10** (issue 85, PR 86,
+  `0409ff9`). The Russian course's author found, on Windows 11, that
   `bun run guards`, and so the pre-push hook, failed on a clean `main`, with four more
   tests: Node's `path.relative` and `path.join` return backslashes there, and guard d's
   `lo-config/` check, the three "is watched like the hub docs" tests and "registers every
@@ -2874,10 +2876,36 @@ rather than the Language Centre's course factory; the maintainer took three smal
   still hands Vite native paths. Its colocated test builds the Windows path with
   `path.win32`, so the conversion is checked on any OS; written failing first. A sweep of
   `src/` for other native paths compared with `/` strings found none (`token-integrity`
-  already accepts either separator, and five places already convert inline, left as they
-  are). **Tested:** on Windows by the author, with this fix: 2377 of 2377 tests, 214 of
+  already accepts either separator, and five places already converted inline; later the
+  same day those five call `toPosixPath()` too, a refactor with no change in behaviour). **Tested:** on Windows by the author, with this fix: 2377 of 2377 tests, 214 of
   214 guards; here, the full gate on macOS. **Not tested:** this branch on Windows. Until
-  a course takes it (step 9), authors on Windows use WSL.
+  a course takes it (step 9), authors on Windows use WSL. A Windows CI job, which would
+  catch a removed `toPosixPath()` call, is ROADMAP item 8.
+- **E54 — typed answers accept more than one form. DONE 2026-11-10** (PR 90, merged
+  as `5662951`; spec
+  [`2026-11-10-typed-answer-alternatives-design.md`](../specs/2026-11-10-typed-answer-alternatives-design.md),
+  plan [`2026-11-10-typed-answer-alternatives-plan.md`](2026-11-10-typed-answer-alternatives-plan.md)).
+  `|` means "or" in any typed answer, in inline-gap, typed-transform, dictation and
+  conjugation; the first is preferred and Show answers fills it in. A wrong answer is
+  hinted at and revealed against the closest form, and the reveal lists the others under
+  "Also accepted:" (new UI string `alsoAccepted`). The build refuses an empty alternative
+  and one accepted twice, compared as grading compares them; "twice" is checked on the
+  exercise envelope, the only schema that sees `options.caseSensitive`. Found by the
+  Russian course: lessons 3 and 4 dropped seven alternatives the 2015 units accepted;
+  course PR 8 (lesson 4) waits for this. **Verify:** the gate in AGENTS.md, and
+  `DEBUG=1 bun run build && DEBUG=1 bun run test:e2e`
+  (`e2e/debug/typed-answer-alternatives.spec.ts`). **Next:** each course takes it with
+  its next update; the Russian course then restores the dropped alternatives in lessons
+  3 and 4, checks lessons 1 and 2 against the 2015 units, and merges PR 8.
+- **E55 — a course of one lesson, with no landing page. DONE 2026-11-11** (PR 92, merged
+  as `cd14265`; spec
+  [`2026-11-10-standalone-lesson-design.md`](../specs/2026-11-10-standalone-lesson-design.md)).
+  A new `course.json` setting, `home`: `"landing"` (the default, today's behaviour) or
+  `"lesson"`, which makes `index.html` the one lesson's page. The build refuses
+  `"lesson"` when there is more than one lesson, and says to switch. `<slug>.html` is
+  still written, so the lesson keeps one address when the course later gains lessons.
+  Plan: [`2026-11-10-standalone-lesson-plan.md`](2026-11-10-standalone-lesson-plan.md). **Next:** each course takes it with its next update; a one-lesson course sets
+  `"home": "lesson"` in `course.json`.
 - **E16 — after the organisation move, file `ORGANIZATION.md` under `docs/process/`.**
   Once steps 1–9 are done it is a record, not a guide; course repos inherit the file,
   so moving it keeps their top-level docs to what a course needs. Fix the links that
@@ -3145,3 +3173,5 @@ build, so it cannot return. Two remain:
 | 2026-10-21 | `f56d9d0` | **Code style debug page** — `code-style.html` renders `docs/STYLE.md`, with real examples from `src/` (E26)                                                         |
 | 2026-10-21 | `e573fdd` | **kebab-case module names** — eleven camelCase modules renamed; `file-names.test.ts` enforces the shapes (E27)                                                      |
 | 2026-10-21 | `35b36d6` | **third review's defects** — exercises checked at load, reserved page names, the playlist's gap; PR 31 (E28)                                                        |
+| 2026-11-10 | `5662951` | **typed answers accept more than one form** — `\|` means "or" in the four typed engines, the first preferred, the rest "Also accepted"; PR 90 (E54)                 |
+| 2026-11-11 | `cd14265` | **a course of one lesson** — `"home": "lesson"` in `course.json` makes `index.html` the lesson's page; the build refuses it with two lessons; PR 92 (E55)           |

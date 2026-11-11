@@ -97,7 +97,8 @@ bun run test:e2e`; and a fixed address: `BASE_URL=/course/` on both commands.
   no JS at all.
 - **A new exercise engine follows the recipe:** schema + pure grading +
   colocated tests + thin view + fixture + two registry entries, view and schema
-  (`CONTRIBUTING.md`, the note on exercise engines, names both). Copy the shape of
+  (`CONTRIBUTING.md`, the note on exercise engines, names both, and where the fixture
+  and the instructions copy are registered). Copy the shape of
   `src/exercises/reading/`.
 - **New code starts from a failing test** — write the test, run it, see it fail, then
   write the code that makes it pass. No hook enforces this by default (the TDD guard

@@ -13,7 +13,8 @@
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §8, §9.
  */
 import { z } from 'zod';
-import { hasTypedAnswer } from '../lib/answer-checks';
+import { splitAlternatives } from '../lib/answer-alternatives';
+import { hasTypedAnswer, typedAnswerProblems } from '../lib/answer-checks';
 import { normalizeAnswer, normalizeForDictation } from '../lib/answers';
 import { ExerciseConfigSchema } from '@/config/lo-schema';
 import { TextEntryContentSchema } from '../text-entry/text-entry-schema';
@@ -27,12 +28,17 @@ export const DictationContentSchema = TextEntryContentSchema.refine(
     path: ['rows'],
   },
 )
-  // Dictation grades with punctuation and quotes ignored, so an answer of only those
-  // leaves nothing to type (TODO §E42). A blank answer is already refused above.
+  // Dictation grades with punctuation and quotes ignored, so an answer, or one of its `|`
+  // alternatives, of only those leaves nothing to type (TODO §E42, §E54). A blank answer
+  // is already refused above; an empty alternative is refused on the envelope.
   .superRefine((content, ctx) => {
     content.rows.forEach((row, index) => {
-      const blank = !hasTypedAnswer(row.answer, normalizeAnswer);
-      if (!blank && !hasTypedAnswer(row.answer, normalizeForDictation)) {
+      const silent = splitAlternatives(row.answer).some(
+        (alternative) =>
+          hasTypedAnswer(alternative, normalizeAnswer) &&
+          !hasTypedAnswer(alternative, normalizeForDictation),
+      );
+      if (silent) {
         ctx.addIssue({
           code: 'custom',
           message: `row ${index + 1} has nothing to type: dictation ignores punctuation and quotes, so the answer needs words`,
@@ -45,5 +51,19 @@ export const DictationContentSchema = TextEntryContentSchema.refine(
 export const DictationExerciseConfigSchema = ExerciseConfigSchema.extend({
   type: z.literal('dictation'),
   content: DictationContentSchema,
-});
+})
+  // An answer's `|` alternatives (TODO §E54), compared as dictation grades them:
+  // punctuation and quotes ignored, capitals folded unless `options.caseSensitive`.
+  .superRefine((config, ctx) => {
+    const caseSensitive = config.options?.caseSensitive ?? false;
+    config.content.rows.forEach((row, index) => {
+      for (const end of typedAnswerProblems(row.answer, normalizeForDictation, caseSensitive)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `row ${index + 1} ${end}`,
+          path: ['content', 'rows', index, 'answer'],
+        });
+      }
+    });
+  });
 export type DictationExerciseConfig = z.infer<typeof DictationExerciseConfigSchema>;

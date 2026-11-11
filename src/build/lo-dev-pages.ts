@@ -14,6 +14,9 @@
  * LO's folder stamped on the root div. `main.tsx` then renders that LO, exactly as it
  * does on a built page.
  *
+ * ONE-LESSON COURSES (TODO §E55). With `home: "lesson"` in course.json, `/` and
+ * `/index.html` are that lesson's page too, as `dist/index.html` is in the build.
+ *
  * WHY THIS IS NOT A THIRD RENDERING PATH (the objection that first ruled it out):
  * nothing is rendered here. The middleware picks a folder and calls `injectRootDiv()`
  * — the same function the prerender pass uses for the same purpose — so there is one
@@ -44,6 +47,9 @@ import { injectRootDiv } from './prerender-html';
 // config is bundled before its own `resolve.alias` exists, so anything reached from
 // here must be free of `@/…` imports. `load-lo-disk` is not — `assembleLo` pulls the
 // schemas in by alias — hence `lo-folders.ts`, which it re-exports from.
+import type { CourseHome } from '../config/course-home';
+import { readCourseHome } from '../config/course-json-disk';
+import { frontPageLesson } from '../lo/course-lessons';
 import { listLoSlugs } from '../lo/lo-folders';
 import { loSlugsByFolder, sortLoFolders } from '../lo/lo-slug';
 
@@ -58,6 +64,11 @@ interface LoDiskReader {
 /** A page lives at the root of the site: `/example.html`, never `/nested/example.html`. */
 const LO_PAGE_PATH_PATTERN = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\.html$/;
 
+/** The course's front address: `/`, or `/index.html` spelled out. */
+export function isFrontPagePath(pathname: string): boolean {
+  return pathname === '/' || pathname === '/index.html';
+}
+
 /**
  * Which LO folder, if any, renders the page at `pathname`.
  *
@@ -66,23 +77,28 @@ const LO_PAGE_PATH_PATTERN = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\.html$/;
  *
  * @param pathname a request path with no query or hash
  * @param loFolders LO folder names under `lo-config/`
- * @returns the folder whose slug matches, or undefined — undefined means "not ours",
+ * @param home course.json's `home`: with "lesson", the front page is the one lesson
+ *   (TODO §E55); with "landing", it is Vite's own index.html
+ * @returns the folder whose page this is, or undefined — undefined means "not ours",
  *   so the request falls through to the middleware that owns it (a real 404 included)
  * @throws Error naming the folder when an LO folder name is malformed, or its slug is
- *   taken by another folder or by one of the course's own pages
+ *   taken by another folder or by one of the course's own pages; and for "lesson"
+ *   with more than one lesson
  */
 export function devLoFolderForPath(
   pathname: string,
   loFolders: readonly string[],
+  home: CourseHome = 'landing',
 ): string | undefined {
   const match = LO_PAGE_PATH_PATTERN.exec(pathname);
-  if (pathname !== '/' && match === null) return undefined;
+  const isFrontPage = isFrontPagePath(pathname);
+  if (!isFrontPage && match === null) return undefined;
 
   // The build's own check on the whole set, on every page request: a duplicate slug or
   // one of the course's own page names (`index`, a debug page) fails here, naming the
-  // folder, instead of only when someone runs `bun run build`. Reserved slugs never
-  // reach the map, so `/index.html` stays Vite's own landing page.
+  // folder, instead of only when someone runs `bun run build`.
   const slugsByFolder = loSlugsByFolder(loFolders);
+  if (isFrontPage) return frontPageLesson(loFolders, home);
   if (match === null) return undefined;
 
   const slug = match[1];
@@ -120,7 +136,10 @@ export function loDevPages(): Plugin {
 
         let loFolder: string | undefined;
         try {
-          loFolder = devLoFolderForPath(basePath, listLoSlugs());
+          // course.json is read only for the front page, and per request, so a changed
+          // `home` needs a reload, not a restart.
+          const home = isFrontPagePath(basePath) ? readCourseHome() : 'landing';
+          loFolder = devLoFolderForPath(basePath, listLoSlugs(), home);
         } catch (error) {
           // A malformed folder name fails the build; failing the dev request the same
           // way is how an author meets it early, with the folder named.

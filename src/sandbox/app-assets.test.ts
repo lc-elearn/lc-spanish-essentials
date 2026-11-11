@@ -8,6 +8,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from 'vitest';
+import { toPosixPath } from '../build/posix-path';
 import { APP_ICONS, APP_IMAGES, isCourseLessonImage } from './app-assets';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -50,7 +51,7 @@ function lucideImports(): string[] {
 function publicImages(): string[] {
   const images = walk(path.join(PUBLIC, 'images'))
     .filter((file) => /\.(svg|png|webp|jpe?g|avif|gif)$/i.test(file))
-    .map((file) => path.relative(PUBLIC, file).split(path.sep).join('/'))
+    .map((file) => toPosixPath(path.relative(PUBLIC, file)))
     .filter((image) => !isCourseLessonImage(image));
   return [...images, 'favicon.svg', 'logo.svg'].sort();
 }

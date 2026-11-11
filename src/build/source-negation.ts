@@ -43,6 +43,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { stripComments } from '../guards/asset-path';
+import { toPosixPath } from './posix-path';
 
 /** Repo-relative folder holding the vendored shadcn wrappers. */
 export const UI_DIR = 'src/components/ui';
@@ -99,7 +100,7 @@ export function readAppSources(rootDir: string = repoRoot()): SourceFile[] {
       if (!SOURCE_EXTENSIONS.includes(path.extname(entry.name))) continue;
       const full = path.join(dir, entry.name);
       out.push({
-        path: path.relative(rootDir, full).split(path.sep).join('/'),
+        path: toPosixPath(path.relative(rootDir, full)),
         text: readFileSync(full, 'utf8'),
       });
     }

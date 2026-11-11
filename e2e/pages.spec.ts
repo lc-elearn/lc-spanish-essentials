@@ -9,6 +9,8 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 
+import { readCourseHome } from '../src/config/course-json-disk';
+import { EXAMPLE_LO_FOLDER, frontPageLesson } from '../src/lo/course-lessons';
 import { listLoSlugs } from '../src/lo/lo-folders';
 import { loSlugsByFolder, sortLoFolders } from '../src/lo/lo-slug';
 import {
@@ -36,7 +38,14 @@ const LESSON_PAGES: PageCase[] = [...loSlugsByFolder(sortLoFolders(listLoSlugs()
   (slug) => ({ path: `${slug}.html`, ready: slug === 'example' ? exampleReady : lessonReady }),
 );
 
-const PAGES: PageCase[] = [{ path: 'index.html', ready: async () => {} }, ...LESSON_PAGES];
+/** index.html is the landing page, or, with `home: "lesson"`, the lesson (TODO §E55). */
+function frontPageReady(): PageCase['ready'] {
+  const lesson = frontPageLesson(sortLoFolders(listLoSlugs()), readCourseHome());
+  if (lesson === undefined) return async () => {};
+  return lesson === EXAMPLE_LO_FOLDER ? exampleReady : lessonReady;
+}
+
+const PAGES: PageCase[] = [{ path: 'index.html', ready: frontPageReady() }, ...LESSON_PAGES];
 
 for (const { path, ready } of PAGES) {
   test.describe(path, () => {

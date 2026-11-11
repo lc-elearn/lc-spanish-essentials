@@ -29,6 +29,9 @@ schemas check every lesson file when it loads, and `bun run test` runs them.
    `lo-NN-` number and a short slug, for example `lo-03-food`; the slug may not be a
    reserved page name or another lesson's ([`CONTRIBUTING.md`, step 1](../../../CONTRIBUTING.md)). The number is the course
    order and nothing else ([`CONTRIBUTING.md` → "Course order has one source"](../../../CONTRIBUTING.md#course-order-has-one-source-the-folder-ordinal)).
+   If `course.json` has `"home": "lesson"` (a course of one lesson), a second lesson
+   stops the build: set `"home": "landing"` first
+   ([`COURSE_GUIDE.md` → "One lesson, or several"](../../../COURSE_GUIDE.md#one-lesson-or-several)).
    Then `git switch -c lo-03-food`, the branch named after the lesson folder. Never
    write the lesson on `main`: GitHub refuses the push.
 3. **Copy the example.** Copy `lo-config/lo-00-example/` to the new folder. **Never edit

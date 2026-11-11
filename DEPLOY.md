@@ -29,13 +29,13 @@ Every step, and the checks before it goes live, are below.
 
 ## What you need, once
 
-| Tool                | Check                                      | Why                                                                 |
-| ------------------- | ------------------------------------------ | ------------------------------------------------------------------- |
-| **Git**             | `git --version`                            | to fetch the course from GitHub                                     |
-| **Bun** 1.3         | `bun --version` → `1.3.…`                  | runs every command in this guide; CI uses the latest 1.3            |
-| **Node** 22         | `node --version` → `v22.…`, 22.12 or later | the build tools run on Node; `.nvmrc` pins 22, and CI uses the same |
-| **Feijoa** fonts    | the three files below                      | the Cambridge heading font; licensed, so never in the repo          |
-| The **web address** | ask whoever runs the server                | which server folder to copy into (step 4)                           |
+| Tool                | Check                                      | Why                                                                                         |
+| ------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **Git**             | `git --version`                            | to fetch the course from GitHub                                                             |
+| **Bun** 1.3         | `bun --version` → `1.3.…`                  | runs every command in this guide; CI uses the latest 1.3                                    |
+| **Node** 22         | `node --version` → `v22.…`, 22.12 or later | optional: only the full check in step 6 (`test:e2e`) needs it; `.nvmrc` pins 22, as CI does |
+| **Feijoa** fonts    | the three files below                      | the Cambridge heading font; licensed, so never in the repo                                  |
+| The **web address** | ask whoever runs the server                | which server folder to copy into (step 4)                                                   |
 
 Install Bun from [bun.sh](https://bun.sh). For Node, [nvm](https://github.com/nvm-sh/nvm)
 is easiest: in the repo folder, `nvm install` reads `.nvmrc` and installs 22. In each
@@ -189,6 +189,8 @@ it. Do not deploy: send the message to the lesson's author or the maintainer.
    ls dist/*.html
    ```
 
+   With `"home": "lesson"` in `course.json`, `index.html` is the lesson itself, and the lesson's own page is there too.
+
    If you see `exercise-showcase.html`, `ui-showcase.html`, `debug-sandbox.html`,
    `code-style.html`, `culp-syllabi.html` or `claude-skills.html`, the build ran with `DEBUG` set. Open a new terminal and build again.
 
@@ -209,6 +211,8 @@ go through this list:
 - [ ] Headings are in Feijoa. To be sure: right-click a heading, **Inspect**, and under
       **Computed** the rendered font says Feijoa, not Open Sans.
 - [ ] Every lesson card opens its lesson, and the way back to the home page works.
+- [ ] With `"home": "lesson"`, the home page is the lesson itself: skip the two card
+      checks, and check that the course name in the header opens the same lesson.
 - [ ] In one lesson: open an exercise, answer it, press **Check**, then **Reset**.
 - [ ] An audio clip plays.
 - [ ] Pictures show.

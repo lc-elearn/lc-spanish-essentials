@@ -7,6 +7,9 @@
  *             differs from the attempt in a <mark> (answer-feedback.css: bold, underlined,
  *             tinted). The marking is also said in words (sr-only), and the visible
  *             key shows once per exercise (`showKey`).
+ *   - also:   under a reveal whose blank or row accepts more than one answer, "Also
+ *             accepted:" and the others joined with " · ", in the course language
+ *             (TODO §E54). Part of the feedback text, so a screen reader hears it too.
  * Replaces the interleaved character diff (TextDiff), which read as one garbled word.
  */
 import { Eye, Lightbulb, RotateCcw } from 'lucide-react';
@@ -70,6 +73,13 @@ export function AnswerFeedback({ feedback, contentLang, showKey, labels }: Answe
           ) : null}
         </span>
       </span>
+      {feedback.alsoAccepted.length > 0 ? (
+        // ms-6: under the answer's text, past the icon (size-4 + gap-2).
+        <span className="ms-6 text-sm text-foreground">
+          {resolveLabel('alsoAccepted', labels)}{' '}
+          <span lang={contentLang}>{feedback.alsoAccepted.join(' · ')}</span>
+        </span>
+      ) : null}
       {showKey && marked.length > 0 ? (
         <span className="ms-6 text-xs text-muted-foreground" aria-hidden="true">
           {key}

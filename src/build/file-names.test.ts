@@ -10,6 +10,7 @@ import { readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { findMisnamed, nameShape } from './file-names';
+import { toPosixPath } from './posix-path';
 
 const SRC = path.resolve(import.meta.dirname, '..');
 
@@ -63,7 +64,7 @@ function srcEntries(): string[] {
   return readdirSync(SRC, { recursive: true, encoding: 'utf-8' })
     .filter((entry) => !entry.startsWith(path.join('components', 'ui')))
     .map((entry) => (statSync(path.join(SRC, entry)).isDirectory() ? `${entry}/` : entry))
-    .map((entry) => entry.split(path.sep).join('/'));
+    .map((entry) => toPosixPath(entry));
 }
 
 describe('src/ follows the naming shapes', () => {

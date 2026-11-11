@@ -41,7 +41,9 @@ folder exists.**
 ## `lo-config/` — the course content
 
 An LO is a folder. Adding a folder adds a lesson page **and its card on the
-landing page**, with no code change anywhere.
+landing page**, with no code change anywhere. (A course of one lesson can set
+`"home": "lesson"` in `course.json` instead, and has no landing page: see
+[`COURSE_GUIDE.md`](COURSE_GUIDE.md#one-lesson-or-several).)
 
 ```
 lo-config/lo-00-example/
@@ -104,9 +106,9 @@ fixed `BASE_URL`, and that is what makes it work. **Guard c** checks the form;
 | Folder               | Owns                                                                                                                                                                                                        |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/exercises/`     | **The engines.** One folder per exercise type, plus `lib/` (shared shell), `text-entry/` (the runtime dictation and typed-transform share) and the registry.                                                |
-| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page.                                                                                                                                 |
+| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page; decides which lessons the course lists or opens on (`course-lessons.ts`).                                                       |
 | `src/components/`    | **The page shell** — header, LO hero, footer, landing page + lesson rail, audio players, `ui/` primitives.                                                                                                  |
-| `src/config/`        | **The content contract** — Zod schemas, course config, UI strings.                                                                                                                                          |
+| `src/config/`        | **The content contract** — Zod schemas, course config (with the `home` setting and its Node reader, `course-json-disk.ts`), UI strings.                                                                     |
 | `src/styles/`        | **The theme** — the token chain. See [`DESIGNER.md`](DESIGNER.md).                                                                                                                                          |
 | `src/guards/`        | **The seven repo-wide invariant sweeps** (guards b–h; guard a is the Zod schemas in `src/config/` and each engine's `<type>-schema.ts`). `bun run guards`.                                                  |
 | `src/build/`         | Build-time helpers importable by Vite — prerender HTML, dev-server LO pages, docs→HTML, debug entries, `@source` check.                                                                                     |
@@ -169,10 +171,10 @@ Run by `bun`, outside the Vite bundle. Two rules apply here, and equally to
 - Anything reachable from `vite.config.ts` must avoid `@/…` alias imports — the
   config is bundled before its own `resolve.alias` exists.
 
-| Script                  | Does                                                          |
-| ----------------------- | ------------------------------------------------------------- |
-| `scripts/prerender.tsx` | After `vite build`: writes the landing page + one HTML per LO |
-| `scripts/docs-tree.ts`  | Regenerates the tree in this file (`bun run docs:tree`)       |
+| Script                  | Does                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `scripts/prerender.tsx` | After `vite build`: writes the front page (the landing page, or the one lesson) + one HTML per LO |
+| `scripts/docs-tree.ts`  | Regenerates the tree in this file (`bun run docs:tree`)                                           |
 
 ## `docs/` — the written record
 
@@ -194,15 +196,16 @@ is the single source of truth for what is still open.
 
 ## Where does my change go?
 
-| I want to…                             | Touch                                                                                                                                     |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| add a lesson                           | a new `lo-config/lo-NN-slug/` folder — nothing else                                                                                       |
-| reorder lessons                        | rename the LO folders                                                                                                                     |
-| change a colour or font                | `src/styles/palette.css` — see [`DESIGNER.md`](DESIGNER.md)                                                                               |
-| add an exercise engine                 | a new `src/exercises/<type>/`, its key in `EXERCISE_TYPE_KEYS`, and two registry entries (`EXERCISE_REGISTRY`, `EXERCISE_CONFIG_SCHEMAS`) |
-| change what an exercise config accepts | the engine's `<type>-schema.ts`, or `src/config/` for the shared envelope — a **contract** change                                         |
-| add audio or images                    | `public/`, mirroring the config's ordinal-type names                                                                                      |
-| change the page chrome                 | `src/components/shell/`                                                                                                                   |
+| I want to…                                       | Touch                                                                                                                                                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| add a lesson                                     | a new `lo-config/lo-NN-slug/` folder — nothing else                                                                                                                                                    |
+| change the course title, home text or front page | `course.json` — see [`COURSE_GUIDE.md`](COURSE_GUIDE.md)                                                                                                                                               |
+| reorder lessons                                  | rename the LO folders                                                                                                                                                                                  |
+| change a colour or font                          | `src/styles/palette.css` — see [`DESIGNER.md`](DESIGNER.md)                                                                                                                                            |
+| add an exercise engine                           | a new `src/exercises/<type>/`, its key in `EXERCISE_TYPE_KEYS`, two registry entries (`EXERCISE_REGISTRY`, `EXERCISE_CONFIG_SCHEMAS`), a `SHOWCASE_FIXTURES` card and its `EXERCISE_INSTRUCTIONS` copy |
+| change what an exercise config accepts           | the engine's `<type>-schema.ts`, or `src/config/` for the shared envelope — a **contract** change                                                                                                      |
+| add audio or images                              | `public/`, mirroring the config's ordinal-type names                                                                                                                                                   |
+| change the page chrome                           | `src/components/shell/`                                                                                                                                                                                |
 
 Anything in the second half of that table re-skins or re-shapes **every** course
 built from this template. Those paths are owned in

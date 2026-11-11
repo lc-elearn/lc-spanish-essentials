@@ -21,9 +21,10 @@ export interface InlineGapFillResult {
 }
 
 /**
- * Grade the first `nToSolve` blanks against their expected text (accent-strict,
- * capitals ignored unless `caseSensitive`). Empty blanks are skipped. `misses` carries
- * each blank's wrong Checks so far: the first gets a hint, the second the answer.
+ * Grade the first `nToSolve` blanks against the answers each accepts (`|` between
+ * them, TODO §E54; accent-strict, capitals ignored unless `caseSensitive`). Empty
+ * blanks are skipped. `misses` carries each blank's wrong Checks so far: the first
+ * gets a hint, the second the answer.
  */
 export function gradeInlineGap(
   blanksMeta: readonly InputMeta[],
@@ -32,11 +33,11 @@ export function gradeInlineGap(
   misses: Readonly<Record<number, number>> = {},
   caseSensitive = false,
 ): InlineGapGradeResult {
-  const expected = Array.from({ length: nToSolve }, (_, i) => blanksMeta[i]?.expected ?? '');
-  return gradeTypedAnswers(expected, values, misses, 'strict', caseSensitive);
+  const accepted = Array.from({ length: nToSolve }, (_, i) => blanksMeta[i]?.accepted ?? ['']);
+  return gradeTypedAnswers(accepted, values, misses, 'strict', caseSensitive);
 }
 
-/** Reveal every answer: fill each blank with its expected text, all correct. */
+/** Reveal every answer: fill each blank with its preferred (first) answer, all correct. */
 export function fillInlineGapAnswers(
   blanksMeta: readonly InputMeta[],
   nToSolve: number,

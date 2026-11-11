@@ -56,6 +56,8 @@ export const UiStringsSchema = z.strictObject({
   hintFar: z.string().min(1),
   answerLabel: z.string().min(1),
   answerKey: z.string().min(1),
+  // The other accepted answers under a revealed one (TODO §E54): "Also accepted: a · b".
+  alsoAccepted: z.string().min(1),
   // Accessible names for controls with no readable text of their own
   blank: z.string().min(1),
   // Audio controls (listening / dictation exercises)
@@ -106,6 +108,7 @@ const raw: UiStrings = {
   hintFar: 'Not quite. Try again.',
   answerLabel: 'Answer:',
   answerKey: 'Highlighted: what differs from yours',
+  alsoAccepted: 'Also accepted:',
   blank: 'Blank',
   play: 'Play',
   pause: 'Pause',

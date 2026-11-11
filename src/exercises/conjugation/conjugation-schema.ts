@@ -29,7 +29,7 @@
  * Spec: docs/specs/2026-07-03-new-exercise-engines-design.md §5.
  */
 import { z } from 'zod';
-import { hasTypedAnswer } from '../lib/answer-checks';
+import { hasTypedAnswer, typedAnswerProblems } from '../lib/answer-checks';
 import { normalizeAnswer } from '../lib/answers';
 import { instructionsField } from '../lib/instructions';
 import { ExerciseConfigSchema } from '@/config/lo-schema';
@@ -38,7 +38,10 @@ import { ExerciseConfigSchema } from '@/config/lo-schema';
 export const ConjugationRowSchema = z.object({
   /** The pronoun/person shown read-only on the left (e.g. "je", "nous"). */
   person: z.string().min(1),
-  /** The expected verb form the learner must produce (typed) or pick (choice). */
+  /**
+   * The expected verb form the learner must produce; several accepted forms are split by
+   * `|`, the first preferred (TODO §E54).
+   */
   answer: z.string().min(1),
   /**
    * Choice-mode options for this row (v2): the buttons shown, one of which is the
@@ -93,5 +96,19 @@ export type ConjugationContent = z.infer<typeof ConjugationContentSchema>;
 export const ConjugationExerciseConfigSchema = ExerciseConfigSchema.extend({
   type: z.literal('conjugation'),
   content: ConjugationContentSchema,
-});
+})
+  // A form's `|` alternatives (TODO §E54): none empty, none twice. Checked here, on the
+  // envelope, the one schema that sees `options.caseSensitive`.
+  .superRefine((config, ctx) => {
+    const caseSensitive = config.options?.caseSensitive ?? false;
+    config.content.rows.forEach((row, index) => {
+      for (const end of typedAnswerProblems(row.answer, normalizeAnswer, caseSensitive)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `row ${index + 1} (${row.person}) ${end}`,
+          path: ['content', 'rows', index, 'answer'],
+        });
+      }
+    });
+  });
 export type ConjugationExerciseConfig = z.infer<typeof ConjugationExerciseConfigSchema>;
