@@ -46,6 +46,13 @@ panel is in the prerendered HTML, inactive ones carry `hidden`. A `sources` bloc
 references list: citations in `<ul>` groups, each with a print or web icon whose
 meaning is also given as screen-reader text.
 
+Exercises sit in accordions after a section's blocks. An entry in a section's
+`exercises` list may also be an exercise set: a `title`, optional `instructions`, and
+two or more `tabs` of `{ "exercise": "<folder ref>", "media"?: … }`. It renders as one
+accordion holding one instruction box and the same tab set as a `tabs` block, each panel
+an exercise with its own Check, Reset and Show answers; panels stay mounted, so answers
+survive a tab switch.
+
 ## Engines
 
 Fifteen engines ship. Each lives under `src/exercises/<engine>/` as pure logic
@@ -65,6 +72,8 @@ forms split by `|`, the first preferred: `[fato|facto::hint]`, `"answer": "fato|
 
 ## Notes
 
+- A lesson page's footer may end its © line with a "Credits" button that opens a popup
+  (a dialog) naming the lesson's team; it navigates nowhere. The landing page has none.
 - UI chrome strings resolve through `src/config/ui-strings.ts` (English by default);
   authored content carries the target language via `lang` attributes.
 - Design tokens and theme colours live in `src/styles/`.

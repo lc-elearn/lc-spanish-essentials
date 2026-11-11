@@ -7,6 +7,7 @@ import {
   EXERCISE_INSTRUCTIONS,
   SAVED_PROGRESS_INSTRUCTIONS,
   resolveInstructions,
+  resolveSetInstructions,
   savesProgress,
 } from './instructions';
 
@@ -92,10 +93,49 @@ describe('flashcards instructions', () => {
     expect(resolveInstructions('flashcards', 'Mine.', { savesProgress: true })).toBe('Mine.');
   });
 
-  test('savesProgress reads options.srs off an unknown config', () => {
-    expect(savesProgress({ options: { srs: true } })).toBe(true);
-    expect(savesProgress({ options: { srs: false } })).toBe(false);
-    expect(savesProgress({ options: {} })).toBe(false);
+  test("savesProgress reads a deck's options.srs off an unknown config", () => {
+    expect(savesProgress({ type: 'flashcards', options: { srs: true } })).toBe(true);
+    expect(savesProgress({ type: 'flashcards', options: { srs: false } })).toBe(false);
+    expect(savesProgress({ type: 'flashcards', options: {} })).toBe(false);
     expect(savesProgress(null)).toBe(false);
+  });
+
+  // Only a deck saves progress. The LO envelope keeps options it does not know, for the
+  // engine that owns them, so a stray `srs` (options copied from a deck) can reach any
+  // exercise; it must not promise a learner that a select remembers anything.
+  test('savesProgress: an exercise that is not a deck never saves progress', () => {
+    expect(savesProgress({ type: 'select', options: { srs: true } })).toBe(false);
+    expect(savesProgress({ options: { srs: true } })).toBe(false);
+  });
+});
+
+describe('an exercise set (E57)', () => {
+  test('its own instructions show above the tabs', () => {
+    expect(resolveSetInstructions('Do both parts.', ['select', 'inline-choice'])).toBe(
+      'Do both parts.',
+    );
+  });
+
+  test('without them, tabs of one engine show that engine default copy (S2)', () => {
+    expect(resolveSetInstructions(undefined, ['drag-fill-gaps', 'drag-fill-gaps'])).toBe(
+      EXERCISE_INSTRUCTIONS['drag-fill-gaps'],
+    );
+  });
+
+  test('a set of decks that save progress says so above the tabs', () => {
+    expect(
+      resolveSetInstructions(undefined, ['flashcards', 'flashcards'], { savesProgress: true }),
+    ).toBe(`${EXERCISE_INSTRUCTIONS.flashcards} ${SAVED_PROGRESS_INSTRUCTIONS}`);
+  });
+
+  test('tabs of different engines have no default, so the loader must refuse (S2)', () => {
+    expect(resolveSetInstructions(undefined, ['select', 'inline-choice'])).toBeNull();
+  });
+
+  test('in a tab, only the exercise own instructions show (S3)', () => {
+    expect(resolveInstructions('select', undefined, { useDefault: false })).toBeNull();
+    expect(resolveInstructions('select', 'Listen first.', { useDefault: false })).toBe(
+      'Listen first.',
+    );
   });
 });

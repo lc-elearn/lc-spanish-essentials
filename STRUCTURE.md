@@ -53,6 +53,7 @@ lo-config/lo-00-example/
   blocks/03-outcomes/block.json    back in the Introduction — see the ordinal rule
   exercises/01-select/exercise.json
   modals/example-popup/modal.json
+  modals/credits/modal.json        the footer's Credits popup, named by lo.json's credits
   hovers/lo-json/hover.json        a hover card, declared in lo.json's hovers[]
 ```
 
@@ -106,8 +107,8 @@ fixed `BASE_URL`, and that is what makes it work. **Guard c** checks the form;
 | Folder               | Owns                                                                                                                                                                                                        |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/exercises/`     | **The engines.** One folder per exercise type, plus `lib/` (shared shell), `text-entry/` (the runtime dictation and typed-transform share) and the registry.                                                |
-| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page; decides which lessons the course lists or opens on (`course-lessons.ts`).                                                       |
-| `src/components/`    | **The page shell** — header, LO hero, footer, landing page + lesson rail, audio players, `ui/` primitives.                                                                                                  |
+| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page; decides which lessons the course lists or opens on (`course-lessons.ts`); renders an exercise set's tabs (`ExerciseSet.tsx`).   |
+| `src/components/`    | **The page shell** — header, LO hero, footer, landing page + lesson rail, the tab UI tabs blocks and exercise sets share (`shell/TabSet.tsx`), audio players, `ui/` primitives.                             |
 | `src/config/`        | **The content contract** — Zod schemas, course config (with the `home` setting and its Node reader, `course-json-disk.ts`), UI strings.                                                                     |
 | `src/styles/`        | **The theme** — the token chain. See [`DESIGNER.md`](DESIGNER.md).                                                                                                                                          |
 | `src/guards/`        | **The seven repo-wide invariant sweeps** (guards b–h; guard a is the Zod schemas in `src/config/` and each engine's `<type>-schema.ts`). `bun run guards`.                                                  |
@@ -115,7 +116,7 @@ fixed `BASE_URL`, and that is what makes it work. **Guard c** checks the form;
 | `src/lib/`           | Small shared utilities — asset paths, heading ids, language tagging, reduced motion, scroll-to-top, scroll-spy rules, the icon sprite.                                                                      |
 | `src/hooks/`         | React hooks — theme, hydration state, viewport, scroll-spy, reveal-while-in-view.                                                                                                                           |
 | `src/audio/`         | Audio playback manager and its hook.                                                                                                                                                                        |
-| `src/showcase/`      | The opt-in debug gallery of every engine with sample content.                                                                                                                                               |
+| `src/showcase/`      | The opt-in debug gallery of every engine with sample content, then exercise sets with every engine in a tab (`exercise-sets.ts`).                                                                           |
 | `src/ui-showcase/`   | The opt-in debug gallery of every block type, plain and as a card, through the course page's own `LoBlock`.                                                                                                 |
 | `src/code-style/`    | The opt-in Code style page: `docs/STYLE.md` rendered with its examples, from the markdown itself.                                                                                                           |
 | `src/culp-syllabi/`  | The opt-in CULP syllabi page: `docs/culp-syllabi/README.md` rendered, how the notes are organised and the skill that reads them.                                                                            |

@@ -1,8 +1,8 @@
 /**
  * RichTextEntries — render parsed rich-text array entries (spec §14).
  *
- * A paragraph becomes a `<p>` around `RichText`; a list, table or audio player becomes
- * its own block element, never wrapped in a `<p>` (a `<ul>` inside a `<p>` is invalid
+ * A paragraph becomes a `<p>` around `RichText`; a list, table, audio player or (in a
+ * popup only, E56) `<h3>` heading becomes its own block element, never wrapped in a `<p>` (a `<ul>` inside a `<p>` is invalid
  * HTML). Used by both consumers of authored rich text — page prose (`TextBlock`) and
  * popups (`ModalProvider`) — so the two cannot drift apart.
  *
@@ -79,6 +79,13 @@ function EntryView({
         >
           <RichText nodes={entry.children} />
         </p>
+      );
+    case 'heading':
+      // Popups only (E56): the dialog title is the h2, so this is one level below it.
+      return (
+        <h3 className="rich-text-heading">
+          <RichText nodes={entry.children} />
+        </h3>
       );
     case 'list': {
       const List = entry.ordered ? 'ol' : 'ul';

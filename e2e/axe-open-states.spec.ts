@@ -62,6 +62,16 @@ const OPEN_STATES: { name: string; open: (page: Page) => Promise<void> }[] = [
     open: (page) => openPopup(page, 'open the conjugation popup'),
   },
   {
+    // The footer's Credits button (TODO §E56): a popup with an <h3> and a list.
+    name: 'the credits popup open',
+    open: async (page) => {
+      await page.getByRole('contentinfo').getByRole('button', { name: 'Credits' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Credits' });
+      await expect(dialog).toBeVisible();
+      await animationsInside(dialog);
+    },
+  },
+  {
     name: 'a select dropdown open',
     open: async (page) => {
       const exercise = await openExercise(page, EXERCISE_HEADINGS.select);

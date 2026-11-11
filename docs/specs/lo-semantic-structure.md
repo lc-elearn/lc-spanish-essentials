@@ -132,7 +132,8 @@ against a semantic-structure audit of the french-lo-1 reference implementation
             </div>
           </details>
         </article>
-        <!-- one per exercise -->
+        <!-- one per exercise; an exercise set is one such article holding one
+             instruction box, then a tab set with one exercise per panel (§1a) -->
 
         <button type="button" aria-label="Back to top" aria-describedby="exercises-heading">
           …
@@ -219,6 +220,10 @@ lo-config/lo-01-salutations/
   exercises. Reordering an array without renaming folders is fine: guard b
   (`src/guards/render-mirror.ts`) is a set difference only — it fails on a ref with
   no folder or a folder no ref names, never on order. (Amended 2026-10-13.)
+  _(Amended 2026-11-11, TODO §E57:)_ an `exercises[]` entry may also be an exercise
+  set, `{ title, instructions?, tabs: [{ exercise, media? }] }`, whose tabs name
+  exercise refs; it renders as one accordion, in its place among the exercises:
+  [`2026-11-11-tab-exercises-design.md`](2026-11-11-tab-exercises-design.md) §3, §5.
 
 `blocks/01-grammar/block.json` (`BlockConfigSchema` + `TextBlockContentSchema`):
 

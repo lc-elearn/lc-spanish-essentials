@@ -7,7 +7,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
 import { MediaPanel } from './MediaPanel';
-import { MediaSchema } from './media-schema';
+import { MediaSchema, SetTabMediaSchema } from './media-schema';
 
 const audio = { src: 'audio/lo-00-example/placeholder.m4a', label: 'Listen to Claire' };
 const transcript = ['Bonjour, je suis Claire.'];
@@ -125,4 +125,12 @@ test('the transcript details carries the class its slide animation targets', () 
   const html = render({ audio, transcript });
 
   expect(html).toMatch(/<details class="[^"]*\bmedia-transcript\b/);
+});
+
+test('audio without a transcript renders the player and no toggle (E57 S5)', () => {
+  const html = renderToStaticMarkup(<MediaPanel media={SetTabMediaSchema.parse({ audio })} />);
+
+  expect(html).toContain('<audio');
+  expect(html).toContain('Listen to Claire');
+  expect(html).not.toContain('<details');
 });

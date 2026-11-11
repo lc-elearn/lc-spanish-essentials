@@ -24,7 +24,26 @@
       "id": "exercises",
       "label": "Exercises",
       "blocks": ["07-intro"],
-      "exercises": ["01-select", "02-radio-quiz"]
+      "exercises": [
+        "01-select",
+        {
+          "title": "Placeholder exercise set",
+          "instructions": "Two parts, one tab each. Complete a part, then select Check in that part; Reset and Show answers work in each part too.",
+          "tabs": [
+            { "exercise": "03-drag-fill-gaps" },
+            {
+              "exercise": "04-inline-choice",
+              "media": {
+                "audio": {
+                  "src": "audio/lo-00-example/placeholder.m4a",
+                  "label": "Listen to the placeholder dialogue"
+                }
+              }
+            }
+          ]
+        },
+        "02-radio-quiz"
+      ]
     },
     {
       "id": "sources",
@@ -32,6 +51,7 @@
       "blocks": ["08-sources"]
     }
   ],
-  "modals": ["example-popup", "conjugation"],
-  "hovers": ["lo-json"]
+  "modals": ["example-popup", "conjugation", "credits"],
+  "hovers": ["lo-json"],
+  "credits": "credits"
 }

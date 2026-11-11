@@ -4,10 +4,13 @@
  * A `.ts` file of its own because the react-refresh lint rule forbids a component file
  * from exporting anything but components.
  */
+import { SHOWCASE_SETS } from './exercise-sets';
 import { SHOWCASE_FIXTURES } from './fixtures';
 
-/** The "jump to" menu: the rich-text card, then one entry per engine card, in fixture order. */
+/** The "jump to" menu: the rich-text card, one entry per engine card in fixture order, then
+ * the exercise-set cards (E57). */
 export const SHOWCASE_SECTIONS = [
   { id: 'rich-text', label: 'Rich text' },
   ...SHOWCASE_FIXTURES.map((fixture) => ({ id: fixture.id, label: fixture.title })),
+  ...SHOWCASE_SETS.map((set) => ({ id: set.id, label: set.title })),
 ];

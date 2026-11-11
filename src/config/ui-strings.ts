@@ -74,6 +74,8 @@ export const UiStringsSchema = z.strictObject({
   // Media transcript toggle (tab media, spec 2026-10-07-tabs-media-design §4)
   showTranscript: z.string().min(1),
   hideTranscript: z.string().min(1),
+  // The footer's Credits button (spec 2026-11-11-footer-credits-design §5)
+  credits: z.string().min(1),
 });
 
 /** Full required map (Layer 1). */
@@ -120,6 +122,7 @@ const raw: UiStrings = {
   sourceWeb: 'Web source:',
   showTranscript: 'Show transcript',
   hideTranscript: 'Hide transcript',
+  credits: 'Credits',
 };
 
 /** Validate at load. A missing/blank/typo key throws here → build dies immediately. */

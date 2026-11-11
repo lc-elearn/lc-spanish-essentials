@@ -7,6 +7,7 @@ import { expect, test, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ExerciseComponentProps } from '@/exercises/lazy-registry';
 import Showcase from './Showcase';
+import { SHOWCASE_SETS } from './exercise-sets';
 import { SHOWCASE_FIXTURES } from './fixtures';
 
 vi.mock('@/hooks/useIsHydrated', () => ({ useIsHydrated: () => true }));
@@ -20,5 +21,9 @@ vi.mock('@/exercises/lazy-registry', () => ({
 test('every showcase card hands its engine a progressId named after the card', () => {
   const html = renderToStaticMarkup(<Showcase />);
   const ids = [...html.matchAll(/<output>([^<]*)<\/output>/g)].map((match) => match[1]);
-  expect(ids).toEqual(SHOWCASE_FIXTURES.map((fixture) => `showcase/${fixture.id}`));
+  expect(ids).toEqual([
+    ...SHOWCASE_FIXTURES.map((fixture) => `showcase/${fixture.id}`),
+    // A set's tab keeps a key of its own, never its engine card's (E57).
+    ...SHOWCASE_SETS.flatMap((set) => set.tabs.map((tab) => `showcase/set/${tab.id}`)),
+  ]);
 });

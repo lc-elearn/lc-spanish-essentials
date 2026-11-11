@@ -13,8 +13,14 @@ next.
 > course's language) was merged into `sync-template` on all four courses (TODO, update of that day), and French and
 > Russian merged it (PR 2 in each). **2026-11-10**: template `0ca46ea` (the CEFR grid) went onto `sync-template`
 > in all four courses, a fresh one in French and Russian, whose author opened PR 4 in each; the Windows fix
-> (template issue 85, `0409ff9`) went onto the same branches later that day (TODO, update of that day). Next: the authors
-> open and merge those update pull requests (Spanish's is pilot R13), then the rest of the rules pilot.
+> (template issue 85, `0409ff9`) went onto the same branches later that day (TODO, update of that day). Russian
+> merged its PR 4 and lessons 1–3 that afternoon, then took E54 (`d3b1cde`) on a fresh `sync-template`, PR 10.
+> **2026-11-11**: template `d33ecb5` (E54 and E55) was merged into `sync-template` in all four courses, all clean
+> (TODO, update of that day), and Russian merged its PR 10 that morning. Later that day template `40419ee`
+> (E56–E59, exercise sets and credits) went onto a fresh Russian `sync-template` (`6282270`) with issue 14 (TODO,
+> update of that day); the other three courses do not have it yet. Next: the authors open (Spanish, pilot R13;
+> German; Russian, from issue 14) or merge (French PR 4) those update pull requests, then the rest of the rules
+> pilot.
 >
 > **Decided 2026-10-12:** the template stayed under `pedbad` until the remaining template
 > work was finished. Tick to ✅ once the first course repo is working.

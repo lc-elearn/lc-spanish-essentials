@@ -58,3 +58,8 @@ test('ui-strings: alsoAccepted labels the other accepted answers, and can be rew
   expect(resolveLabel('alsoAccepted', { alsoAccepted: 'Or:' })).toBe('Or:');
   expect(UiStringsOverrideSchema.safeParse({ alsoAccepted: 'Or:' }).success).toBe(true);
 });
+
+// The footer's Credits button (E56, spec 2026-11-11-footer-credits-design §5).
+test('ui-strings: the footer credits label exists', () => {
+  expect(resolveLabel('credits')).toBe('Credits');
+});

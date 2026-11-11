@@ -115,7 +115,8 @@ Layer 1 is the carrot; layers 2–4 are the stick.
 - **`bun run guards` — the fast subset** (`vitest run src/guards`). The guards are
   ordinary Vitest tests, so `bun run test` already enforces every one of them; this is
   the quick check you run before committing when you only want to know whether you broke a repo-wide
-  invariant. 214 tests in about a second against the full suite's ~10s.
+  invariant. It runs in about a second against the full suite's ~10s; how many tests it
+  holds is in the header of [`docs/process/TODO.md`](process/TODO.md).
   - **Why a path glob and not a list:** every guard's scanner module lives in
     `src/guards/`, so a new guard joins the script the moment its file exists. A
     hand-maintained list is the thing that silently goes stale — the same argument
@@ -310,11 +311,22 @@ is too low`, and the guard fails closed, so every Claude edit was blocked — an
 **This is the one place the budget is written down.** Every other doc and comment that
 needs the number points here rather than restating it.
 
-| Asset        | Budget (gzipped) | Measured 2026-10-23 | Headroom |
+| Asset        | Budget (gzipped) | Measured 2026-11-11 | Headroom |
 | ------------ | ---------------- | ------------------- | -------- |
-| `main-*.js`  | **< 140 kB**     | 137.18 kB           | 2.82 kB  |
-| `main-*.css` | **< 19 kB**      | 17.96 kB            | 1.04 kB  |
+| `main-*.js`  | **< 140 kB**     | 134.59 kB           | 5.41 kB  |
+| `main-*.css` | **< 19 kB**      | 18.01 kB            | 0.99 kB  |
 
+- **Exercise sets (2026-11-11, TODO §E57): JS 137.90 → 134.59 kB, CSS 18.01 kB
+  unchanged**, against `main` built the same day. The drop is not a saving: the set's
+  schema made `lo-schema.ts` import the media schema, so Rollup moved shared schema and
+  rich-text code out of `main-*.js` into the shared chunk every page also loads (named
+  `lo-schema-*.js` before, `lang-*.js` now; 38.12 → 42.47 kB). The two together grew
+  176.02 → 177.06 kB (+1.04 kB): `TabSet` reused, the set's body, schema and loader
+  checks. The 5.41 kB headroom above is therefore partly that move.
+- **Footer credits (2026-11-11, TODO §E56): JS 137.23 → 137.86 kB, CSS 17.97 → 18.01
+  kB**, measured against `main` built the same day (it had drifted from 137.18 since
+  2026-10-23 with no entry here). The Credits button, the popup heading's parser and
+  its author-facing messages, which the page's own prose parser carries.
 - **Fourth review's fixes (2026-10-23, TODO §E34): JS 137.13 → 137.18 kB, CSS
   unchanged.** AudioManager, in every page, now keeps each player's own stop. The blank
   checks cost the main bundle nothing: they run in the engine schemas, which only the
@@ -939,6 +951,11 @@ stays on).`eslint.config.js` is locked by the config-protection hook, so it was
   into the schema. **Since 2026-10-21** the envelope stays loose, but the Node LO reader
   also checks each exercise against its engine's full schema at load
   (`src/exercises/exercise-schemas.ts`, TODO §E28), so bad content fails the build.
+  **Since 2026-11-11** an `exercises` entry may also be an exercise set, whose tabs name
+  refs (TODO §E57,
+  [`2026-11-11-tab-exercises-design.md`](specs/2026-11-11-tab-exercises-design.md)); the
+  LO envelope's `options` is loose too, so an engine's own options reach it (§E58), and
+  the load check closes each engine's `options`, so an unknown key fails the build (§E59).
 - **No slug field:** the folder name is the single source of truth; the URL slug
   strips the `lo-NN-` ordinal prefix (`lo-01-salutations` → `/salutations.html`).
   The schema neither stores nor derives it — `src/lo/lo-slug.ts` does, at build time.

@@ -73,6 +73,12 @@ When a second lesson arrives, the build stops and says so. Change the setting to
 lessons, one click from the lesson. A link straight to the lesson (`<slug>.html`) and
 their saved progress are unchanged.
 
+### Credits
+
+Each lesson can have its own "Credits" link at the end of the footer's © line, opening a
+popup with the lesson's team. It lives in the lesson's own folder, so it merges like the
+rest of the lesson: [`CONTRIBUTING.md` → "Authoring a Learning Object"](CONTRIBUTING.md#authoring-a-learning-object), under **Credits**, says how.
+
 ## Every day: the loop
 
 1. **Start from an up-to-date `main`, on a branch per lesson.**
