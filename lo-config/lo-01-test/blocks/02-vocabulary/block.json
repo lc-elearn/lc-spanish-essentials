@@ -1,0 +1,31 @@
+{
+  "type": "vocabulary",
+  "title": "Placeholder vocabulary list",
+  "content": {
+    "summary": {
+      "lead": "You will learn:",
+      "items": [
+        "Placeholder group one (<em>term one, term two</em>).",
+        "Placeholder group two (<em>term three</em>).",
+        "Replace these lines with what the list teaches — the sort buttons below reorder it semantically or alphabetically."
+      ]
+    },
+    "items": [
+      {
+        "term": "Placeholder term one",
+        "gloss": "placeholder gloss one",
+        "audio": "audio/lo-01-test/placeholder.m4a"
+      },
+      {
+        "term": "Placeholder term two",
+        "gloss": "placeholder gloss two",
+        "audio": "audio/lo-01-test/placeholder.m4a"
+      },
+      {
+        "term": "Placeholder term three",
+        "gloss": "placeholder gloss three",
+        "audio": "audio/lo-01-test/placeholder.m4a"
+      }
+    ]
+  }
+}
