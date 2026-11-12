@@ -26,7 +26,7 @@
  * Those stay with whoever supplies the notes.
  *
  * NOT IN src/guards/, for the same reason as md-links: that glob is `bun run guards`,
- * the eight spec guards. This runs in `bun run test`, which is the gate and what CI runs.
+ * the nine guards. This runs in `bun run test`, which is the gate and what CI runs.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';

@@ -216,6 +216,15 @@ option`: each message and its fix are in
 - **It names a question, row or item**, such as `question 2 offers "sí" twice`: each
   message and its fix are in
   [`CONTRIBUTING.md` → "Answers in their own fields"](CONTRIBUTING.md#answers-in-their-own-fields).
+- **It says "invisible text mistakes"** and names a file and a word: a character in that
+  word is not what it looks like. `not-nfc` is an accent stored as a separate mark (often
+  pasted from a PDF); `stray-mark` is an accent with no letter under it (shown as
+  `‹U+0301›` after a space); `mixed-script` is a letter from another alphabet that looks
+  the same, such as a Latin `e` in a Russian word; `misplaced-mark` is a stress mark on a
+  letter that cannot take one. Type the word again, or delete the stray accent. A stress
+  mark just after a closing tag (`<b>о</b>́`) belongs inside it, on its letter
+  (`<b>о́</b>`); to show an accent on its own, put it on `◌`. The rules:
+  [`docs/specs/2026-11-12-text-integrity-guard-design.md`](docs/specs/2026-11-12-text-integrity-guard-design.md).
 - **It fails anywhere else**, or the message does not make sense: do not change files
   outside your folders. Report it on the template: its **Issues** → **New issue** →
   **Bug report**

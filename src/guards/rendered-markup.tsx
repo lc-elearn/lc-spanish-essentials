@@ -2,7 +2,7 @@
  * rendered-markup.tsx — the 26 documents guard h validates (buildlist 26, spec §17, §95).
  *
  * WHY THIS FILE EXISTS AT ALL, rather than guard h reading `dist/`. Guard h is the only
- * one of the eight whose subject is a built artefact, so the obvious implementation opens
+ * one of the nine whose subject is a built artefact, so the obvious implementation opens
  * `dist/index.html` and `dist/example.html` — and then a fresh clone has no `dist/`, and
  * the guard either fails for a reason that has nothing to do with accessibility or, far
  * worse, quietly skips and reports green. Rendering the same component trees in process

@@ -108,9 +108,9 @@ bun run test:e2e`; and a fixed address: `BASE_URL=/course/` on both commands.
   `e2e/`: Playwright specs, run by `test:e2e` (`STRUCTURE.md`).
 - Files under 800 lines.
 
-## The eight guards
+## The nine guards
 
-Guards b–h are Vitest sweeps in `src/guards/` (plus `eslint-plugin-jsx-a11y` for guard
+Guards b–i are Vitest sweeps in `src/guards/` (plus `eslint-plugin-jsx-a11y` for guard
 h's per-file half); guard a is the Zod schemas, run on every load and tested beside
 them (`src/config/`, and each engine's schema in `src/exercises/`). All are Vitest
 tests, so `bun run test` already enforces them. **Do not weaken a
@@ -118,7 +118,7 @@ guard to make a change pass** — if a guard fires, the code is wrong, or the ru
 genuinely needs a written-down narrowing with its reasoning in the guard header.
 
 The canonical short list is
-[`CONTRIBUTING.md` → "The 8 guards"](CONTRIBUTING.md#locked-spec-decisions).
+[`CONTRIBUTING.md` → "The 9 guards"](CONTRIBUTING.md#locked-spec-decisions).
 Do not fork a second copy of it.
 
 ## Commits

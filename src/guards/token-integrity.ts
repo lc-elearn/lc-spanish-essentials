@@ -71,7 +71,7 @@
  * that references a token", which is four of the repo's real sites, and it cannot see the
  * TSX surface at all. Splitting one rule across two tools would also make `bun run guards`
  * a half-truth — it globs `src/guards/`, so a stylelint-owned half would silently not be
- * in it. All eight guards stay in one place and in that one script.
+ * in it. All nine guards stay in one place and in that one script.
  */
 import { readdirSync } from 'node:fs';
 import path from 'node:path';

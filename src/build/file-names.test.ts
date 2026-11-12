@@ -3,7 +3,7 @@
  * shapes (docs/STYLE.md, "Files and names"), so a camelCase module cannot creep back in.
  *
  * NOT IN src/guards/ ON PURPOSE, like docs-tree.test.ts: `bun run guards` means "the
- * eight spec guards (a–h)", and a naming convention is not one of them. It runs in
+ * nine guards (a–i)", and a naming convention is not one of them. It runs in
  * `bun run test`, so CI and the pre-push hook enforce it all the same.
  */
 import { readdirSync, statSync } from 'node:fs';

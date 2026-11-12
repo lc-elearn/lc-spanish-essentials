@@ -124,6 +124,17 @@ nothing linking to it, so the browser tests keep a page to drive.
 > scans, stock photos, or anything found online without such a licence. If you are
 > not sure, do not add it — ask the maintainer first. Content pull requests skip
 > owner review, so nobody else checks this for you.
+>
+> **Made with an AI tool** (generated images, synthetic speech): allowed only when the
+> tool's terms let us publish what it makes, such as an image tool whose terms give the
+> output to the person who made it, or a paid speech service licensed for publishing its
+> output. Not allowed: output from a free consumer feature never licensed for that, such
+> as a browser's read-aloud voice. Credit it as AI-generated, naming the tool, in the
+> lesson's Credits popup (below). The result must carry no Cambridge branding (no crest,
+> wordmark or imagery recognisably taken from the University's visual identity), which
+> `LICENSE` excludes from both licences. Keep a record, outside the course repo, of the
+> tool and prompt or script behind each file, and show the maintainer a sample before a
+> course's first AI-made media.
 
 Rich text in `text` fields takes the tags listed in
 [`docs/specs/lo-rich-text-modals.md`](docs/specs/lo-rich-text-modals.md). The rule
@@ -648,17 +659,22 @@ doc it links:
   folder↔config match. The rules: [`STRUCTURE.md`](STRUCTURE.md).
 - **Exercise authoring contract** — **landed**: the shared `options` are in
   [Exercise options](#exercise-options); each type's `content` shape is its own schema.
-- **The 8 guards** (a–h) — what each checks, what fails, and how to fix it. **All eight
+- **The 9 guards** (a–i) — what each checks, what fails, and how to fix it. **All nine
   are live:** **a** config-schema (Zod at load), plus **b** naming + render-mirror, **c**
   asset-path, **d** asset-existence, **e** registry completeness, **f** token integrity
   (no raw hex/px bypassing the token chain), **g** CSS layer discipline (every rule in
-  `@layer`, no `!important`) and **h** semantic DOM (the spec §17 contract over rendered
-  output). **b–h** are the seven sweeps in `src/guards/`; **a** is not a sweep — the Zod
+  `@layer`, no `!important`), **h** semantic DOM (the spec §17 contract over rendered
+  output) and **i** text integrity (no invisible mistakes in lesson text: an accent stored
+  as a separate mark, a mark with no letter under it, one word in two alphabets, and the
+  course language's own rule, keyed on `course.json`'s `languageCode`; the failure names
+  the file and the word, and the fix is to type the word again —
+  [spec](docs/specs/2026-11-12-text-integrity-guard-design.md)). **b–i** are the eight
+  sweeps in `src/guards/`; **a** is not a sweep — the Zod
   schemas run on every load, and their contract tests sit beside them: the LO schemas in
   `src/config/`, each engine's exercise schema in `src/exercises/<type>/`, and the map
   the loader checks exercises with in `src/exercises/exercise-schemas.ts`.
   All are Vitest tests, so `bun run test` already enforces them, and `bun run guards`
-  runs the seven sweeps on their own in about a second. Guard h has a second half that is not in `src/guards/` at all:
+  runs the eight sweeps on their own in about a second. Guard h has a second half that is not in `src/guards/` at all:
   `eslint-plugin-jsx-a11y` in `eslint.config.js`, which lints the JSX as you write it —
   so an a11y mistake can fail either `bun run lint` or `bun run test`, depending on
   whether it is visible in one file or only in the assembled page. See

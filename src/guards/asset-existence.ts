@@ -119,8 +119,8 @@ export function findMissingAssets(
   return missing;
 }
 
-/** Every `.json` under `lo-config/`, repo-relative. */
-function loConfigFiles(repoRoot: string): string[] {
+/** Every `.json` under `lo-config/`, as absolute paths. Guard i reads the same files. */
+export function loConfigFiles(repoRoot: string): string[] {
   const root = path.join(repoRoot, 'lo-config');
   const found: string[] = [];
 

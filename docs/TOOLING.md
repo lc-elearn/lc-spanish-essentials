@@ -69,8 +69,8 @@ to strongest:
    "Coverage") + `build`, then `test:e2e` in four browser jobs ("Browser tests"), on
    every PR to `main` and every push to `main`.
    The unbypassable wall: a
-   `--no-verify` commit still fails here before merge. (All eight guards run inside
-   `test`: b–h as the `src/guards/` sweeps, a through its colocated schema tests.)
+   `--no-verify` commit still fails here before merge. (All nine guards run inside
+   `test`: b–i as the `src/guards/` sweeps, a through its colocated schema tests.)
 
 Layer 1 is the carrot; layers 2–4 are the stick.
 
@@ -126,7 +126,7 @@ Layer 1 is the carrot; layers 2–4 are the stick.
     enforced at runtime rather than by a sweep. Its contract tests are colocated unit
     tests of the schemas (`src/config/lo-schema.test.ts`), and every LO on disk is
     parsed end-to-end by `lo-rich-text.test.ts`, which loads them all through
-    `loadLo`. `bun run test` covers both; `bun run guards` covers the seven sweeps.
+    `loadLo`. `bun run test` covers both; `bun run guards` covers the eight sweeps.
   - **No separate CI step, on purpose.** CI runs `bun run test:coverage`, the whole
     suite and a strict superset — a `guards` step would run the same tests a second time
     for no extra signal.

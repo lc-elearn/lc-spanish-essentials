@@ -18,7 +18,7 @@ next.
 > **2026-11-11**: template `d33ecb5` (E54 and E55) was merged into `sync-template` in all four courses, all clean
 > (TODO, update of that day), and Russian merged its PR 10 that morning. Later that day template `40419ee`
 > (E56–E59, exercise sets and credits) went onto a fresh Russian `sync-template` (`6282270`) with issue 14 (TODO,
-> update of that day); the other three courses do not have it yet. Next: the authors open (Spanish, pilot R13;
+> update of that day), and template `41f1e56` onto Spanish, French and German's `sync-template`, all clean. Next: the authors open (Spanish, pilot R13;
 > German; Russian, from issue 14) or merge (French PR 4) those update pull requests, then the rest of the rules
 > pilot.
 >

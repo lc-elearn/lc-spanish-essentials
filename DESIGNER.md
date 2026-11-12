@@ -375,7 +375,7 @@ how specific, so one stray rule can quietly override the whole design system.
 **Fix:** wrap the rule in the appropriate `@layer`, and delete the `!important`.
 
 These are guards **f** (token integrity) and **g** (CSS layer discipline), in
-`src/guards/`. The full list of eight is in
+`src/guards/`. The full list of nine is in
 [`CONTRIBUTING.md`](CONTRIBUTING.md#locked-spec-decisions).
 
 ---
