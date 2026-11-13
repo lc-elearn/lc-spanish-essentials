@@ -51,3 +51,15 @@ test('progressCorrect: an override missing a placeholder is rejected', () => {
     UiStringsOverrideSchema.safeParse({ progressCorrect: '{correct} de {total}' }).success,
   ).toBe(true);
 });
+
+// TODO §E54: a revealed answer lists the other accepted ones under this label.
+test('ui-strings: alsoAccepted labels the other accepted answers, and can be reworded', () => {
+  expect(resolveLabel('alsoAccepted')).toBe('Also accepted:');
+  expect(resolveLabel('alsoAccepted', { alsoAccepted: 'Or:' })).toBe('Or:');
+  expect(UiStringsOverrideSchema.safeParse({ alsoAccepted: 'Or:' }).success).toBe(true);
+});
+
+// The footer's Credits button (E56, spec 2026-11-11-footer-credits-design §5).
+test('ui-strings: the footer credits label exists', () => {
+  expect(resolveLabel('credits')).toBe('Credits');
+});

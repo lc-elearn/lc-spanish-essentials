@@ -8,6 +8,7 @@
 import { test, expect } from 'vitest';
 import { loadLo as loadLoFromGlob, listLoSlugs as globSlugs } from './load-lo-glob';
 import { loadLo as loadLoFromDisk, listLoSlugs as diskSlugs } from './load-lo-disk';
+import { isExerciseSet } from './assemble-lo';
 
 const EXAMPLE = 'lo-00-example';
 
@@ -23,11 +24,10 @@ test('loadLo (glob): loads the example LO with its sections in order', () => {
     'exercises',
     'sources',
   ]);
-  // The exercises section holds both exercises, in manifest order.
-  expect(lo.sections[3].exercises.map((exercise) => exercise.ref)).toEqual([
-    '01-select',
-    '02-radio-quiz',
-  ]);
+  // The exercises section holds both exercises and, between them, an exercise set (E57).
+  expect(
+    lo.sections[3].exercises.map((entry) => (isExerciseSet(entry) ? entry.id : entry.ref)),
+  ).toEqual(['01-select', 'exercise-set-03-drag-fill-gaps', '02-radio-quiz']);
   // Parts are resolved, not left as refs.
   expect(lo.sections[0].blocks[0].config.type).toBe('intro');
   // The intro is the example's PLAIN block — no accordion, so no defaultOpen. It

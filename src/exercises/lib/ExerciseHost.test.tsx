@@ -10,6 +10,7 @@ import { describe, expect, test } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EXERCISE_TYPE_KEYS } from '@/config/exercise-types';
 import { ExerciseHost } from './ExerciseHost';
+import { EXERCISE_INSTRUCTIONS } from './instructions';
 
 const CONFIG = { type: 'select', title: 'Placeholder', content: {} };
 
@@ -75,5 +76,25 @@ describe('ExerciseHost saved-progress line', () => {
   test('promises nothing when the host gives no progressId', () => {
     const html = renderToStaticMarkup(<ExerciseHost type="flashcards" config={DECK} />);
     expect(html).not.toContain('saves your progress');
+  });
+});
+
+describe('ExerciseHost in a set tab (E57 S3)', () => {
+  test('shows no box when the exercise wrote no instructions', () => {
+    const html = renderToStaticMarkup(
+      <ExerciseHost type="select" config={CONFIG} defaultInstructions={false} />,
+    );
+
+    expect(html).not.toContain(EXERCISE_INSTRUCTIONS.select.slice(0, 30));
+    expect(html).not.toContain('role="note"');
+  });
+
+  test('shows the box the exercise wrote', () => {
+    const config = { ...CONFIG, content: { instructions: 'Listen to dialogue 1 first.' } };
+    const html = renderToStaticMarkup(
+      <ExerciseHost type="select" config={config} defaultInstructions={false} />,
+    );
+
+    expect(html).toContain('Listen to dialogue 1 first.');
   });
 });

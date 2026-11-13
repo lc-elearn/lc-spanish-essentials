@@ -10,7 +10,7 @@
  * STRUCTURE.md and AGENTS.md for months before those files were written.
  *
  * NOTHING CAUGHT ANY OF IT. Prettier formats markdown, so `format:check` proves a doc is
- * SHAPED right and says nothing about whether it is TRUE. The eight guards all read
+ * SHAPED right and says nothing about whether it is TRUE. The nine guards all read
  * `.ts`/`.tsx`/`.css`/JSON. Before this file, exactly one markdown file was
  * machine-checked at all — STRUCTURE.md, and only the fenced block `docs-tree` writes.
  * The whole suite, lint, format and build stayed green through every broken link above.
@@ -19,7 +19,7 @@
  * each for a stated reason rather than by omission — see the survey below.
  *
  * NOT IN src/guards/, for the same reason as docs-tree: that glob IS `bun run guards`,
- * and that command means "the eight spec guards (a–h)". A docs check is not one of them.
+ * and that command means "the nine guards (a–i)". A docs check is not one of them.
  * It runs in `bun run test`, which is the gate and what CI runs.
  *
  * ── THE SURVEY (42 relative · 17 http · 4 relative+anchor · 1 anchor-only; zero images,

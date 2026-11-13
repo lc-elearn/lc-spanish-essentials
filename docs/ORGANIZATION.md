@@ -1,12 +1,26 @@
 # GitHub Organisation — `lc-elearn`
 
 **The plan for moving this template into a GitHub organisation and giving each course its
-own repo.** Steps 1–5 (the organisation and the template) are done; steps 6–9 (the course
-repos and the colleagues) follow, top to bottom, on the course day.
+own repo.** Steps 1–7 (the organisation, the template, the course repos and their teams) are done,
+and step 9 (template updates into a course) is in use; the status below says what is
+next.
 
 > Status: 🟡 **In progress — steps 1–5 done 2026-11-04** (work iMac, starting commit
-> `d8008f8`). Steps 6–7 wait for each author's GitHub username (with their Cambridge email
-> verified); all course repos are then set up on one day.
+> `d8008f8`); **steps 6–7 done 2026-11-05** (work iMac, course repos from `c2e6cbe`): three
+> course repos, their rules read back, one team each, the authors invited; **2026-11-06**: the authors accepted, each team holds its author alone,
+> and the update to template `7bfb378` was pushed to all three courses as `sync-template`. A fourth course, `lc-russian-basic-vocabulary`,
+> was set up the same way on 2026-11-06 from `bfa98f5`. **2026-11-09**: template `2687c8f` (tests follow the
+> course's language) was merged into `sync-template` on all four courses (TODO, update of that day), and French and
+> Russian merged it (PR 2 in each). **2026-11-10**: template `0ca46ea` (the CEFR grid) went onto `sync-template`
+> in all four courses, a fresh one in French and Russian, whose author opened PR 4 in each; the Windows fix
+> (template issue 85, `0409ff9`) went onto the same branches later that day (TODO, update of that day). Russian
+> merged its PR 4 and lessons 1–3 that afternoon, then took E54 (`d3b1cde`) on a fresh `sync-template`, PR 10.
+> **2026-11-11**: template `d33ecb5` (E54 and E55) was merged into `sync-template` in all four courses, all clean
+> (TODO, update of that day), and Russian merged its PR 10 that morning. Later that day template `40419ee`
+> (E56–E59, exercise sets and credits) went onto a fresh Russian `sync-template` (`6282270`) with issue 14 (TODO,
+> update of that day), and template `41f1e56` onto Spanish, French and German's `sync-template`, all clean. Next: the authors open (Spanish, pilot R13;
+> German; Russian, from issue 14) or merge (French PR 4) those update pull requests, then the rest of the rules
+> pilot.
 >
 > **Decided 2026-10-12:** the template stayed under `pedbad` until the remaining template
 > work was finished. Tick to ✅ once the first course repo is working.
@@ -57,7 +71,8 @@ branch rules on every course repo, and nobody else can switch them off.
   - **Colleagues join as members**, base permission Read, with **one team per course**
     holding Write on that course's repo only, one person per team to start (step 7).
   - **Template updates when there is something to share**, no fixed rhythm: the
-    maintainer announces one and each author opens the course's update PR (step 9).
+    maintainer opens an assigned issue in each course and each author opens the course's
+    update PR (step 9). Decided 2026-11-09: issues, not email, so the record stays on the course.
   - **Deployments are recorded** in one pinned "Deployments" issue per course repo, a
     comment per release; never a password, key or sensitive server path
     ([`DEPLOY.md`](../DEPLOY.md), step 9).
@@ -163,8 +178,9 @@ take over the old address and break the redirect.
 run 41748325782, green on all five jobs; no open PRs). Read back: `lc-elearn/lc-base-template`
 is public, a template, not a fork, `main` at the same SHA with all 765 commits, Actions
 enabled; the old address answers `301` to the new one (web and API). The template's two
-existing forks, `pedbad-uol/lc-base-template` and `Bagnall/lc-acwriting`, now hang off the
-new address; neither is a course repo of this plan (TODO).
+existing forks, `pedbad-uol/lc-base-template` and a colleague's personal fork, now hang off the
+new address; neither is a course repo of this plan (TODO). The colleague deleted theirs on
+2026-11-05.
 
 ## Step 3 — Point each local clone at the new address
 
@@ -258,7 +274,7 @@ loose in the three content folders. Whole folders are never exempt: the full tab
 
 ## Step 6 — Create a course repo (once per course)
 
-All four course repos (French, Spanish, English, Portuguese) can be created on the same
+All the course repos can be created on the same
 day (decided 2026-11-02): repeat this step for each, then step 7 for each team. **Read
 back each repo's effective rules** (item 5 below): identical intended settings are not
 evidence of identical configuration. Authors do not merge independently until the
@@ -275,9 +291,13 @@ into `lc-elearn`, use the fallback below for that course.
 Right after creating it, in the new course repo:
 
 1. **Actions tab → enable workflows.** Forks start with Actions off; until this is done,
-   CI never runs on the course.
+   CI never runs on the course. GitHub's API has no call for this button (a fork's workflows
+   stay unregistered until it is clicked; seen 2026-11-05), so it is done on the website.
 2. **Settings → General:** untick "Template repository" if it was carried over — a course
-   is not a template.
+   is not a template. Under **Features**, tick **Issues**: forks start with them off, and
+   the course needs them for update issues (step 9) and the pinned "Deployments" issue
+   (`gh repo edit lc-elearn/<course> --enable-issues`; the first four courses were
+   switched on 2026-11-09).
 3. **Two branch rulesets on `main`**, each from **Settings → Rules → Rulesets → New
    ruleset → New branch ruleset**, enforcement **Active**, target **Include default
    branch**. GitHub applies every rule of every ruleset on a branch, so the two add up.
@@ -341,12 +361,13 @@ Right after creating it, in the new course repo:
    ```bash
    gh api repos/lc-elearn/<course> --jq '{merge: .allow_merge_commit,
      squash: .allow_squash_merge, rebase: .allow_rebase_merge,
-     delete_branch: .delete_branch_on_merge, template: .is_template}'
+     delete_branch: .delete_branch_on_merge, template: .is_template,
+     issues: .has_issues}'
    gh api repos/lc-elearn/<course>/rulesets --jq '.[] | {id, name, enforcement}'
    gh api repos/lc-elearn/<course>/rules/branches/main --jq '.[] | {type, parameters}'
    ```
 
-   Expected: merge `true`, squash and rebase `false`; rulesets A and B `active`; the
+   Expected: merge `true`, squash and rebase `false`, issues `true`; rulesets A and B `active`; the
    effective rules on `main` include deletion, non_fast_forward, pull_request (with
    `require_code_owner_review` and `dismiss_stale_reviews_on_push` true) and
    required_status_checks with the five checks; no `required_linear_history`.
@@ -357,6 +378,26 @@ Right after creating it, in the new course repo:
    (checked 2026-11-02). The read-back and the pilot verify our configuration, which
    availability does not. Private repositories are a different case: on GitHub Free
    they are not covered by that statement, so nothing here is assumed for one.
+
+**Done 2026-11-05** (work iMac, as `pedbad`), from template `main` at `c2e6cbe` (its push
+CI, run 42010809276, green on all five jobs): `lc-spanish-essentials`,
+`lc-french-academic-reading` and `lc-german-basic`, each forked into `lc-elearn` through the
+API (`POST repos/lc-elearn/lc-base-template/forks` with `organization`, `name` and
+`default_branch_only`). Several forks into one organisation were accepted, so the fallback
+below was not needed. Each fork arrived with "Template repository" ticked and all three
+merge methods on; item 4's `gh repo edit`, plus `--template=false`, set items 2 and 4.
+Rulesets A (`A: main rules`) and B (`B: code owners`) were created from JSON with
+`POST …/rulesets`: enforcement active, target `~DEFAULT_BRANCH`, bypass lists empty.
+Item 5's read-back, run on each repo and compared with the IDs removed, is **identical across
+the three**: merge commits only, head branches deleted, not a template, `ci.yml` active, both
+rulesets active with empty bypass lists, the effective rules on `main` as expected and no
+`required_linear_history`; GitHub's `CODEOWNERS` errors API reports none. **GitHub added two
+parameters** to every `pull_request` rule that the JSON did not set:
+`allowed_merge_methods` with all three methods (harmless: the repo setting already allows
+merge commits only) and `require_extra_approval_for_unattributed_changes: true` (not found in
+GitHub's public documentation on 2026-11-05). Both are left as GitHub set them, alike on all
+three repos; the rules pilot shows whether the second changes anything (the first suspect if
+R1 asks for a review). The template's own settings and protection read back unchanged.
 
 **Fallback — a linked copy instead of a fork** (only if a second fork into `lc-elearn`
 is refused). Create an **empty** repo `lc-elearn/lc-french-academic-reading`
@@ -396,8 +437,8 @@ What the settings cannot do: enforce P1 for colleagues while letting the maintai
 merge their own core PRs alone. Path 3 gives the maintainer the same power over
 colleagues' PRs, so P1 then rests on practice, not on GitHub. Path 1 enforces P1 but
 depends on the author opening each update PR. **Decided 2026-11-02: P1 with path 1**, bypass
-list empty. In practice the author's part is small: the maintainer announces a template
-update, and the author opens the update PR on GitHub's website (step 9), which the
+list empty. In practice the author's part is small: the maintainer opens an update issue
+assigned to the author, and the author opens the update PR on GitHub's website (step 9), which the
 maintainer reviews and approves.
 
 Never treat `gh pr merge --admin`, or a bypass, as a routine way to merge: it merges a
@@ -420,11 +461,12 @@ maintainer their GitHub username.
 All the courses can be set up on one day (step 6 for each repo first). Then, for each
 course:
 
-| Course repo                  | Team                      | Members to start |
-| ---------------------------- | ------------------------- | ---------------- |
-| `lc-spanish-essentials`      | `spanish-essentials`      | its author       |
-| `lc-french-academic-reading` | `french-academic-reading` | its author       |
-| `lc-german-basic`            | `german-basic`            | its author       |
+| Course repo                   | Team                       | Members to start                        |
+| ----------------------------- | -------------------------- | --------------------------------------- |
+| `lc-spanish-essentials`       | `spanish-essentials`       | its author                              |
+| `lc-french-academic-reading`  | `french-academic-reading`  | its author                              |
+| `lc-german-basic`             | `german-basic`             | its author                              |
+| `lc-russian-basic-vocabulary` | `russian-basic-vocabulary` | its author (the French course's author) |
 
 Every course belongs to the **Language Centre, University of Cambridge**, the copyright
 holder in [`LICENSE`](../LICENSE) and every course's footer, whoever writes it. Where no
@@ -468,6 +510,25 @@ The team lists the colleague; the repo lists `spanish-essentials` with `push`, a
 course → add them to that course's team as well (**Teams → that team → Members → Add a
 member**), and remove them when done.
 
+**Done 2026-11-05** (after `gh auth refresh -h github.com -s admin:org`): teams
+`spanish-essentials`, `french-academic-reading` and `german-basic`, Visible, each with
+**Write** (`push`; not maintain, not admin) on its own repo and no other, and each repo lists
+only its own team. GitHub added `pedbad` to each team as maintainer: harmless, and removed on 2026-11-06 once all three authors were in, so that each team holds its author alone. Each author's
+Cambridge email was confirmed verified, then each was invited as **Member** into their
+course's team, one invitation at a time. Read back: three pending invitations, role
+`direct_member`, one team each. **Next:** each author accepts; then read back the team
+members, the repo teams and the pending invitations (none left).
+
+**Done 2026-11-06** (a fourth course): `lc-russian-basic-vocabulary`, forked from template
+`main` at `bfa98f5` (its push CI, run 42234696595, green) and set up as above: merge commits
+only, head branches deleted, not a template, rulesets A and B from the same JSON, Actions
+enabled on the website. Read back identical to `lc-spanish-essentials`: repo settings, both
+rulesets, the effective rules on `main`; `CODEOWNERS` errors none. Team
+`russian-basic-vocabulary`, Visible, **Write** on that repo only. Its member is the French
+course's author, already in the organisation, so added directly with no invitation; they
+stay in `french-academic-reading`. `pedbad` was removed from the new team. It started after
+the lesson-image fix, so it needs no `sync-template` update.
+
 ## Step 8 — The colleague's setup
 
 They clone the **course repo** (not the template), then `bun install`. That installs the
@@ -480,15 +541,24 @@ request into the course repo's `main`, CI green before merge).
 
 When the template changes, each course repo pulls it in:
 
-- **Fork:** not the **Sync fork** button. It updates `main` directly, which step 6's
-  ruleset A refuses for everyone. Add the template as `upstream` once
+- **Fork:** not the **Sync fork** button. It updates `main` directly, which step 6's ruleset A refuses for everyone (tried on a course on 2026-11-06: refused, `main` unchanged; TODO, update of that day). Add the template as `upstream` once
   (`git remote add upstream <template URL>`) and use the branch route below.
 - **Linked copy:** `upstream` is set already in the clone that pushed it (step 6); add
   it once in any other clone, as for a fork.
 
 **When:** whenever the template has something to share (decided 2026-11-02): the
-maintainer merges it in the template, then tells the authors ("a new exercise is in,
-please update your course").
+maintainer merges it in the template, prepares each course's update branch, then opens
+an issue in each course repo, "Template update ready", assigned to its author (GitHub
+emails them), titled with the date, as in "Template update ready (9 Nov 2026)". The issue
+gives the steps and the pull request link
+`https://github.com/lc-elearn/<course>/compare/main...sync-template?expand=1&title=Template%20update%20(<date>)&body=Closes%20%23<N>`,
+where N is that issue's number, so merging the update closes it, and the course's
+issues show which updates are still waiting. `<date>` is the issue's date with each
+space as `%20` (`9%20Nov%202026`), so each update's pull request is named
+"Template update (9 Nov 2026)" instead of the branch's "Sync template", and a course's
+pull requests tell its updates apart. Decided 2026-11-09, after the first ones were
+all "Sync template". Issues are public like the repo: no
+unpublished lesson text, images or audio. First used 2026-11-09 (issue 1 in each course).
 
 **The procedure: an update branch inside the course repo.** Not a pull request from the
 template's `main` straight into the course's `main`: the course's rules require the
@@ -501,9 +571,7 @@ go into the template. Nor the **Sync fork** button, which writes to `main` direc
    template, merge the tested template commit with a merge commit, resolve any
    conflict deliberately, install, and run the full checks on content and behaviour.
    Then push the branch to the **course** repo. The commands are below.
-2. **Open the pull request** from that branch into the same course repo's `main`: GitHub
-   offers **Compare & pull request** on the course repo's page once the branch is
-   pushed; the base repository must be the course, not the template GitHub may suggest
+2. **Open the pull request** from that branch into the same course repo's `main`: open `https://github.com/lc-elearn/<course>/compare/main...sync-template` (or **Pull requests → New pull request**, base the course's `main`, compare the update branch). GitHub may also offer **Compare & pull request** on the course repo's page, but the author may not see it for a branch someone else pushed, so give them the link. The base repository must be the course, not the template GitHub may suggest
    for a fork. **The course's author opens it** (path 1), even when the maintainer
    prepared the branch: a pull request the maintainer opens could never get a code
    owner's approval.
@@ -514,8 +582,7 @@ go into the template. Nor the **Sync fork** button, which writes to `main` direc
 approval is enough. It reviews the maintainer's own merge work, which nobody else reads;
 GitHub accepts it because the maintainer is not the pull request's author. Revisit if a
 second code owner joins (P2).
-**Not proven on a real course:** pilot case R13 tests this procedure before it is
-recommended for use.
+**Not proven on a real course yet:** pilot case R13 tests this procedure. Decided 2026-11-06 by the Owner: the first update (`7bfb378`) is prepared in all three courses at once rather than after R13, so no author waits to add a lesson image; Spanish's pull request is R13.
 
 **The commands**, on a clone of the course repo.
 `main` takes changes only through a pull request (step 6), so the merge happens on a
@@ -597,12 +664,13 @@ own account (Write on the course; never the maintainer's account, whose Owner ro
 changes the result), **M** is `pedbad` (Owner), **P** is whoever publishes. Record each
 case's evidence (the PR's address, a screenshot of its merge box, the terminal output)
 in TODO.md under E2, and mark it **passed** only when the expected result was seen.
-Until then every case is **pending rollout**: no course repo exists yet.
+Until then every case is **pending rollout**: the course repos exist (2026-11-05), but no
+case has run yet.
 
 | #   | Case                               | Who        | Change                                                             | Expected                                                                                                                                                                                                                                     | Evidence                                                               | Status          |
 | --- | ---------------------------------- | ---------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------- |
 | R1  | Lesson JSON                        | A          | `lo-config/lo-01-test/` (a copy of the example)                    | five checks run; no review requested; A merges once green                                                                                                                                                                                    | PR, merge box before merging, merged commit                            | pending rollout |
-| R2  | Lesson images and audio            | A          | `public/images/lo-01-test/`, `public/audio/lo-01-test/`            | as R1                                                                                                                                                                                                                                        | as R1                                                                  | pending rollout |
+| R2  | Lesson images and audio            | A          | `public/images/lo-01-test/`, `public/audio/lo-01-test/`            | as R1, on a course whose template commit is `7bfb378` or later (R13 first): before it, a lesson image fails `Lint, test, build`                                                                                                              | as R1                                                                  | pending rollout |
 | R3  | The example lesson                 | A          | one line in `lo-config/lo-00-example/`                             | review requested from `@pedbad`; merge blocked: code owner review required                                                                                                                                                                   | reviewers list, merge box                                              | pending rollout |
 | R4  | Shared logos and template media    | A          | a file in `public/images/footer/` or `public/audio/showcase-demo/` | as R3                                                                                                                                                                                                                                        | as R3                                                                  | pending rollout |
 | R5  | Core code and dependencies         | A          | a comment in `src/`; separately, `package.json`                    | as R3; after M approves, A merges once green                                                                                                                                                                                                 | as R3, then the approval and merge                                     | pending rollout |
@@ -620,7 +688,7 @@ Until then every case is **pending rollout**: no course repo exists yet.
 
 **Before authors merge independently**, on one course with a named author: R1 to R12 must
 pass (every content and core boundary, failed checks, direct pushes, renewed approval,
-and the maintainer's own core PR). **R13 must pass before step 9 is recommended**, and
+and the maintainer's own core PR). **R13 must pass before step 9 is used again** (the first update went to all three courses at once, by the Owner's decision of 2026-11-06), and before R2 on a course started from `c2e6cbe` (all three were; the lesson-image fix is `7bfb378`), and
 **R16 before the first real deployment**; R14 and R15 follow the first time each comes
 up. The courses share one intended setup, so step 6's read-back on **every** course
 shows each is configured the same; a case is passed only on evidence, and the others
@@ -639,7 +707,7 @@ runs after this one.
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Repository files** (implemented)   | `CODEOWNERS` (E41, and `course.json` ownerless since E45), the CI workflow, these docs. `src/docs/codeowners.test.ts` proves the file matches the path policy; GitHub's `CODEOWNERS` errors API reports none. Neither proves GitHub **enforces** a merge rule: that needs the settings below and the pilot.                                                                                                                                          |
 | **GitHub settings, inspected**       | the template only, read with `gh api`: classic protection on `main` (pull request, 0 approvals, the five checks up to date, admins included, linear history, no force push or deletion; no code-owner review or stale dismissal, not needed solo); merge commit, squash and rebase all allowed; no environments, deployments, Pages site or webhooks. GitHub Apps installed on the account were not listed (the API needs an app token): unverified. |
-| **GitHub settings, proposed**        | step 6's rulesets A and B and merge settings for each course repo. Nothing is set: no course repo exists.                                                                                                                                                                                                                                                                                                                                            |
+| **GitHub settings, course repos**    | step 6's rulesets A and B and merge settings, set on the three course repos on 2026-11-05 and on `lc-russian-basic-vocabulary` on 2026-11-06, and read back identical (step 6). A read-back proves configuration, not behaviour.                                                                                                                                                                                                                     |
 | **Behaviour shown by pull requests** | on the template, a direct push to `main` was refused (2026-10-21, `BRANCH_PROTECTION.md`). On a course: nothing yet; every rules-pilot case is pending rollout.                                                                                                                                                                                                                                                                                      |
 
 ---

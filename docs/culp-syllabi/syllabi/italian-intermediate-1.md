@@ -7,7 +7,6 @@ level_order: 50
 strand: General
 previous_level: "[[italian-basic-2]]"
 next_level: "[[italian-intermediate-2]]"
-programme_spec: "[[italian-intermediate-1-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 source_date: 2023-08-14

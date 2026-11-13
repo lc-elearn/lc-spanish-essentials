@@ -1,0 +1,11 @@
+{
+  "type": "inline-choice",
+  "title": "Part 2",
+  "content": {
+    "instructions": "Play the placeholder clip, then pick the word that completes each line.",
+    "items": [
+      { "text": "Buenos [*días|noches], señora." },
+      { "text": "¿Cómo [*está|estás] usted, señor García?" }
+    ]
+  }
+}

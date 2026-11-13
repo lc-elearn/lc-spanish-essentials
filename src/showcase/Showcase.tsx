@@ -12,10 +12,14 @@
  * The first card is not an engine: it is the rich-text authoring reference — every
  * block entry (lists, tables, the audio player) plus a popup (spec §14).
  *
+ * After the engines, two exercise-set cards (E57).
+ *
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §3, §8;
  *       docs/process/2026-07-02-instructions-box-handover.md §3.
  */
 import { ExerciseHost } from '@/exercises/lib/ExerciseHost';
+import { ExerciseSetBody } from '@/lo/ExerciseSet';
+import { SHOWCASE_SETS } from './exercise-sets';
 import { SHOWCASE_FIXTURES } from './fixtures';
 import { SHOWCASE_SECTIONS } from './showcase-sections';
 import RichTextShowcase from './RichTextShowcase';
@@ -60,6 +64,14 @@ export default function Showcase() {
             ))}
           </section>
         )}
+        <section aria-label="Exercise sets" className="mt-10 flex flex-col gap-10">
+          {SHOWCASE_SETS.map((set) => (
+            <article key={set.id} id={set.id} className="scroll-mt-6 rounded-lg border p-6">
+              <h2 className="mb-4 text-xl font-semibold">{set.title}</h2>
+              <ExerciseSetBody label={set.title} instructions={set.instructions} tabs={set.tabs} />
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   );

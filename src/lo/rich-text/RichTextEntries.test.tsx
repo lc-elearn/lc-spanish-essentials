@@ -101,3 +101,12 @@ describe('RichTextEntries', () => {
     expect(html).toContain('super-compact-speaker');
   });
 });
+
+describe('headings (popups only, E56)', () => {
+  test('a heading entry renders an <h3> with its inline children', () => {
+    const entry = parseRichTextEntry('<h3>Team <em>2026</em></h3>', undefined, { headings: true });
+    expect(renderToStaticMarkup(<RichTextEntries entries={[entry]} />)).toBe(
+      '<h3 class="rich-text-heading">Team <em>2026</em></h3>',
+    );
+  });
+});

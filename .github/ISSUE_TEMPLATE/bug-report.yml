@@ -1,0 +1,55 @@
+# A course author reports something the template gets wrong: a build or CI failure that
+# does not name a file in their own folders, an error message that makes no sense, or a
+# page that does not work as it should (COURSE_GUIDE.md, "When you are stuck").
+# The maintainer fixes it in the template; the pull request's "Closes #N" closes it, and
+# the fix reaches the courses with the next template update.
+name: Bug report
+description: Something in the template is broken, or an error does not make sense
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        **File this on the template repo** (lc-base-template), not on your course repo.
+        **Issues here are public**: a short made-up example only, never unpublished lesson
+        text, textbook content, images or audio.
+  - type: input
+    id: course
+    attributes:
+      label: Which course and repo?
+      placeholder: French academic reading, lc-elearn/lc-french-academic-reading
+    validations:
+      required: true
+  - type: textarea
+    id: did
+    attributes:
+      label: What did you do?
+      description: The steps, in order, such as the command you ran or the page you opened.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: The error or CI output
+      description: >-
+        Paste the message as it appears, from your terminal or the failed CI check. If it
+        quotes your lesson text, replace that text with a made-up example.
+      render: shell
+  - type: input
+    id: branch
+    attributes:
+      label: Which branch or pull request?
+      placeholder: lesson-04, or https://github.com/lc-elearn/<course>/pull/12

@@ -164,12 +164,24 @@ export interface AudioPlayerEntry {
   readonly label: string;
 }
 
-export type RichTextEntry = ParagraphEntry | ListEntry | TableEntry | AudioPlayerEntry;
+/** `<h3>` inside a popup (E56): the dialog title is the h2, so this is one level below. */
+export interface HeadingEntry {
+  readonly kind: 'heading';
+  readonly children: readonly RichTextNode[];
+}
+
+export type RichTextEntry =
+  | ParagraphEntry
+  | ListEntry
+  | TableEntry
+  | AudioPlayerEntry
+  | HeadingEntry;
 
 /** Every inline node list inside one entry, in reading order. */
 function inlineListsOf(entry: RichTextEntry): readonly (readonly RichTextNode[])[] {
   switch (entry.kind) {
     case 'paragraph':
+    case 'heading':
       return [entry.children];
     case 'list':
       return entry.items;

@@ -16,6 +16,11 @@
  * dictation also drops sentence punctuation), then capitals folded unless the author
  * sets `options.caseSensitive`. Accents always count (é ≠ e): an accent-only miss is
  * still wrong, but it is NAMED, so the learner knows exactly what to fix.
+ *
+ * MORE THAN ONE ANSWER (TODO §E54). Each gap or row has a list of accepted answers
+ * (`splitAlternatives`, answer-alternatives.ts). Any of them is right. A wrong answer is
+ * hinted at and revealed against the CLOSEST one (highest `similarity`, the first on a
+ * tie), and the reveal lists the others in authored order (`alsoAccepted`).
  */
 import { normalizeAnswer, normalizeForDictation } from './answers';
 import { diffChars } from './char-diff';
@@ -33,7 +38,13 @@ export interface AnswerSegment {
 
 export type AnswerFeedback =
   | { kind: 'hint'; reason: MissReason }
-  | { kind: 'reveal'; answer: string; segments: readonly AnswerSegment[] };
+  | {
+      kind: 'reveal';
+      answer: string;
+      segments: readonly AnswerSegment[];
+      /** The other accepted answers, in authored order, light-normalized; empty for one. */
+      alsoAccepted: readonly string[];
+    };
 
 /** Wrong Checks on one answer before it is revealed. One honest retry first. */
 export const REVEAL_AFTER_MISSES = 2;
@@ -149,8 +160,35 @@ export function answerSegments(
 }
 
 /**
+ * Index of the accepted answer a wrong attempt is compared with: the one most like it
+ * (`similarity` on the compared keys), the first on a tie. A learner who types
+ * `в кругу семя` is told about the ending of `в кругу семьи`, not compared with
+ * `в семейном кругу`.
+ */
+export function closestAlternative(
+  typed: string,
+  alternatives: readonly string[],
+  mode: ComparisonMode = 'strict',
+  caseSensitive = false,
+): number {
+  const typedKey = answerKey(typed, mode, caseSensitive);
+  let closest = 0;
+  let best = -1;
+  alternatives.forEach((alternative, index) => {
+    const score = similarity(typedKey, answerKey(alternative, mode, caseSensitive));
+    if (score > best) {
+      closest = index;
+      best = score;
+    }
+  });
+  return closest;
+}
+
+/**
  * The feedback for one wrong answer after `misses` wrong Checks on it (this one
- * included): a hint until REVEAL_AFTER_MISSES, then the answer.
+ * included): a hint until REVEAL_AFTER_MISSES, then the answer. `expected` is the
+ * accepted answer the attempt is compared with (the closest, `closestAlternative`);
+ * `alsoAccepted` are the others, shown on the reveal only, never with a hint.
  */
 export function feedbackFor(
   typed: string,
@@ -158,6 +196,7 @@ export function feedbackFor(
   misses: number,
   mode: ComparisonMode = 'strict',
   caseSensitive = false,
+  alsoAccepted: readonly string[] = [],
 ): AnswerFeedback {
   const reason = classifyMiss(
     answerKey(typed, mode, caseSensitive),
@@ -172,6 +211,7 @@ export function feedbackFor(
       reason === 'far'
         ? [{ text: answer, differs: false }]
         : answerSegments(typed, expected, caseSensitive),
+    alsoAccepted: alsoAccepted.map((alternative) => normalizeAnswer(alternative)),
   };
 }
 
@@ -185,12 +225,14 @@ export interface TypedGradeResult {
 }
 
 /**
- * Grade one Check over a set of typed answers (rows, blanks). Empty answers are
- * skipped. Each wrong answer's miss count goes up by one and decides between a hint
- * and the revealed answer. The engines' own grading modules are thin wrappers.
+ * Grade one Check over a set of typed answers (rows, blanks). `accepted` holds, per
+ * answer, every form it accepts (`splitAlternatives`); a value matching any of them is
+ * right. Empty answers are skipped. Each wrong answer's miss count goes up by one and
+ * decides between a hint and the revealed answer, both against the closest form. The
+ * engines' own grading modules are thin wrappers.
  */
 export function gradeTypedAnswers(
-  expected: readonly string[],
+  accepted: readonly (readonly string[])[],
   values: Readonly<Record<number, string>>,
   previousMisses: Readonly<Record<number, number>>,
   mode: ComparisonMode = 'strict',
@@ -199,15 +241,26 @@ export function gradeTypedAnswers(
   const checkedResults: Record<number, boolean> = {};
   const feedback: Record<number, AnswerFeedback> = {};
   const misses: Record<number, number> = { ...previousMisses };
-  expected.forEach((answer, index) => {
+  accepted.forEach((alternatives, index) => {
     const value = values[index] ?? '';
     if (value.trim() === '') return; // grade only answers the learner filled
-    const isCorrect =
-      answerKey(value, mode, caseSensitive) === answerKey(answer, mode, caseSensitive);
+    const typedKey = answerKey(value, mode, caseSensitive);
+    const isCorrect = alternatives.some(
+      (alternative) => answerKey(alternative, mode, caseSensitive) === typedKey,
+    );
     checkedResults[index] = isCorrect;
     if (isCorrect) return;
     misses[index] = (misses[index] ?? 0) + 1;
-    feedback[index] = feedbackFor(value, answer, misses[index], mode, caseSensitive);
+    const closest = closestAlternative(value, alternatives, mode, caseSensitive);
+    const others = alternatives.filter((_, i) => i !== closest);
+    feedback[index] = feedbackFor(
+      value,
+      alternatives[closest] ?? '',
+      misses[index],
+      mode,
+      caseSensitive,
+      others,
+    );
   });
   return { checkedResults, feedback, misses };
 }

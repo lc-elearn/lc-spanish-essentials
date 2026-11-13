@@ -69,3 +69,18 @@ test('course.config: a misspelt key in course.json is refused, not ignored', () 
   const valid = CourseConfigSchema.parse(courseJson);
   expect(() => parseCourseConfig({ ...valid, courseTitel: 'Typo' })).toThrow(/courseTitel/);
 });
+
+// TODO §E55: which page the course opens on. Optional, so a course.json without it keeps
+// its landing page.
+test('course.config schema: home defaults to "landing" and accepts "lesson"', () => {
+  const base = { ...courseConfig, home: undefined };
+
+  expect(CourseConfigSchema.parse(base).home).toBe('landing');
+  expect(CourseConfigSchema.parse({ ...base, home: 'lesson' }).home).toBe('lesson');
+});
+
+test('course.config schema: refuses another home, naming the field', () => {
+  const base = { ...courseConfig, home: undefined };
+
+  expect(() => parseCourseConfig({ ...base, home: 'single' })).toThrow(/home/);
+});

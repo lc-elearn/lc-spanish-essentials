@@ -7,7 +7,6 @@ level_order: 50
 strand: General
 previous_level: "[[german-basic-2]]"
 next_level: "[[german-intermediate-2]]"
-programme_spec: "[[german-intermediate-1-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 source_date: 2013-09-30

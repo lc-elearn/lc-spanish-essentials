@@ -1,4 +1,5 @@
 import { test, expect } from 'vitest';
+import { z } from 'zod';
 import {
   HoverConfigSchema,
   LoManifestSchema,
@@ -314,6 +315,50 @@ test('lo-schema: options.caseSensitive defaults to false and can be turned on', 
   expect(ExerciseOptionsSchema.parse({ caseSensitive: true }).caseSensitive).toBe(true);
 });
 
+// The envelope checks the shared options; an engine's own (the flashcards' srs,
+// direction, lockDirection) pass through untouched for that engine's schema to check.
+// Stripped here, a lesson's deck lost them before its engine ever saw them.
+test("lo-schema: the LO envelope keeps an engine's own options for the engine", () => {
+  const parsed = LoExerciseConfigSchema.parse({
+    type: 'flashcards',
+    title: 'Deck',
+    content: {},
+    options: { srs: true, direction: 'native-target', lockDirection: true },
+  });
+  expect(parsed.options).toEqual({
+    srs: true,
+    direction: 'native-target',
+    lockDirection: true,
+    shuffle: false,
+    allowShowAnswers: true,
+    caseSensitive: false,
+  });
+});
+
+// Passing through is not a loophole: a shared option is still checked by the envelope.
+test('lo-schema: the envelope still rejects a bad shared option beside an engine one', () => {
+  const parsed = LoExerciseConfigSchema.safeParse({
+    type: 'flashcards',
+    title: 'Deck',
+    content: {},
+    options: { srs: true, shuffle: 'yes' },
+  });
+  expect(parsed.success).toBe(false);
+});
+
+// Only the LO envelope keeps unknown option keys. The shared envelope that every engine
+// schema extends stays closed, so a typo in a showcase fixture's options (typed against
+// its engine's schema input) still fails to compile. `tsc -b` in the build checks this.
+test('lo-schema: an engine config type still refuses an unknown option key', () => {
+  const input: z.input<typeof ExerciseConfigSchema> = {
+    type: 'select',
+    content: {},
+    // @ts-expect-error — `shufle` is not an option; the closed envelope type refuses it.
+    options: { shufle: true },
+  };
+  expect(input.type).toBe('select');
+});
+
 // Guard: sampleSize must be a positive integer.
 test('lo-schema: options rejects non-positive sampleSize', () => {
   expect(() => ExerciseOptionsSchema.parse({ sampleSize: 0 })).toThrow();
@@ -389,4 +434,119 @@ test('lo-schema: hovers defaults to none and takes kebab-case ids', () => {
   expect(LoManifestSchema.parse(base).hovers).toEqual([]);
   expect(LoManifestSchema.parse({ ...base, hovers: ['lo-json'] }).hovers).toEqual(['lo-json']);
   expect(() => LoManifestSchema.parse({ ...base, hovers: ['Bad Id'] })).toThrow();
+});
+
+// The footer's Credits link (E56): optional, and only ever a declared modal.
+test('lo-schema: manifest without credits parses, leaving it undefined', () => {
+  expect(LoManifestSchema.parse({ title: 'T', sections: oneSection }).credits).toBeUndefined();
+});
+
+test('lo-schema: manifest accepts credits naming a declared modal', () => {
+  const parsed = LoManifestSchema.parse({
+    title: 'T',
+    sections: oneSection,
+    modals: ['credits'],
+    credits: 'credits',
+  });
+  expect(parsed.credits).toBe('credits');
+});
+
+test('lo-schema: manifest rejects credits naming an undeclared modal', () => {
+  const result = LoManifestSchema.safeParse({
+    title: 'T',
+    sections: oneSection,
+    modals: ['example-popup'],
+    credits: 'credits',
+  });
+  expect(result.success).toBe(false);
+  expect(result.error?.issues).toContainEqual(
+    expect.objectContaining({
+      path: ['credits'],
+      message: 'credits names modal "credits", which modals does not declare — add it to modals',
+    }),
+  );
+});
+
+// --- Exercise sets (E57) -------------------------------------------------------
+
+const SET = {
+  title: 'Reconstruct the text',
+  tabs: [{ exercise: '03-drag-fill-gaps' }, { exercise: '04-drag-fill-gaps' }],
+};
+
+/** A manifest with one section listing these exercise entries. */
+function withExercises(...exercises: unknown[]) {
+  return { title: 'T', sections: [{ id: 'exercises', label: 'Exercises', exercises }] };
+}
+
+/** The prettified error for an input that must fail. */
+function errorOf(input: unknown): string {
+  const result = LoManifestSchema.safeParse(input);
+  if (result.success) throw new Error('expected the manifest to fail');
+  return z.prettifyError(result.error);
+}
+
+test('lo-schema: a section lists an exercise set beside plain refs (S1)', () => {
+  const parsed = LoManifestSchema.parse(withExercises('01-select', SET, '02-radio-quiz'));
+
+  expect(parsed.sections[0]?.exercises).toEqual(['01-select', SET, '02-radio-quiz']);
+});
+
+test('lo-schema: a set takes optional instructions and tab media', () => {
+  const set = {
+    ...SET,
+    instructions: 'Do both parts.',
+    tabs: [
+      SET.tabs[0],
+      { exercise: '04-drag-fill-gaps', media: { audio: { src: 'audio/x.m4a' } } },
+    ],
+  };
+
+  expect(LoManifestSchema.safeParse(withExercises(set)).success).toBe(true);
+});
+
+test('lo-schema: a set needs a title, two tabs and no stray keys', () => {
+  expect(LoManifestSchema.safeParse(withExercises({ ...SET, title: '' })).success).toBe(false);
+  expect(LoManifestSchema.safeParse(withExercises({ ...SET, tabs: [SET.tabs[0]] })).success).toBe(
+    false,
+  );
+  expect(LoManifestSchema.safeParse(withExercises({ ...SET, instructions: '' })).success).toBe(
+    false,
+  );
+  expect(LoManifestSchema.safeParse(withExercises({ ...SET, instructions: '   ' })).success).toBe(
+    false,
+  );
+  expect(errorOf(withExercises({ ...SET, tabz: [] }))).toContain('tabz');
+});
+
+test.each([
+  [
+    'twice in sections',
+    'sections[1].exercises[0]',
+    [
+      { id: 'a', label: 'A', exercises: ['01-select'] },
+      { id: 'b', label: 'B', exercises: ['01-select'] },
+    ],
+  ],
+  [
+    'twice in tabs',
+    'sections[0].exercises[0].tabs[1].exercise',
+    [
+      {
+        id: 'a',
+        label: 'A',
+        exercises: [{ ...SET, tabs: [{ exercise: '01-select' }, { exercise: '01-select' }] }],
+      },
+    ],
+  ],
+  [
+    'in a section and a tab',
+    'sections[0].exercises[1].tabs[0].exercise',
+    [{ id: 'a', label: 'A', exercises: ['03-drag-fill-gaps', SET] }],
+  ],
+])('lo-schema: an exercise used %s fails, naming the second use (S7)', (_case, at, sections) => {
+  const error = errorOf({ title: 'T', sections });
+
+  expect(error).toMatch(/used twice/);
+  expect(error).toContain(`at ${at}`);
 });

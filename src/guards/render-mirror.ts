@@ -21,7 +21,8 @@
  * THE RULE. For each LO folder, per kind, build two sets and report the symmetric
  * difference:
  *
- *   REFERENCED = the refs `lo.json` names.
+ *   REFERENCED = the refs `lo.json` names (for exercises, the plain refs and the refs
+ *                in each exercise set's tabs, E57).
  *   PRESENT    = the sub-folders of `blocks/`, `exercises/`, `modals/`.
  *
  *   referenced − present  → `missing`      (also a present folder holding no config)
@@ -155,6 +156,28 @@ function stringsAt(value: unknown, key: string): string[] {
 }
 
 /**
+ * The exercise refs one section names: its plain refs, and each exercise set's tab refs
+ * (E57). Read as defensively as `stringsAt`: a shape it does not know yields nothing.
+ */
+function exerciseRefsAt(section: unknown): string[] {
+  if (section === null || typeof section !== 'object') return [];
+  const entries = (section as Record<string, unknown>).exercises;
+  if (!Array.isArray(entries)) return [];
+
+  return entries.flatMap((entry): string[] => {
+    if (typeof entry === 'string') return entry === '' ? [] : [entry];
+    if (entry === null || typeof entry !== 'object') return [];
+    const tabs = (entry as { tabs?: unknown }).tabs;
+    if (!Array.isArray(tabs)) return [];
+    return tabs.flatMap((tab): string[] => {
+      if (tab === null || typeof tab !== 'object') return [];
+      const ref = (tab as { exercise?: unknown }).exercise;
+      return typeof ref === 'string' && ref !== '' ? [ref] : [];
+    });
+  });
+}
+
+/**
  * Every ref one manifest names, per kind, in declared order.
  *
  * Defensive by design (see the header on staleness): any shape that is not what the
@@ -172,7 +195,7 @@ export function referencedRefs(manifest: unknown): RefsByKind {
 
   return {
     blocks: sectionList.flatMap((section) => stringsAt(section, 'blocks')),
-    exercises: sectionList.flatMap((section) => stringsAt(section, 'exercises')),
+    exercises: sectionList.flatMap(exerciseRefsAt),
     modals: stringsAt(manifest, 'modals'),
     hovers: stringsAt(manifest, 'hovers'),
   };

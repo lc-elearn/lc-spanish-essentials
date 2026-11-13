@@ -6,8 +6,10 @@
  *
  * inline-gap is a TYPED cloze: the learner types into inline blanks inside flowing
  * prose. Blanks use `[expected::placeholder]` — the text before `::` is the answer,
- * the optional text after it is a placeholder hint. Grading is the blank-grading
- * family (spec §7), but answers are TYPED (compared via normalizeAnswer), not picked.
+ * the optional text after it is a placeholder hint. Several answers are split by `|`,
+ * the first preferred: `[profesor|maestro::trabajo]` (TODO §E54). Grading is the
+ * blank-grading family (spec §7), but answers are TYPED (compared via normalizeAnswer),
+ * not picked.
  *
  * Content shape:
  *   - items[]    one sentence per entry:
@@ -27,7 +29,7 @@
 import { z } from 'zod';
 import { hasAnyBlank, noBlankIssue, sentenceWithBlanks } from '../lib/blank-checks';
 import { instructionsField } from '../lib/instructions';
-import { inputBlankProblems } from '../lib/parsing';
+import { inputBlankProblems, inputBlankRepeatProblems } from '../lib/parsing';
 import { ExerciseConfigSchema } from '@/config/lo-schema';
 
 /** One sentence in an inline-gap exercise. `text` carries `[expected::placeholder]` blanks;
@@ -64,10 +66,19 @@ export type InlineGapContent = z.infer<typeof InlineGapContentSchema>;
 /**
  * The full exercise envelope for an inline-gap exercise: the shared
  * `type`/`options`/`labels` from ExerciseConfigSchema, with `content` narrowed to
- * InlineGapContentSchema and `type` pinned to the literal `'inline-gap'`.
+ * InlineGapContentSchema and `type` pinned to the literal `'inline-gap'`. An answer
+ * accepted twice is checked here, the one schema that sees `options.caseSensitive`,
+ * which decides whether `Soy` and `soy` are the same answer (TODO §E54).
  */
 export const InlineGapExerciseConfigSchema = ExerciseConfigSchema.extend({
   type: z.literal('inline-gap'),
   content: InlineGapContentSchema,
+}).superRefine((config, ctx) => {
+  const caseSensitive = config.options?.caseSensitive ?? false;
+  config.content.items.forEach((item, index) => {
+    for (const message of inputBlankRepeatProblems(item.text, caseSensitive)) {
+      ctx.addIssue({ code: 'custom', message, path: ['content', 'items', index, 'text'] });
+    }
+  });
 });
 export type InlineGapExerciseConfig = z.infer<typeof InlineGapExerciseConfigSchema>;

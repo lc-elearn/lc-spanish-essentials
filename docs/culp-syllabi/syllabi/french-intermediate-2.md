@@ -9,7 +9,6 @@ level_order: 60
 strand: General
 previous_level: "[[french-intermediate-1]]"
 next_level: "[[french-upper-intermediate-stories-and-film]]"
-programme_spec: "[[french-intermediate-2-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2020-10-15

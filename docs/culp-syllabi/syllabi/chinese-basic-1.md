@@ -7,7 +7,6 @@ level: Basic 1
 level_order: 10
 strand: General
 next_level: "[[chinese-basic-2]]"
-programme_spec: "[[chinese-basic-1-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2020-10-15

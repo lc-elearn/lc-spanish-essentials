@@ -56,6 +56,8 @@ export const UiStringsSchema = z.strictObject({
   hintFar: z.string().min(1),
   answerLabel: z.string().min(1),
   answerKey: z.string().min(1),
+  // The other accepted answers under a revealed one (TODO §E54): "Also accepted: a · b".
+  alsoAccepted: z.string().min(1),
   // Accessible names for controls with no readable text of their own
   blank: z.string().min(1),
   // Audio controls (listening / dictation exercises)
@@ -72,6 +74,8 @@ export const UiStringsSchema = z.strictObject({
   // Media transcript toggle (tab media, spec 2026-10-07-tabs-media-design §4)
   showTranscript: z.string().min(1),
   hideTranscript: z.string().min(1),
+  // The footer's Credits button (spec 2026-11-11-footer-credits-design §5)
+  credits: z.string().min(1),
 });
 
 /** Full required map (Layer 1). */
@@ -106,6 +110,7 @@ const raw: UiStrings = {
   hintFar: 'Not quite. Try again.',
   answerLabel: 'Answer:',
   answerKey: 'Highlighted: what differs from yours',
+  alsoAccepted: 'Also accepted:',
   blank: 'Blank',
   play: 'Play',
   pause: 'Pause',
@@ -117,6 +122,7 @@ const raw: UiStrings = {
   sourceWeb: 'Web source:',
   showTranscript: 'Show transcript',
   hideTranscript: 'Hide transcript',
+  credits: 'Credits',
 };
 
 /** Validate at load. A missing/blank/typo key throws here → build dies immediately. */

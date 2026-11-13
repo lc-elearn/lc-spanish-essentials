@@ -31,7 +31,7 @@ description: Use before committing, pushing or opening a pull request, or when s
    - If `test:e2e` cannot start a browser, say which one and that CI runs it; do not
      call it passed.
    - If a check fails, fix the cause. Never weaken a test or a guard to get green
-     ([`AGENTS.md` → "The eight guards"](../../../AGENTS.md#the-eight-guards)).
+     ([`AGENTS.md` → "The nine guards"](../../../AGENTS.md#the-nine-guards)).
 3. **Check the scope.** Run `git diff --name-only origin/main...` (and `git status` for files
    not yet committed).
    - In a **course repo** (by [`.claude/skills/README.md` → "Where am I"](../README.md#where-am-i)),

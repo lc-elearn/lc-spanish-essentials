@@ -14,8 +14,9 @@
  *    build, and this proves the rendered markup agrees — a schema and a component can
  *    disagree, so both ends are asserted.
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { ModalProvider } from '@/lo/rich-text/modal/ModalProvider';
 import Footer from './Footer';
 
 describe('Footer', () => {
@@ -58,5 +59,53 @@ describe('Footer', () => {
   test('is not a nav landmark — the header owns the only one', () => {
     const html = renderToStaticMarkup(<Footer />);
     expect(html).not.toMatch(/<nav/);
+  });
+});
+
+// The lesson's Credits button (E56, docs/specs/2026-11-11-footer-credits-design.md §5):
+// the one piece of the footer that comes from the lesson, not footer.config.ts.
+describe('Footer credits (E56)', () => {
+  const MODALS = { credits: { id: 'credits', title: 'Credits', content: [] } };
+  const BUTTON =
+    '<button type="button" class="footer-licence-link footer-credits">Credits</button>';
+  const withCredits = () =>
+    renderToStaticMarkup(
+      <ModalProvider modals={MODALS}>
+        <Footer credits="credits" />
+      </ModalProvider>,
+    );
+
+  test('without credits there is no Credits button', () => {
+    expect(renderToStaticMarkup(<Footer />)).not.toMatch(/Credits/);
+  });
+
+  test('with credits, the © line ends with a hidden separator and the button', () => {
+    expect(withCredits()).toContain(
+      `University of Cambridge<span aria-hidden="true"> · </span>${BUTTON}</p>`,
+    );
+  });
+
+  test('the footer still holds no heading and no dead link', () => {
+    const html = withCredits();
+    expect(html).not.toMatch(/<h[1-6][\s/>]/);
+    expect(html).not.toMatch(/href="#/);
+  });
+
+  test('with no © holder the line holds the button alone', async () => {
+    vi.resetModules();
+    vi.doMock('@/config/footer.config', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('@/config/footer.config')>();
+      return { footerConfig: { ...actual.footerConfig, copyrightHolder: undefined } };
+    });
+    const { default: BareFooter } = await import('./Footer');
+    const { ModalProvider: Provider } = await import('@/lo/rich-text/modal/ModalProvider');
+    const html = renderToStaticMarkup(
+      <Provider modals={MODALS}>
+        <BareFooter credits="credits" />
+      </Provider>,
+    );
+    vi.doUnmock('@/config/footer.config');
+    expect(html).toContain(`<p class="footer-copyright">${BUTTON}</p>`);
+    expect(html).not.toMatch(/©/);
   });
 });

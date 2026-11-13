@@ -21,14 +21,25 @@
  *
  * LAYOUT MIRRORS THE REFERENCE'S THREE GROUPS: the lockup with its © line, the marks
  * and social as one visual cluster, then the licence. Styling is in footer.css.
+ *
+ * THE ONE LESSON-OWNED PIECE (E56). The © line may end with a "Credits" button that
+ * opens the lesson's credits popup: `lo.json`'s `credits`, passed in by PageLayout. It
+ * is per lesson, so it cannot live in `footer.config.ts`, the institution's footer.
+ * The landing page passes nothing. Spec: docs/specs/2026-11-11-footer-credits-design.md.
  */
 import { footerConfig } from '@/config/footer.config';
+import CreditsButton from './CreditsButton';
 import FooterLink from './FooterLink';
 import FooterMarks from './FooterMarks';
 import FooterSocial from './FooterSocial';
 import './footer.css';
 
-export default function Footer() {
+interface FooterProps {
+  /** The modal the © line's Credits button opens; absent → no button (E56). */
+  credits?: string;
+}
+
+export default function Footer({ credits }: FooterProps) {
   const { lockup, copyrightHolder, marks, social, licence, links } = footerConfig;
 
   return (
@@ -37,17 +48,27 @@ export default function Footer() {
         <div className="footer-identity">
           <FooterMarks lockup={lockup} marks={[]} />
 
-          {copyrightHolder === undefined ? null : (
+          {copyrightHolder === undefined && credits === undefined ? null : (
             <p className="footer-copyright">
-              {/* The year is read from the clock, never authored — an authored year
-                  goes stale on 1 January and nothing notices. That makes it the one
-                  value here that can legitimately differ between the prerender (build
-                  time) and the first client render (view time), across a New Year
-                  boundary on a build that was not redeployed. suppressHydrationWarning
-                  is React's sanctioned escape hatch for exactly this, scoped to the one
-                  text node rather than the paragraph. */}
-              <>© </>
-              <span suppressHydrationWarning>{new Date().getFullYear()}</span> {copyrightHolder}
+              {copyrightHolder === undefined ? null : (
+                <>
+                  {/* The year is read from the clock, never authored — an authored year
+                      goes stale on 1 January and nothing notices. That makes it the one
+                      value here that can legitimately differ between the prerender (build
+                      time) and the first client render (view time), across a New Year
+                      boundary on a build that was not redeployed. suppressHydrationWarning
+                      is React's sanctioned escape hatch for exactly this, scoped to the one
+                      text node rather than the paragraph. */}
+                  <>© </>
+                  <span suppressHydrationWarning>{new Date().getFullYear()}</span> {copyrightHolder}
+                </>
+              )}
+              {credits === undefined ? null : (
+                <>
+                  {copyrightHolder === undefined ? null : <span aria-hidden="true"> · </span>}
+                  <CreditsButton modalId={credits} />
+                </>
+              )}
             </p>
           )}
         </div>

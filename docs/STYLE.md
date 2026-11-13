@@ -18,7 +18,7 @@ fix the page.
 | **ESLint**     | correctness, React hooks, accessibility in JSX                                      | [`eslint.config.js`](../eslint.config.js)                      | `bun run lint`     |
 | **TypeScript** | types, strictly                                                                     | [`tsconfig.app.json`](../tsconfig.app.json) and its neighbours | `bun run build`    |
 | **Stylelint**  | CSS errors and notation, no vendor prefixes; tokens and `@layer` are guards f and g | [`stylelint.config.mjs`](../stylelint.config.mjs)              | `bun run lint:css` |
-| **The guards** | repo-wide invariants b–h (guard a, the Zod schemas, runs in `bun run test`)         | `src/guards/`                                                  | `bun run guards`   |
+| **The guards** | repo-wide invariants b–i (guard a, the Zod schemas, runs in `bun run test`)         | `src/guards/`                                                  | `bun run guards`   |
 | **File names** | every file and folder name in `src/`                                                | `src/build/file-names.ts` ([below](#files-and-names))          | `bun run test`     |
 
 In practice that means: single quotes, semicolons, trailing commas, lines up to 100
@@ -39,7 +39,7 @@ These are rules, not habits, and each has one home. Read them there:
 - [`AGENTS.md` → "Code rules"](../AGENTS.md#code-rules) — tokens only, `@layer`,
   semantic HTML, reduced motion through `prefersReducedMotion()`, new code from a failing
   test, tests beside the code, files under 800 lines, the exercise-engine recipe.
-- [`CONTRIBUTING.md`](../CONTRIBUTING.md) — the commit gate and the eight guards.
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md) — the commit gate and the nine guards.
 - [`DESIGNER.md`](../DESIGNER.md) — how the theme tokens are organised.
 
 ## Files and names

@@ -24,10 +24,11 @@
  * browser tests keep a page to drive; only the link to it goes.
  */
 import type { AssembledLo } from './assemble-lo';
+import { courseLessonFolders } from './course-lessons';
 import { loSlugsByFolder, sortLoFolders } from './lo-slug';
 
-/** The example lesson's folder: the template's demo and every course's master copy. */
-export const EXAMPLE_LO_FOLDER = 'lo-00-example';
+/** Re-exported where it always lived; the rule that uses it is in course-lessons.ts. */
+export { EXAMPLE_LO_FOLDER } from './course-lessons';
 
 /** One LO as the landing page sees it: where it lives, and what its card says. */
 export interface LoIndexEntry {
@@ -64,10 +65,8 @@ export function buildLoIndex(
   loadLo: LoLoader,
 ): readonly LoIndexEntry[] {
   const slugsByFolder = loSlugsByFolder(sortLoFolders(folders));
-  const hasOwnLesson = folders.some((folder) => folder !== EXAMPLE_LO_FOLDER);
-  const listed = [...slugsByFolder].filter(
-    ([folder]) => !(hasOwnLesson && folder === EXAMPLE_LO_FOLDER),
-  );
+  const lessons = new Set(courseLessonFolders(folders));
+  const listed = [...slugsByFolder].filter(([folder]) => lessons.has(folder));
 
   return listed.map(([folder, slug]) => {
     const lo = loadLo(folder);

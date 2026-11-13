@@ -105,7 +105,7 @@ export const SANDBOX_DOCS: readonly SandboxDoc[] = [
     id: 'contributing',
     file: 'CONTRIBUTING.md',
     audience: 'developer',
-    blurb: 'Setup, the per-LO authoring loop, the eight guards, and the verify gate.',
+    blurb: 'Setup, the per-LO authoring loop, the nine guards, and the verify gate.',
   },
   {
     id: 'structure',

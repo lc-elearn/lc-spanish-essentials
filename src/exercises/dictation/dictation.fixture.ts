@@ -27,6 +27,8 @@ export const dictationFixtures: ShowcaseFixture[] = [
           { answer: 'Buenos días', audio: 'audio/showcase-demo/inline-gap/q1.wav' },
           { answer: '¿Cómo estás?', audio: 'audio/showcase-demo/inline-gap/q2.wav' },
           { answer: 'Hasta luego', audio: 'audio/showcase-demo/inline-gap/q3.wav' },
+          // Three accepted answers (TODO §E54): `|` means "or", the first preferred.
+          { answer: 'Adiós|Chao|Nos vemos', audio: 'audio/showcase-demo/inline-gap/q1.wav' },
         ],
         footnote: 'Demo hint line — type what you hear (demo clips).',
       },

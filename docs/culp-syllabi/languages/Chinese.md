@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # Chinese
 
-Hub note for CULP Chinese: 11 documents. Part of [[CULP Syllabi]].
+Hub note for CULP Chinese: 8 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -35,11 +35,3 @@ Strand: [[Medics]]
 | Note | Level | Title |
 | --- | --- | --- |
 | [[chinese-medics-basic]] | Basic | Chinese Medics Basic Syllabus |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[chinese-basic-1-programme-spec]] | Basic 1 | CULP Basic 1 in Mandarin Chinese: Programme Specification |
-| [[chinese-basic-2-programme-spec]] | Basic 2 | CULP Basic 2 in Mandarin Chinese: Programme Specification |
-| [[chinese-elementary-programme-spec]] | Elementary | CULP Elementary 1 in Mandarin Chinese: Programme Specification |

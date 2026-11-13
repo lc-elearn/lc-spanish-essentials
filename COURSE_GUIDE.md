@@ -38,16 +38,16 @@ What counts is the path **and** what it is for, never a whole folder: your cours
 lessons, one folder each, each lesson's own media folder, and your course's settings in
 `course.json`.
 
-| Path                                                                                                                                                   | What it is                                                                                                | Your pull request                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `lo-config/lo-NN-slug/`                                                                                                                                | one of your lessons: `lo.json`, its blocks, exercises, popups and hover cards                             | merges once CI is green, no review   |
-| `public/images/lo-NN-slug/`                                                                                                                            | that lesson's images, its card and banner art included                                                    | merges once CI is green, no review   |
-| `public/audio/lo-NN-slug/`                                                                                                                             | that lesson's audio                                                                                       | merges once CI is green, no review   |
-| `course.json`                                                                                                                                          | your course's title, language code, home-page heading and subheading, logo and icon names                 | merges once CI is green, no review   |
-| `lo-config/lo-00-example/`, `public/images/lo-00-example/`, `public/audio/lo-00-example/`                                                              | the template's example lesson: copy it, never change it                                                   | waits for the maintainer             |
-| `public/images/footer/`, `public/images/line-match/`, `public/images/placeholders/`, `public/images/lo-placeholder.svg`, `public/audio/showcase-demo/` | the template's shared media: the institutional logos, and what the exercises and showcase use             | waits for the maintainer             |
-| anything else in `lo-config/`, `public/images/` or `public/audio/`                                                                                     | not a lesson's own folder (a loose file, another subfolder)                                               | waits for the maintainer — ask first |
-| anything else                                                                                                                                          | the template's machinery, and your course's logo and icon files (`public/logo.svg`, `public/favicon.svg`) | waits for the maintainer — ask first |
+| Path                                                                                                                                                   | What it is                                                                                                                                                           | Your pull request                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `lo-config/lo-NN-slug/`                                                                                                                                | one of your lessons: `lo.json`, its blocks, exercises, popups and hover cards                                                                                        | merges once CI is green, no review   |
+| `public/images/lo-NN-slug/`                                                                                                                            | that lesson's images, its card and banner art included                                                                                                               | merges once CI is green, no review   |
+| `public/audio/lo-NN-slug/`                                                                                                                             | that lesson's audio                                                                                                                                                  | merges once CI is green, no review   |
+| `course.json`                                                                                                                                          | your course's title, language code, home-page heading and subheading, logo and icon names, and whether it opens on its list of lessons or on its one lesson (`home`) | merges once CI is green, no review   |
+| `lo-config/lo-00-example/`, `public/images/lo-00-example/`, `public/audio/lo-00-example/`                                                              | the template's example lesson: copy it, never change it                                                                                                              | waits for the maintainer             |
+| `public/images/footer/`, `public/images/line-match/`, `public/images/placeholders/`, `public/images/lo-placeholder.svg`, `public/audio/showcase-demo/` | the template's shared media: the institutional logos, and what the exercises and showcase use                                                                        | waits for the maintainer             |
+| anything else in `lo-config/`, `public/images/` or `public/audio/`                                                                                     | not a lesson's own folder (a loose file, another subfolder)                                                                                                          | waits for the maintainer — ask first |
+| anything else                                                                                                                                          | the template's machinery, and your course's logo and icon files (`public/logo.svg`, `public/favicon.svg`)                                                            | waits for the maintainer — ask first |
 
 `course.json` is checked when the site builds: a blank title or a misspelt key stops the
 build with a message naming `course.json` and the field. Its rules are the template's
@@ -61,6 +61,23 @@ If a lesson seems to need a change outside its own two or three folders, **stop 
 the maintainer**: it usually means the content model needs extending, which is done once
 in the template for every course. The full rule:
 [`CONTRIBUTING.md` → "Adding content vs. changing the system"](CONTRIBUTING.md#adding-content-vs-changing-the-system-read-before-a-pr).
+
+### One lesson, or several
+
+A course of one lesson can skip the list of lessons: `"home": "lesson"` in `course.json`
+makes the course's front page the lesson itself. Without the key, or with
+`"home": "landing"`, the front page lists the lessons.
+
+When a second lesson arrives, the build stops and says so. Change the setting to
+`"landing"` and build again. For students, the front address now opens the list of
+lessons, one click from the lesson. A link straight to the lesson (`<slug>.html`) and
+their saved progress are unchanged.
+
+### Credits
+
+Each lesson can have its own "Credits" link at the end of the footer's © line, opening a
+popup with the lesson's team. It lives in the lesson's own folder, so it merges like the
+rest of the lesson: [`CONTRIBUTING.md` → "Authoring a Learning Object"](CONTRIBUTING.md#authoring-a-learning-object), under **Credits**, says how.
 
 ## Every day: the loop
 
@@ -108,15 +125,18 @@ in the template for every course. The full rule:
 
 ## When the template changes
 
-The maintainer improves the template (a new exercise type, a fix) and tells you. The
+The maintainer improves the template (a new exercise type, a fix) and opens an issue,
+"Template update ready", in your course repo, assigned to you; GitHub emails you. The
+issue has the steps and the pull request link, which fills in the title ("Template
+update" and the date) and `Closes #N`, so the issue closes when you merge. Issues are public, like the repo: no unpublished lesson text,
+images or audio in a comment. The
 update reaches your course through a pull request **from an update branch inside your
 course repo**, never from the template's `main` and never through the **Sync fork**
 button:
 
 1. The maintainer (or a colleague the maintainer asks) prepares the update branch and
    pushes it to your course repo.
-2. **You open the pull request:** on your course repo's page, GitHub offers **Compare &
-   pull request** for the new branch. Its base must be your course's `main`: your
+2. **You open the pull request:** open `https://github.com/lc-elearn/<your course>/compare/main...sync-template` (or **Pull requests → New pull request**, base your course's `main`, compare `sync-template`). GitHub may also show a **Compare & pull request** button on your course's page; if it does not, use the link. Its base must be your course's `main`: your
    course is a fork, so GitHub may suggest the template (`lc-elearn/lc-base-template`)
    as the base repository first; change it to your course.
 3. The checks run and the maintainer approves; **you** merge it with **Create a merge
@@ -196,6 +216,18 @@ option`: each message and its fix are in
 - **It names a question, row or item**, such as `question 2 offers "sí" twice`: each
   message and its fix are in
   [`CONTRIBUTING.md` → "Answers in their own fields"](CONTRIBUTING.md#answers-in-their-own-fields).
-- **It fails anywhere else**, or the message does not make sense: ask the maintainer
-  rather than changing files outside your folders.
+- **It says "invisible text mistakes"** and names a file and a word: a character in that
+  word is not what it looks like. `not-nfc` is an accent stored as a separate mark (often
+  pasted from a PDF); `stray-mark` is an accent with no letter under it (shown as
+  `‹U+0301›` after a space); `mixed-script` is a letter from another alphabet that looks
+  the same, such as a Latin `e` in a Russian word; `misplaced-mark` is a stress mark on a
+  letter that cannot take one. Type the word again, or delete the stray accent. A stress
+  mark just after a closing tag (`<b>о</b>́`) belongs inside it, on its letter
+  (`<b>о́</b>`); to show an accent on its own, put it on `◌`. The rules:
+  [`docs/specs/2026-11-12-text-integrity-guard-design.md`](docs/specs/2026-11-12-text-integrity-guard-design.md).
+- **It fails anywhere else**, or the message does not make sense: do not change files
+  outside your folders. Report it on the template: its **Issues** → **New issue** →
+  **Bug report**
+  ([the form](https://github.com/lc-elearn/lc-base-template/issues/new?template=bug-report.yml)).
+  The form asks for what the maintainer needs, and reminds you that issues are public.
 - **What a folder is for:** [`STRUCTURE.md`](STRUCTURE.md).
