@@ -24,3 +24,20 @@ export function parseBlockContent<TSchema extends z.ZodTypeAny>(
   }
   return result.data;
 }
+
+/**
+ * Parse `options` for a block of `type` (E63), or throw naming the type and what broke.
+ * Absent options parse as `{}`, so every default applies. The envelope has already
+ * refused bad options at load; this is where the renderer gets their defaults.
+ */
+export function parseBlockOptions<TSchema extends z.ZodTypeAny>(
+  type: string,
+  schema: TSchema,
+  options: unknown,
+): z.output<TSchema> {
+  const result = schema.safeParse(options ?? {});
+  if (!result.success) {
+    throw new Error(`block type "${type}" has invalid options:\n${z.prettifyError(result.error)}`);
+  }
+  return result.data;
+}

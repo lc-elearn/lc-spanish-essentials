@@ -36,18 +36,24 @@ message an author would see.
    ([`sources-block-schema.ts`](../../../src/lo/blocks/sources-block-schema.ts)), its
    renderer ([`SourcesBlock.tsx`](../../../src/lo/blocks/SourcesBlock.tsx)) and its test
    ([`sources-block.test.tsx`](../../../src/lo/blocks/sources-block.test.tsx)).
-2. **Register it** in `BLOCK_RENDERERS`
+2. **If it takes `options`**, register their schema in `BLOCK_OPTIONS_SCHEMAS`
+   ([`src/lo/blocks/block-options-schemas.ts`](../../../src/lo/blocks/block-options-schemas.ts));
+   a type absent there takes none, and the build refuses any it is given. Copy the
+   vocabulary block's
+   ([`vocabulary-options-schema.ts`](../../../src/lo/blocks/vocabulary-options-schema.ts)).
+   The renderer receives `options` and the block's `labels`.
+3. **Register it** in `BLOCK_RENDERERS`
    ([`src/lo/blocks/block-renderers.ts`](../../../src/lo/blocks/block-renderers.ts)).
    The UI showcase builds its groups from that map by itself.
-3. **Give the showcase something to render**: a fixture in
+4. **Give the showcase something to render**: a fixture in
    [`src/ui-showcase/block-fixtures.ts`](../../../src/ui-showcase/block-fixtures.ts).
    Its header says when one is needed and when it is not. Do not edit
    `lo-config/lo-00-example/` ([`AGENTS.md` → "Content rules"](../../../AGENTS.md#content-rules));
    adding the type to the example is the maintainer's call, asked separately.
-4. **The rules.** Keep to [`AGENTS.md`](../../../AGENTS.md) "Hard constraints" and "Code
+5. **The rules.** Keep to [`AGENTS.md`](../../../AGENTS.md) "Hard constraints" and "Code
    rules" throughout, and watch the bundle budget
    ([`docs/TOOLING.md` → "Bundle budget"](../../../docs/TOOLING.md)).
-5. **The docs** authors read: a section beside "Sources block" in
+6. **The docs** authors read: a section beside "Sources block" in
    [`CONTRIBUTING.md`](../../../CONTRIBUTING.md), and
    [`public/llms.txt`](../../../public/llms.txt) (it lists the block types).
 

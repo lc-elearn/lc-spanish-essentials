@@ -28,6 +28,7 @@ import { useId, useReducer, useRef, type KeyboardEvent, type ReactNode } from 'r
 
 import { Input } from '@/components/ui/input';
 import AudioManager from '@/audio/AudioManager';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { CircularAudioProgressAnimatedSpeakerDisplay } from '@/components/audio/CircularAudioProgressAnimatedSpeakerDisplay';
 import {
@@ -63,6 +64,7 @@ import { createExerciseReducer } from '@/exercises/lib/exercise-scaffold';
 import { ProgressMeter } from '@/exercises/lib/ProgressMeter';
 import type { ExerciseComponentProps } from '@/exercises/lazy-registry';
 import { TARGET_LANG } from '@/lib/lang';
+import { cn } from '@/lib/utils';
 import { InlineGapExerciseConfigSchema, type InlineGapItem } from './inline-gap-schema';
 import { fillInlineGapAnswers, gradeInlineGap } from './inline-gap-grading';
 import { useHangUnder } from './useHangUnder';
@@ -264,9 +266,15 @@ export default function InlineTypedGapExercise({ config }: ExerciseComponentProp
     );
 
     rows.push(
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- pointer-only enhancement (mouse and touch) over the speaker <button>, which is the keyboard path; see src/audio/row-clip.ts
       <div
         key={`row-${i}`}
-        className="rounded-lg border border-border/70 bg-card px-4 py-3 leading-loose"
+        onClick={item.audio ? playRowClip : undefined}
+        data-row-clip={item.audio ? '' : undefined}
+        className={cn(
+          'rounded-lg border border-border/70 bg-card px-4 py-3 leading-loose',
+          item.audio && ROW_CLIP_CLASSES,
+        )}
       >
         {item.prompt ? (
           <p className="mb-2 text-sm text-muted-foreground" lang={TARGET_LANG}>

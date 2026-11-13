@@ -49,7 +49,7 @@ describe('vocabulary summary and sort', () => {
   test('offers Semantic and Alphabetical above the terms, Semantic pressed first', () => {
     const html = renderToStaticMarkup(<VocabularyBlock content={{ items }} />);
 
-    expect(html).toContain('role="group" aria-label="Sort the vocabulary"');
+    expect(html).toContain('role="group" aria-label="Choose a view"');
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*Semantic<\/button>/);
     expect(html).toMatch(/aria-pressed="false"[^>]*>.*Alphabetical<\/button>/);
     expect(html.indexOf('Semantic')).toBeLessThan(html.indexOf('<dl'));
@@ -74,6 +74,95 @@ describe('vocabulary summary and sort', () => {
     const html = renderToStaticMarkup(
       <VocabularyBlock content={{ items: [{ term: 'Hola', gloss: 'hello' }] }} />,
     );
-    expect(html).not.toContain('Sort the vocabulary');
+    expect(html).not.toContain('Choose a view');
+  });
+});
+
+// E63 (spec §3–4): a word bank. The first render is the topic view with nothing
+// hidden, so the prerendered markup equals the first client render.
+const BANK = {
+  topics: [{ id: 'greetings', heading: 'Greetings' }, { id: 'farewells' }],
+  items: [
+    { term: 'hola', gloss: 'hello', topic: 'greetings' },
+    { term: 'buenos días', gloss: 'good morning', topic: 'greetings', only: 'topics' },
+    { term: 'adiós', gloss: 'goodbye', topic: 'farewells' },
+    { term: 'saludar', gloss: 'to greet', only: 'alphabetical' },
+  ],
+};
+
+describe('vocabulary word bank, first render', () => {
+  test('is the topic view: topic entries in written order, A–Z-only entries left out', () => {
+    const html = renderToStaticMarkup(<VocabularyBlock content={BANK} />);
+    expect(html.indexOf('hola')).toBeLessThan(html.indexOf('buenos días'));
+    expect(html.indexOf('buenos días')).toBeLessThan(html.indexOf('adiós'));
+    expect(html).not.toContain('saludar');
+  });
+
+  test('heads each topic with an <h4> inside a card, and gives each topic its own <dl>', () => {
+    const html = renderToStaticMarkup(<VocabularyBlock content={BANK} />);
+    expect(html).toMatch(/<h4[^>]*>Greetings<\/h4>/);
+    expect((html.match(/<dl/g) ?? []).length).toBe(2);
+  });
+
+  test('heads each topic with an <h3> in a plain block, under the section <h2>', () => {
+    const html = renderToStaticMarkup(<VocabularyBlock content={BANK} presentation="plain" />);
+    expect(html).toMatch(/<h3[^>]*>Greetings<\/h3>/);
+    expect(html).not.toContain('<h4');
+  });
+
+  test('a topic without a heading is a divider', () => {
+    const html = renderToStaticMarkup(<VocabularyBlock content={BANK} />);
+    expect((html.match(/<hr/g) ?? []).length).toBe(1);
+    expect(html.indexOf('<hr')).toBeLessThan(html.indexOf('adiós'));
+  });
+
+  test('a list without topics is still one <dl>, as before', () => {
+    const html = renderToStaticMarkup(<VocabularyBlock content={{ items }} />);
+    expect(html).toContain(
+      '<dl class="grid gap-x-6 gap-y-2 sm:grid-cols-[fit-content(50%)_minmax(0,1fr)]">',
+    );
+    expect((html.match(/<dl/g) ?? []).length).toBe(1);
+    expect(html).not.toContain('<h4');
+  });
+
+  test('no view buttons when one view would be empty', () => {
+    const html = renderToStaticMarkup(
+      <VocabularyBlock
+        content={{
+          items: [
+            { term: 'b', gloss: 'b', only: 'alphabetical' },
+            { term: 'a', gloss: 'a', only: 'alphabetical' },
+          ],
+        }}
+      />,
+    );
+    expect(html).not.toContain('Choose a view');
+    // The one view with entries shows: A–Z.
+    expect(html.indexOf('>a<')).toBeLessThan(html.indexOf('>b<'));
+  });
+
+  test('a block renames the view buttons through its labels', () => {
+    const html = renderToStaticMarkup(
+      <VocabularyBlock content={BANK} labels={{ vocabularySemantic: 'By topic' }} />,
+    );
+    expect(html).toContain('By topic');
+    expect(html).not.toContain('Semantic');
+  });
+});
+
+// A plain list may repeat a term (the 2015 units teach some words twice); it must render
+// both rows and re-sort without duplicate React keys.
+describe('a plain list with a repeated term', () => {
+  const content = {
+    items: [
+      { term: 'условия', gloss: 'conditions' },
+      { term: 'вредный', gloss: 'harmful' },
+      { term: 'условия', gloss: 'conditions' },
+    ],
+  };
+  const dts = (html: string) => Array.from(html.matchAll(/<dt[^>]*>.*?<\/dt>/g)).length;
+
+  test('renders both rows', () => {
+    expect(dts(renderToStaticMarkup(<VocabularyBlock content={content} />))).toBe(3);
   });
 });

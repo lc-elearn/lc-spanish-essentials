@@ -1,5 +1,11 @@
 import { test, expect } from 'vitest';
-import { uiStrings, UiStringsSchema, UiStringsOverrideSchema, resolveLabel } from './ui-strings';
+import {
+  fillLabel,
+  uiStrings,
+  UiStringsSchema,
+  UiStringsOverrideSchema,
+  resolveLabel,
+} from './ui-strings';
 
 // Importing uiStrings runs the Layer-1 parse at load — see course.config.test.ts.
 test('ui-strings: global map validates and loads at import', () => {
@@ -62,4 +68,56 @@ test('ui-strings: alsoAccepted labels the other accepted answers, and can be rew
 // The footer's Credits button (E56, spec 2026-11-11-footer-credits-design §5).
 test('ui-strings: the footer credits label exists', () => {
   expect(resolveLabel('credits')).toBe('Credits');
+});
+
+// E63 (spec §4–5, W10): the vocabulary block's chrome. The view buttons keep today's
+// words, so a course that changes nothing sees no change.
+test('ui-strings: the vocabulary block labels exist, view buttons as today', () => {
+  expect(resolveLabel('vocabularyViews')).toBe('Choose a view');
+  expect(resolveLabel('vocabularySemantic')).toBe('Semantic');
+  expect(resolveLabel('vocabularyAlphabetical')).toBe('Alphabetical');
+  expect(resolveLabel('vocabularySelfTest')).toBe('Test yourself');
+  expect(resolveLabel('vocabularyHide')).toBe('Hide {language}');
+  expect(resolveLabel('vocabularyReveal')).toBe('Reveal');
+  expect(resolveLabel('vocabularyRevealWord')).toBe('Reveal {language}, word {number}');
+  expect(resolveLabel('vocabularyListenWord')).toBe('Listen: word {number}');
+  expect(resolveLabel('vocabularyListen')).toBe('Listen: {term}');
+});
+
+test('ui-strings: a block can rename the view buttons', () => {
+  expect(resolveLabel('vocabularySemantic', { vocabularySemantic: 'By topic' })).toBe('By topic');
+});
+
+// A rewording that drops a placeholder would name no language or no word.
+test.each([
+  ['vocabularyHide', 'Hide it'],
+  ['vocabularyRevealWord', 'Reveal {language}'],
+  ['vocabularyRevealWord', 'Reveal word {number}'],
+  ['vocabularyListenWord', 'Listen'],
+  ['vocabularyListen', 'Listen'],
+])('ui-strings: %s without its placeholders is rejected (%s)', (key, value) => {
+  expect(UiStringsOverrideSchema.safeParse({ [key]: value }).success).toBe(false);
+});
+
+test('ui-strings: a rewording that keeps its placeholders is accepted', () => {
+  expect(
+    UiStringsOverrideSchema.safeParse({
+      vocabularyHide: 'Cover the {language}',
+      vocabularyRevealWord: 'Show {language} word {number}',
+      vocabularyListenWord: 'Hear word {number}',
+    }).success,
+  ).toBe(true);
+});
+
+test('fillLabel fills every named placeholder, and leaves others alone', () => {
+  expect(fillLabel('Hide {language}', { language: 'Russian' })).toBe('Hide Russian');
+  expect(fillLabel('Reveal {language}, word {number}', { language: 'Russian', number: 3 })).toBe(
+    'Reveal Russian, word 3',
+  );
+  expect(fillLabel('{a} and {a}', { a: 'x' })).toBe('x and x');
+  expect(fillLabel('Hide {language}', {})).toBe('Hide {language}');
+});
+
+test('fillLabel inserts a value literally, even one with $ replacement patterns', () => {
+  expect(fillLabel('Hide {language}', { language: "$& $$ $'" })).toBe("Hide $& $$ $'");
 });

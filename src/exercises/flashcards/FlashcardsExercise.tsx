@@ -42,7 +42,11 @@ import { Frown, RotateCcw, Smile } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { resolveAsset, storageScope } from '@/lib/assets';
-import { TARGET_LANG } from '@/lib/lang';
+import {
+  NATIVE_LANGUAGE_NAME as NATIVE_NAME,
+  TARGET_LANG,
+  TARGET_LANGUAGE_NAME as TARGET_NAME,
+} from '@/lib/lang';
 import type { ExerciseComponentProps } from '@/exercises/lazy-registry';
 import {
   FlashcardsExerciseConfigSchema,
@@ -70,12 +74,6 @@ import { planExits, type PlannedExit } from '@/exercises/lib/flip-cue-exits';
 import { resolveLabel } from '@/config/ui-strings';
 import './flashcards.css';
 
-/** The learner's own language; the deck's `native` side. */
-const NATIVE_LANG = 'en';
-const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
-/** Face and direction labels, e.g. "Spanish" / "English", from the language code. */
-const TARGET_NAME = languageNames.of(TARGET_LANG) ?? TARGET_LANG;
-const NATIVE_NAME = languageNames.of(NATIVE_LANG) ?? NATIVE_LANG;
 /** Let the next front turn into view before its corner leaves. */
 const CUE_EXIT_START_MS = 350;
 

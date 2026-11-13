@@ -5,11 +5,20 @@
  *
  *   - semantic      the authored order: how the lesson groups the words.
  *   - alphabetical  by the visible term in the course language, ignoring case and
- *                   accents (an Intl.Collator at `base` sensitivity).
+ *                   accents and leading punctuation (`vocabularyCollator`).
  *   - reverse       alphabetical backwards — a second press of Alphabetical, as in
  *                   the reference.
  */
 export type VocabularySortMode = 'semantic' | 'alphabetical' | 'reverse';
+
+/**
+ * The one collator for ordering and sectioning the A–Z view: `base` sensitivity, and
+ * leading brackets and quotes skipped ("(с) кем" files under С), the same rule
+ * `firstLetter` applies to headings, so a section is never split by the sort.
+ */
+export function vocabularyCollator(lang: string): Intl.Collator {
+  return new Intl.Collator(lang, { sensitivity: 'base', ignorePunctuation: true });
+}
 
 /** A new list in the requested order; the authored list is never reordered. */
 export function sortVocabulary<T extends { readonly term: string }>(
@@ -18,7 +27,7 @@ export function sortVocabulary<T extends { readonly term: string }>(
   lang: string,
 ): T[] {
   if (mode === 'semantic') return [...items];
-  const collator = new Intl.Collator(lang, { sensitivity: 'base' });
+  const collator = vocabularyCollator(lang);
   const sorted = [...items].sort((a, b) => collator.compare(a.term, b.term));
   return mode === 'reverse' ? sorted.reverse() : sorted;
 }

@@ -64,3 +64,24 @@ test('a clip that cannot load shows "Sound unavailable"', async ({ page }) => {
   await expect(failed).toHaveAttribute('title', 'Sound unavailable');
   await expect(failed).toHaveClass(/\bstopped\b/);
 });
+
+test.describe('on a phone', () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  test('a tap anywhere on a row plays its clip; a tap on its text box does not (E62)', async ({
+    page,
+  }) => {
+    await recordPlayback(page);
+    await openShowcase(page);
+    const row = card(page, 'inline-gap-audio').locator('[data-row-clip]').first();
+
+    await row.locator('input').first().tap();
+    await expect(row.locator('input').first()).toBeFocused();
+    expect(await mediaLog(page)).toEqual([]);
+
+    await row.getByText('de Madrid.').tap();
+    await expect
+      .poll(() => mediaLog(page))
+      .toEqual([expect.stringMatching(`^playing .*${CLIP}$`), expect.stringMatching(`^ended `)]);
+  });
+});

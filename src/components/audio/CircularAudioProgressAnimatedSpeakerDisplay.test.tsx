@@ -62,3 +62,18 @@ describe('speaker whose sound could not play', () => {
     expect(playable).toContain('aria-label="Click to play"');
   });
 });
+
+// E62: a row click finds its speaker by this marker, never as "the first button".
+describe('row-clip marker', () => {
+  test('the interactive speaker carries data-row-clip-speaker', () => {
+    const html = renderToStaticMarkup(<CircularAudioProgressAnimatedSpeakerDisplay />);
+    expect(html).toMatch(/<button[^>]*data-row-clip-speaker=""/);
+  });
+
+  test('the decorative speaker does not', () => {
+    const html = renderToStaticMarkup(
+      <CircularAudioProgressAnimatedSpeakerDisplay interactive={false} />,
+    );
+    expect(html).not.toContain('data-row-clip-speaker');
+  });
+});

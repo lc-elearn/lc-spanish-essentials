@@ -56,7 +56,8 @@ test('vocabulary block renders a <dl>, term in target language and gloss in UI l
   expect(html).toContain('<dl');
   expect(html).toContain('<dt');
   expect(html).toContain('<dd');
-  expect(html).toMatch(new RegExp(`<dt[^>]*lang="${TARGET_LANG}"`));
+  expect(html).not.toMatch(/<dt[^>]*lang=/);
+  expect(html).toContain(`<span lang="${TARGET_LANG}">buenos días</span>`);
   expect(html).toContain('buenos días');
   expect(html).toContain('good morning');
   expect(html).not.toMatch(new RegExp(`<dd[^>]*lang="${TARGET_LANG}"`));

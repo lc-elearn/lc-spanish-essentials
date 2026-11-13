@@ -104,25 +104,25 @@ fixed `BASE_URL`, and that is what makes it work. **Guard c** checks the form;
 
 ## `src/` — the application
 
-| Folder               | Owns                                                                                                                                                                                                        |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/exercises/`     | **The engines.** One folder per exercise type, plus `lib/` (shared shell), `text-entry/` (the runtime dictation and typed-transform share) and the registry.                                                |
-| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page; decides which lessons the course lists or opens on (`course-lessons.ts`); renders an exercise set's tabs (`ExerciseSet.tsx`).   |
-| `src/components/`    | **The page shell** — header, LO hero, footer, landing page + lesson rail, the tab UI tabs blocks and exercise sets share (`shell/TabSet.tsx`), audio players, `ui/` primitives.                             |
-| `src/config/`        | **The content contract** — Zod schemas, course config (with the `home` setting and its Node reader, `course-json-disk.ts`), UI strings.                                                                     |
-| `src/styles/`        | **The theme** — the token chain. See [`DESIGNER.md`](DESIGNER.md).                                                                                                                                          |
-| `src/guards/`        | **The eight repo-wide invariant sweeps** (guards b–i; guard a is the Zod schemas in `src/config/` and each engine's `<type>-schema.ts`). `bun run guards`.                                                  |
-| `src/build/`         | Build-time helpers importable by Vite — prerender HTML, dev-server LO pages, docs→HTML, debug entries, `@source` check.                                                                                     |
-| `src/lib/`           | Small shared utilities — asset paths, heading ids, language tagging, reduced motion, scroll-to-top, scroll-spy rules, the icon sprite.                                                                      |
-| `src/hooks/`         | React hooks — theme, hydration state, viewport, scroll-spy, reveal-while-in-view.                                                                                                                           |
-| `src/audio/`         | Audio playback manager and its hook.                                                                                                                                                                        |
-| `src/showcase/`      | The opt-in debug gallery of every engine with sample content, then exercise sets with every engine in a tab (`exercise-sets.ts`).                                                                           |
-| `src/ui-showcase/`   | The opt-in debug gallery of every block type, plain and as a card, through the course page's own `LoBlock`.                                                                                                 |
-| `src/code-style/`    | The opt-in Code style page: `docs/STYLE.md` rendered with its examples, from the markdown itself.                                                                                                           |
-| `src/culp-syllabi/`  | The opt-in CULP syllabi page: `docs/culp-syllabi/README.md` rendered, how the notes are organised and the skill that reads them.                                                                            |
-| `src/claude-skills/` | The opt-in Claude skills page: a card per `.claude/skills/*/SKILL.md`, its recipe, and the skills README.                                                                                                   |
-| `src/sandbox/`       | The opt-in debug sandbox — tokens, type, the icon sprite, the docs hub and the palette preview.                                                                                                             |
-| `src/docs/`          | Documentation checks — the `STRUCTURE.md` tree generator, its freshness test, the markdown link check, the Claude skills' shape, the CULP syllabus notes, the `CODEOWNERS` path policy and the CI workflow. |
+| Folder               | Owns                                                                                                                                                                                                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/exercises/`     | **The engines.** One folder per exercise type, plus `lib/` (shared shell), `text-entry/` (the runtime dictation and typed-transform share) and the registry.                                                                                                                                  |
+| `src/lo/`            | **The loader.** Reads an LO folder, validates it, assembles it into a page; decides which lessons the course lists or opens on (`course-lessons.ts`); renders an exercise set's tabs (`ExerciseSet.tsx`); a block's `options` are checked per block type (`blocks/block-options-schemas.ts`). |
+| `src/components/`    | **The page shell** — header, LO hero, footer, landing page + lesson rail, the tab UI tabs blocks and exercise sets share (`shell/TabSet.tsx`), audio players, `ui/` primitives.                                                                                                               |
+| `src/config/`        | **The content contract** — Zod schemas, course config (with the `home` setting and its Node reader, `course-json-disk.ts`), UI strings.                                                                                                                                                       |
+| `src/styles/`        | **The theme** — the token chain. See [`DESIGNER.md`](DESIGNER.md).                                                                                                                                                                                                                            |
+| `src/guards/`        | **The eight repo-wide invariant sweeps** (guards b–i; guard a is the Zod schemas in `src/config/` and each engine's `<type>-schema.ts`). `bun run guards`.                                                                                                                                    |
+| `src/build/`         | Build-time helpers importable by Vite — prerender HTML, dev-server LO pages, docs→HTML, debug entries, `@source` check.                                                                                                                                                                       |
+| `src/lib/`           | Small shared utilities — asset paths, heading ids, language tagging, reduced motion, scroll-to-top, scroll-spy rules, the icon sprite.                                                                                                                                                        |
+| `src/hooks/`         | React hooks — theme, hydration state, viewport, scroll-spy, reveal-while-in-view.                                                                                                                                                                                                             |
+| `src/audio/`         | Audio playback manager and its hook; `row-clip.ts`, the helper a row uses to play its clip from a click anywhere on it.                                                                                                                                                                       |
+| `src/showcase/`      | The opt-in debug gallery of every engine with sample content, then exercise sets with every engine in a tab (`exercise-sets.ts`).                                                                                                                                                             |
+| `src/ui-showcase/`   | The opt-in debug gallery of every block type, plain and as a card, through the course page's own `LoBlock`.                                                                                                                                                                                   |
+| `src/code-style/`    | The opt-in Code style page: `docs/STYLE.md` rendered with its examples, from the markdown itself.                                                                                                                                                                                             |
+| `src/culp-syllabi/`  | The opt-in CULP syllabi page: `docs/culp-syllabi/README.md` rendered, how the notes are organised and the skill that reads them.                                                                                                                                                              |
+| `src/claude-skills/` | The opt-in Claude skills page: a card per `.claude/skills/*/SKILL.md`, its recipe, and the skills README.                                                                                                                                                                                     |
+| `src/sandbox/`       | The opt-in debug sandbox — tokens, type, the icon sprite, the docs hub and the palette preview.                                                                                                                                                                                               |
+| `src/docs/`          | Documentation checks — the `STRUCTURE.md` tree generator, its freshness test, the markdown link check, the Claude skills' shape, the CULP syllabus notes, the `CODEOWNERS` path policy and the CI workflow.                                                                                   |
 
 ### Inside `src/exercises/`
 
@@ -246,7 +246,8 @@ as far as the tree is concerned.
 │       ├── build-for-upload/
 │       ├── change-theme/
 │       ├── culp-syllabus/
-│       └── sync-from-template/
+│       ├── sync-from-template/
+│       └── team-status/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   └── workflows/

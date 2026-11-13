@@ -30,6 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import AudioManager from '@/audio/AudioManager';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
 import { AudioClip } from '@/components/audio/AudioClip';
 import type { ExerciseOptions } from '@/config/lo-schema';
 import type { UiStringsOverride } from '@/config/ui-strings';
@@ -158,7 +159,12 @@ export function TextEntryRuntime({
     // Cells keep TableCell's align-middle: the 54px speaker is taller than the input,
     // so top-aligned cells left the prompt and input riding high (2026-10-08).
     return (
-      <TableRow key={`row-${rowIndex}`}>
+      <TableRow
+        key={`row-${rowIndex}`}
+        onClick={row.audio ? playRowClip : undefined}
+        data-row-clip={row.audio ? '' : undefined}
+        className={row.audio ? ROW_CLIP_CLASSES : undefined}
+      >
         {hasAudio ? (
           <TableCell className="w-12">
             {row.audio ? (

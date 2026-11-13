@@ -17,6 +17,7 @@
  */
 import type { ComponentType } from 'react';
 import type { BlockConfig } from '@/config/lo-schema';
+import type { UiStringsOverride } from '@/config/ui-strings';
 import { OutcomesBlock } from './OutcomesBlock';
 import { SourcesBlock } from './SourcesBlock';
 import { TabsBlock } from './TabsBlock';
@@ -28,10 +29,16 @@ import { VocabularyBlock } from './VocabularyBlock';
  * its `presentation`. Most renderers ignore the latter; a renderer with its own
  * headings needs it, because a plain block sits under the section's <h2> and a card
  * under the accordion's <h3>.
+ *
+ * `options` (E63) are the block's raw per-type switches, already checked at load by
+ * `BlockConfigSchema`; the renderer re-parses them for their defaults
+ * (`parseBlockOptions`). `labels` is the block's override of the UI strings.
  */
 export interface BlockRendererProps {
   content: unknown;
   presentation?: BlockConfig['presentation'];
+  options?: unknown;
+  labels?: UiStringsOverride;
 }
 
 export type BlockRenderer = ComponentType<BlockRendererProps>;
