@@ -1,59 +1,74 @@
 /**
- * VocabularyBlock — `type: "vocabulary"`. A term/gloss list, rendered as a `<dl>`:
- * the description-list element IS the semantic for "term and its definition", so no
- * `<ul>` of `<span>` pairs.
+ * VocabularyBlock — `type: "vocabulary"`. A term/gloss list, rendered as `<dl>`s: the
+ * description-list element IS the semantic for "term and its definition", so no `<ul>`
+ * of `<span>` pairs.
  *
  * `lang` (spec §3, WCAG 3.1.2) is per-part, not per-block: the TERM is target
- * language, its GLOSS is the UI language, so only the `<dt>` carries TARGET_LANG.
+ * language, its GLOSS is the UI language, so TARGET_LANG sits on a span around the term
+ * text, never on the `<dt>` (whose speaker and Reveal button are UI-language chrome).
  *
- * A term may carry a CLIP of itself being said. It renders as the same speaker button
- * `RichText` uses for an inline audio node, so audio looks and behaves the same
- * wherever a learner meets it.
+ * A WORD BANK (E63, docs/specs/2026-11-12-vocabulary-word-bank-design.md). One list per
+ * lesson, each word written and recorded once, shown two ways: the topic view (the
+ * authored order, grouped by `topics`) and the A–Z view (the course language's order,
+ * with letter headings when `options.letterHeadings`). `options.selfTest` adds Hide
+ * {language} / Hide English, and a Reveal button per hidden word. Everything new is
+ * off by default: a block with only `items` renders as before (W3).
  *
- * The button sits inside the `<dt>` and BEFORE the word. Inside, because a control in
- * a column of its own is separated from the thing it plays for anyone navigating by
- * element. Before, because it gives every row one shared left edge to scan down and
- * click, and because a vocabulary list is heard before it is read — the clip is the
- * way in to the word, not an afterthought hung off its end.
+ * This file holds the state; the list is VocabularySections and VocabularyRow, the
+ * buttons VocabularyControls, and the rules are pure modules beside them
+ * (vocabulary-views, -letters, -self-test), each with its own tests.
  */
-import { useState, type MouseEvent } from 'react';
-import { ArrowDownAZ, ArrowUpZA, CircleCheck, Layers } from 'lucide-react';
-import { AudioClip } from '@/components/audio/AudioClip';
+import { useReducer, useState } from 'react';
+import { CircleCheck } from 'lucide-react';
 import Callout from '@/components/shell/Callout';
-import { buttonVariants } from '@/components/ui/button';
 import { TARGET_LANG } from '@/lib/lang';
 import { RichText } from '../rich-text/RichText';
-import { parseBlockContent } from './parse-block-content';
+import type { BlockRendererProps } from './block-renderers';
+import { parseBlockContent, parseBlockOptions } from './parse-block-content';
 import { VocabularyBlockContentSchema } from './vocabulary-block-schema';
-import { nextSortMode, sortVocabulary, type VocabularySortMode } from './vocabulary-sort';
+import { VocabularyBlockOptionsSchema } from './vocabulary-options-schema';
+import { INITIAL_SELF_TEST, isAnyHidden, selfTestReducer } from './vocabulary-self-test';
+import { nextSortMode, type VocabularySortMode } from './vocabulary-sort';
+import { offersBothViews, sectionsFor, viewFor } from './vocabulary-views';
+import { SelfTestButtons, ViewButtons } from './VocabularyControls';
+import { VocabularySections } from './VocabularySections';
 
-/**
- * Forward a click anywhere on the row to the row's own speaker button.
- *
- * Ported from french-lo-1's `handleRowClick` (PhraseTable.jsx), including the reason
- * it DELEGATES rather than playing the clip itself: the button already owns the
- * playback state — what is playing, the progress ring, stopping every other clip —
- * so a second entry point that called the audio layer directly would be a second
- * source of truth for the same fact.
- *
- * Returns early when the click landed on the button, or the press began on it: the
- * button's own handler is about to run, and firing this too would toggle it twice and
- * leave a clip stopped the instant it started.
- */
-function playRowClip(event: MouseEvent<HTMLDivElement>): void {
-  const target = event.target instanceof Element ? event.target : null;
-  if (target?.closest('button')) return;
-  event.currentTarget.querySelector('button')?.click();
-}
-
-export function VocabularyBlock({ content }: { content: unknown }) {
-  const { items, summary } = parseBlockContent('vocabulary', VocabularyBlockContentSchema, content);
-  // Semantic (authored) order on the first render, so prerendered markup and the
-  // first client render agree; the learner re-sorts with the buttons below.
+export function VocabularyBlock({
+  content,
+  options,
+  labels,
+  presentation = 'card',
+}: BlockRendererProps) {
+  const {
+    items: authored,
+    summary,
+    topics,
+  } = parseBlockContent('vocabulary', VocabularyBlockContentSchema, content);
+  const items = authored.map((item, index) => ({ ...item, index }));
+  const { selfTest, letterHeadings } = parseBlockOptions(
+    'vocabulary',
+    VocabularyBlockOptionsSchema,
+    options,
+  );
+  // The topic view, nothing hidden, on the first render: the prerendered markup and
+  // the first client render agree. The learner changes both with the buttons.
   const [sortMode, setSortMode] = useState<VocabularySortMode>('semantic');
-  const shown = sortVocabulary(items, sortMode, TARGET_LANG);
-  const isAlphabetical = sortMode !== 'semantic';
-  const AlphabeticalIcon = sortMode === 'reverse' ? ArrowUpZA : ArrowDownAZ;
+  const [test, dispatch] = useReducer(selfTestReducer, INITIAL_SELF_TEST);
+  const { view, sections } = sectionsFor(items, {
+    mode: sortMode,
+    topics,
+    lang: TARGET_LANG,
+    letterHeadings,
+  });
+  const shownIndexes = sections.flatMap((section) => section.items.map((item) => item.index));
+  const showViews = offersBothViews(items);
+
+  const choose = (pressed: 'semantic' | 'alphabetical') => {
+    const next = nextSortMode(sortMode, pressed);
+    // Switching view clears what was revealed; reversing the A–Z view does not.
+    if (viewFor(next, items) !== view) dispatch({ type: 'switch-view' });
+    setSortMode(next);
+  };
 
   return (
     <div className="grid gap-6">
@@ -76,81 +91,28 @@ export function VocabularyBlock({ content }: { content: unknown }) {
         </Callout>
       )}
 
-      {items.length < 2 ? null : (
-        // Semantic | Alphabetical (french-lo-1's PhraseTable): the pressed one is
-        // filled. A second press of Alphabetical reverses the order (Z→A).
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Sort the vocabulary">
-          {/* Native buttons styled by buttonVariants: the Button component would pull
-              Base UI's primitive into main-*.js, over the JS budget (docs/TOOLING.md). */}
-          <button
-            type="button"
-            className={buttonVariants({
-              variant: isAlphabetical ? 'outline' : 'default',
-              size: 'lg',
-            })}
-            aria-pressed={!isAlphabetical}
-            onClick={() => setSortMode((mode) => nextSortMode(mode, 'semantic'))}
-          >
-            <Layers aria-hidden="true" />
-            Semantic
-          </button>
-          <button
-            type="button"
-            className={buttonVariants({
-              variant: isAlphabetical ? 'default' : 'outline',
-              size: 'lg',
-            })}
-            aria-pressed={isAlphabetical}
-            onClick={() => setSortMode((mode) => nextSortMode(mode, 'alphabetical'))}
-          >
-            <AlphabeticalIcon aria-hidden="true" />
-            Alphabetical
-          </button>
+      {showViews || selfTest ? (
+        <div className="flex flex-wrap gap-x-6 gap-y-3">
+          {showViews ? <ViewButtons sortMode={sortMode} labels={labels} onChoose={choose} /> : null}
+          {selfTest ? (
+            <SelfTestButtons
+              hidden={test.hidden}
+              labels={labels}
+              onHide={(side) => dispatch({ type: 'hide', side })}
+            />
+          ) : null}
         </div>
-      )}
+      ) : null}
 
-      <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
-        {shown.map((item) => (
-          // THE WHOLE ROW PLAYS THE CLIP, and it is a MOUSE affordance only — no role,
-          // no tabIndex, no key handler, so it never enters the accessibility tree. That
-          // is deliberate, not an omission: the speaker inside is a real <button>, so
-          // keyboard and screen-reader users already have the clip on one tab stop.
-          // Giving the row a role as well would announce and tab-stop every word twice
-          // to buy those users nothing. WCAG asks for equivalent keyboard access, which
-          // the button is — it does not ask every mouse convenience to be duplicated.
-          //
-          // Only a row WITH a clip gets the cursor and the hover: a pointer over a row
-          // that does nothing is a promise the page cannot keep.
-          // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- mouse-only enhancement over the speaker <button>, which is the keyboard path; see above
-          <div
-            key={item.term}
-            onClick={item.audio === undefined ? undefined : playRowClip}
-            className={`grid gap-x-6 rounded-md sm:col-span-2 sm:grid-cols-subgrid ${
-              item.audio === undefined
-                ? ''
-                : 'cursor-pointer transition-colors hover:bg-muted motion-reduce:transition-none'
-            }`}
-          >
-            <dt lang={TARGET_LANG} className="flex items-center gap-2 font-medium text-foreground">
-              {item.audio === undefined ? null : (
-                // The same speaker `RichText` renders for an inline audio node, so a
-                // clip looks and behaves identically wherever it appears. `title` is
-                // its accessible name: the button has no text of its own, and "play"
-                // alone would be identical on every row of the list.
-                <AudioClip
-                  className="super-compact-speaker"
-                  inline
-                  soundFile={item.audio}
-                  title={`Listen: ${item.term}`}
-                />
-              )}
-              {item.term}
-            </dt>
-            {/* Centred like the term, which sits beside a 54px speaker. */}
-            <dd className="self-center text-muted-foreground">{item.gloss}</dd>
-          </div>
-        ))}
-      </dl>
+      <VocabularySections
+        sections={sections}
+        headingLevel={presentation === 'plain' ? 'h3' : 'h4'}
+        letters={view === 'alphabetical'}
+        test={test}
+        rowClicks={!isAnyHidden(test, shownIndexes)}
+        labels={labels}
+        onReveal={(entry, row) => dispatch({ type: 'reveal', entry, row })}
+      />
     </div>
   );
 }

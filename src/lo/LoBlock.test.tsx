@@ -30,6 +30,24 @@ describe('LoBlock', () => {
     expect(html).toContain('Body paragraph.');
   });
 
+  // E63: the renderer gets the block's options and its labels override.
+  it("passes a block's options and labels to its renderer", () => {
+    const html = render({
+      type: 'vocabulary',
+      title: 'Words',
+      labels: { vocabularySemantic: 'By topic' },
+      options: { selfTest: true },
+      content: {
+        items: [
+          { term: 'hola', gloss: 'hello' },
+          { term: 'adiós', gloss: 'goodbye' },
+        ],
+      },
+    });
+    expect(html).toContain('By topic');
+    expect(html).toContain('aria-label="Test yourself"');
+  });
+
   it('says so visibly when a block type has no renderer', () => {
     const html = render({ type: 'nope', presentation: 'plain', content: {} });
     expect(html).toContain('No renderer registered for block type <code>nope</code>');

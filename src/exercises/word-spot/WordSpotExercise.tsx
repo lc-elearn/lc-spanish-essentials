@@ -19,6 +19,8 @@
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §2, §5.3, §7, §8.
  */
 import { useReducer } from 'react';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { ExerciseOptionsSchema } from '@/config/lo-schema';
@@ -96,7 +98,13 @@ export default function WordSpotExercise({ config }: ExerciseComponentProps) {
     <div className="word-spot">
       <ol className="word-spot-lines" aria-label="Spot the target part-words">
         {rows.map((row, rowIndex) => (
-          <li className="word-spot-row" key={`row-${rowIndex}`}>
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events -- pointer-only enhancement (mouse and touch) over the speaker <button>, which is the keyboard path; see src/audio/row-clip.ts
+          <li
+            className={cn('word-spot-row', row.audio && ROW_CLIP_CLASSES)}
+            key={`row-${rowIndex}`}
+            onClick={row.audio ? playRowClip : undefined}
+            data-row-clip={row.audio ? '' : undefined}
+          >
             {row.audio ? (
               <AudioClip className="super-compact-speaker" soundFile={row.audio} inline />
             ) : null}

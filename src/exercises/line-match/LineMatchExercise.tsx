@@ -27,6 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
+import { cn } from '@/lib/utils';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { ExerciseOptionsSchema, type ExerciseOptions } from '@/config/lo-schema';
 import type { UiStringsOverride } from '@/config/ui-strings';
@@ -365,9 +367,15 @@ export default function LineMatchExercise({ config }: ExerciseComponentProps) {
     const selectId = `${uid}-match-${key}`;
 
     return (
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events -- pointer-only enhancement (mouse and touch) over the speaker <button>, which is the keyboard path; see src/audio/row-clip.ts
       <li
-        className="flex items-center gap-3 rounded-xl border border-border/70 bg-card p-3"
+        className={cn(
+          'flex items-center gap-3 rounded-xl border border-border/70 bg-card p-3',
+          item.audio && ROW_CLIP_CLASSES,
+        )}
         key={`line-match-row-${key}`}
+        onClick={item.audio ? playRowClip : undefined}
+        data-row-clip={item.audio ? '' : undefined}
       >
         {item.audio ? (
           <AudioClip

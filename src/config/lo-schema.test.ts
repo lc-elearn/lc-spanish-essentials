@@ -550,3 +550,54 @@ test.each([
   expect(error).toMatch(/used twice/);
   expect(error).toContain(`at ${at}`);
 });
+
+// E63 (spec §3): a block may carry `options`, checked per block type as an exercise's
+// are per engine. Only `vocabulary` takes any today.
+test('BlockConfigSchema: a vocabulary block accepts its two options', () => {
+  const parsed = BlockConfigSchema.parse({
+    type: 'vocabulary',
+    title: 'Vocabulary',
+    options: { selfTest: true, letterHeadings: true },
+    content: {},
+  });
+  expect(parsed.options).toEqual({ selfTest: true, letterHeadings: true });
+});
+
+test('BlockConfigSchema: a block without options still parses, options undefined', () => {
+  expect(BlockConfigSchema.parse({ type: 'vocabulary', title: 'V', content: {} }).options).toBe(
+    undefined,
+  );
+});
+
+test('BlockConfigSchema: an unknown vocabulary option fails, naming the key', () => {
+  const result = BlockConfigSchema.safeParse({
+    type: 'vocabulary',
+    title: 'V',
+    options: { selfTset: true },
+    content: {},
+  });
+  expect(result.success).toBe(false);
+  expect(z.prettifyError(result.error as z.ZodError)).toMatch(/selfTset[\s\S]*options/);
+});
+
+test('BlockConfigSchema: a vocabulary option of the wrong type fails', () => {
+  expect(
+    BlockConfigSchema.safeParse({
+      type: 'vocabulary',
+      title: 'V',
+      options: { letterHeadings: 'yes' },
+      content: {},
+    }).success,
+  ).toBe(false);
+});
+
+test('BlockConfigSchema: a block type with no options refuses an options object', () => {
+  const result = BlockConfigSchema.safeParse({
+    type: 'prose',
+    title: 'P',
+    options: {},
+    content: {},
+  });
+  expect(result.success).toBe(false);
+  expect(z.prettifyError(result.error as z.ZodError)).toContain('A prose block takes no options');
+});

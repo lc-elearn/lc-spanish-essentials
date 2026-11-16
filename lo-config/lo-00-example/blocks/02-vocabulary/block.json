@@ -1,30 +1,42 @@
 {
   "type": "vocabulary",
   "title": "Placeholder vocabulary list",
+  "options": { "selfTest": true, "letterHeadings": true },
   "content": {
     "summary": {
       "lead": "You will learn:",
       "items": [
-        "Placeholder group one (<em>term one, term two</em>).",
-        "Placeholder group two (<em>term three</em>).",
-        "Replace these lines with what the list teaches — the sort buttons below reorder it semantically or alphabetically."
+        "Placeholder group one (<em>term one, phrase two</em>).",
+        "Placeholder group two (<em>another term</em>).",
+        "Replace these lines with what the list teaches — Semantic shows it by topic, Alphabetical from A to Z, and Test yourself hides one side."
       ]
     },
+    "topics": [{ "id": "group-one", "heading": "Placeholder topic one" }, { "id": "group-two" }],
     "items": [
       {
         "term": "Placeholder term one",
         "gloss": "placeholder gloss one",
-        "audio": "audio/lo-00-example/placeholder.m4a"
+        "audio": "audio/lo-00-example/placeholder.m4a",
+        "topic": "group-one"
       },
       {
-        "term": "Placeholder term two",
+        "term": "Placeholder phrase two",
         "gloss": "placeholder gloss two",
-        "audio": "audio/lo-00-example/placeholder.m4a"
+        "audio": "audio/lo-00-example/placeholder.m4a",
+        "topic": "group-one",
+        "only": "topics"
       },
       {
-        "term": "Placeholder term three",
+        "term": "Another placeholder term",
         "gloss": "placeholder gloss three",
-        "audio": "audio/lo-00-example/placeholder.m4a"
+        "audio": "audio/lo-00-example/placeholder.m4a",
+        "topic": ["group-one", "group-two"]
+      },
+      {
+        "term": "Headword placeholder",
+        "gloss": "placeholder gloss four",
+        "audio": "audio/lo-00-example/placeholder.m4a",
+        "only": "alphabetical"
       }
     ]
   }

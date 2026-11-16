@@ -53,7 +53,14 @@ function blockBody(config: BlockConfig): ReactNode {
       </p>
     );
   }
-  return <Renderer content={config.content} presentation={config.presentation} />;
+  return (
+    <Renderer
+      content={config.content}
+      presentation={config.presentation}
+      options={config.options}
+      labels={config.labels}
+    />
+  );
 }
 
 interface LoBlockProps {

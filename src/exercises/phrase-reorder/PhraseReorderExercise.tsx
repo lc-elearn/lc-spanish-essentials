@@ -17,6 +17,8 @@
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §2, §5.2, §5.3, §7, §8.
  */
 import { useLayoutEffect, useReducer, useRef, type DragEvent } from 'react';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
+import { cn } from '@/lib/utils';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { ExerciseOptionsSchema } from '@/config/lo-schema';
 import type { ExerciseComponentProps } from '@/exercises/lazy-registry';
@@ -271,10 +273,13 @@ export default function PhraseReorderExercise({ config }: ExerciseComponentProps
           const isDragging = draggingId === token.id;
           const isDropTarget = dropTargetId === token.id && !isDragging;
           return (
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events -- pointer-only enhancement (mouse and touch) over the speaker <button>, which is the keyboard path; see src/audio/row-clip.ts
             <li
               key={`slot-${index}`}
-              className="phrase-reorder-row"
+              className={cn('phrase-reorder-row', row.audio && ROW_CLIP_CLASSES)}
               data-has-prompt={showPromptColumn}
+              onClick={row.audio ? playRowClip : undefined}
+              data-row-clip={row.audio ? '' : undefined}
             >
               <div className="phrase-reorder-audio">
                 {row.audio ? (

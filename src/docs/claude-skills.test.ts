@@ -26,6 +26,7 @@ const SHIPPED_SKILLS = [
   'before-pr',
   'build-for-upload',
   'culp-syllabus',
+  'team-status',
 ];
 const STEP_0 = '## Step 0 — Where am I';
 const STEP_1 = '## Step 1 — Test first';

@@ -45,6 +45,14 @@ transcript in a native `<details>` toggle); every
 panel is in the prerendered HTML, inactive ones carry `hidden`. A `sources` block is a
 references list: citations in `<ul>` groups, each with a print or web icon whose
 meaning is also given as screen-reader text.
+A `vocabulary` block is a word list in `<dl>`s, shown two ways by toggle buttons
+(`aria-pressed`): by topic (an entry may sit under several topics), under `<h4>` headings (`<h3>` in a plain block), and A to Z
+in the course language, optionally under letter headings. Its optional self-test
+(Hide <language> / Hide English) replaces one side of each entry with a Reveal button,
+the hidden word staying only as an invisible `aria-hidden` placeholder so the columns do
+not move; revealing moves focus to the word. A row that has its own recording (this block
+and several exercise types) plays it when tapped anywhere on the row, and the speaker
+button stays the keyboard route.
 
 Exercises sit in accordions after a section's blocks. An entry in a section's
 `exercises` list may also be an exercise set: a `title`, optional `instructions`, and

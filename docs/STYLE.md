@@ -224,6 +224,15 @@ it('keeps a fixed address when BASE_URL names one', () => {
   that must replay real DOM events opts in to happy-dom, per file
   ([`docs/TOOLING.md`](TOOLING.md), "Config").
 
+### A row with its own clip
+
+A row that carries its own recording plays it when clicked or tapped anywhere on the row,
+through `src/audio/row-clip.ts` (`onClick={playRowClip}`, `data-row-clip`,
+`ROW_CLIP_CLASSES`), never a copy of it. The speaker stays the keyboard path; the row gets
+no role or tab stop. Flashcards and memory match are the exception: a tap there turns the
+card over. Spec:
+[`docs/specs/2026-11-12-row-click-audio-design.md`](specs/2026-11-12-row-click-audio-design.md).
+
 ## When unsure
 
 Copy the nearest file that does the same kind of job, and match it. The engine recipe

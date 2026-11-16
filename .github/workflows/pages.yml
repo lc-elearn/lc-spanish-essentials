@@ -1,0 +1,78 @@
+name: Pages
+
+# Publishes main to GitHub Pages as a preview for the team and colleagues
+# (docs/specs/2026-11-13-github-pages-previews-design.md). Not the live course: that is
+# still built and uploaded by DEPLOY.md. Every course repo gets this file at its next
+# template update; it does nothing until the repo switches Pages on
+# (Settings → Pages → Source: GitHub Actions).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Two quick merges publish in order; neither is cancelled.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish
+    # Pages off (a course not yet switched on, a fork elsewhere): skip, no red ✗.
+    if: github.event.repository.has_pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      # Debug pages on the template's preview only (spec §3.1, P3). Empty is off, so
+      # every other repo, a renamed course included, builds the plain course.
+      DEBUG: ${{ github.repository == 'lc-elearn/lc-base-template' && '1' || '' }}
+    steps:
+      # Same set-up as ci.yml; see its notes on each pin.
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3'
+
+      - name: Set up Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # No tests here: main takes only pull requests that passed CI. No Feijoa fonts on
+      # GitHub either (AGENTS.md, hard constraint 5), so headings use Open Sans.
+      - name: Build
+        run: bun run build
+
+      - name: No debug pages in a course build
+        if: env.DEBUG == ''
+        run: bun scripts/check-no-debug-pages.ts
+
+      # Exact tags, adopted 2026-11-13, each older than the two weeks this repo waits
+      # before adopting (as ci.yml): configure-pages v6.0.0 (2026-03-25),
+      # upload-pages-artifact v5.0.0 (2026-04-10), deploy-pages v5.0.1 (2026-09-01).
+      - name: Configure Pages
+        uses: actions/configure-pages@v6.0.0
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: dist
+
+      - name: Publish
+        id: deploy
+        uses: actions/deploy-pages@v5.0.1

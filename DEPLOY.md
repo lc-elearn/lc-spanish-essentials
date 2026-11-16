@@ -328,6 +328,23 @@ folder: the demo carries internal test pages. On the demo site, open
 each viewer's own browser; "Reset" in the corner label undoes it. A new palette file
 needs a new demo build.
 
+## Preview on GitHub Pages
+
+Every course repo can publish its `main` as a **preview** at
+`https://lc-elearn.github.io/<repo>/`, listed on the landing page
+`https://lc-elearn.github.io/`. It is for the team and colleagues to try the course as it
+stands; it is **not** the live course, which is still built and uploaded by steps 1–9.
+
+- **Switch it on once:** the repo's **Settings → Pages → Source: GitHub Actions**. From
+  then on, every merge to `main` publishes (`.github/workflows/pages.yml`); before that,
+  the workflow skips.
+- **What it shows:** the course without the Feijoa fonts (headings in Open Sans) and
+  without debug pages. Only the template's own preview has the debug pages.
+- **Who can see it:** anyone with the link. Search engines are asked not to list it
+  (`robots.txt` on the landing repo), but it is not private.
+
+Design: [`docs/specs/2026-11-13-github-pages-previews-design.md`](docs/specs/2026-11-13-github-pages-previews-design.md).
+
 ## Never
 
 - commit the Feijoa files, or put them anywhere public other than the built site;

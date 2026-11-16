@@ -379,6 +379,11 @@ Right after creating it, in the new course repo:
    availability does not. Private repositories are a different case: on GitHub Free
    they are not covered by that statement, so nothing here is assumed for one.
 
+6. **Switch on its preview:** Settings → Pages → Source: **GitHub Actions**. The course
+   then publishes to `https://lc-elearn.github.io/<repo>/` on every merge to `main` and
+   appears on `https://lc-elearn.github.io/` within the hour
+   ([`DEPLOY.md` → "Preview on GitHub Pages"](../DEPLOY.md#preview-on-github-pages)).
+
 **Done 2026-11-05** (work iMac, as `pedbad`), from template `main` at `c2e6cbe` (its push
 CI, run 42010809276, green on all five jobs): `lc-spanish-essentials`,
 `lc-french-academic-reading` and `lc-german-basic`, each forked into `lc-elearn` through the

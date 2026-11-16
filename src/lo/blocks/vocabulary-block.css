@@ -1,0 +1,35 @@
+/**
+ * vocabulary-block.css — the A–Z view's letter headings (E63, spec §4, W6) and the
+ * self-test's hidden word (§5). Headings: the letter centred, with a thin rule either side. The rules are empty ::before/::after boxes, so
+ * they are drawn and never announced: the heading reads as its letter alone. Plain CSS
+ * rather than utilities: a pseudo-element pair is unreadable as arbitrary values.
+ * Pinned by vocabulary-block-css.test.ts.
+ */
+@layer components {
+  .vocabulary-letter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .vocabulary-letter::before,
+  .vocabulary-letter::after {
+    content: '';
+    flex: 1;
+    border-block-start: 1px solid var(--border);
+  }
+
+  /*
+   * A hidden word (self-test, spec §5): its invisible text and its Reveal button share
+   * one grid cell, so the cell is as wide as the word and the other column does not
+   * jump when a side is hidden.
+   */
+  .vocabulary-hidden-word {
+    display: inline-grid;
+    place-items: center start;
+  }
+
+  .vocabulary-hidden-word > * {
+    grid-area: 1 / 1;
+  }
+}

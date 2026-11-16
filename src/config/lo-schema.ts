@@ -43,6 +43,7 @@ import { UiStringsOverrideSchema } from './ui-strings';
 import { EXERCISE_TYPE_KEYS } from './exercise-types';
 // Relative, like every other import in this file.
 import { SetTabMediaSchema } from '../lo/blocks/media-schema';
+import { blockOptionsSchema } from '../lo/blocks/block-options-schemas';
 
 /**
  * Shared behavior switches for ANY exercise (spec §5/§6). One shape for all 15
@@ -113,6 +114,12 @@ export const BlockConfigSchema = z
      */
     defaultOpen: z.boolean().default(false),
     labels: UiStringsOverrideSchema.optional(),
+    /**
+     * Per-type switches (E63, spec §3). Loose here, as `content` is; the superRefine
+     * below checks them against the type's own schema (`block-options-schemas.ts`), so
+     * an unknown key or a type that takes no options fails at load, naming the file.
+     */
+    options: z.looseObject({}).optional(),
     content: z.looseObject({}),
   })
   // A card block is headed by its title, so it must have one.
@@ -132,6 +139,25 @@ export const BlockConfigSchema = z
   .refine((block) => block.presentation !== 'plain' || block.defaultOpen !== true, {
     path: ['defaultOpen'],
     message: 'A plain block has no accordion to open — remove `defaultOpen`.',
+  })
+  // E63: options are checked per block type, as an exercise's are per engine. The
+  // renderer re-parses them for their defaults (`parseBlockOptions`).
+  .superRefine((block, ctx) => {
+    if (block.options === undefined) return;
+    const schema = blockOptionsSchema(block.type);
+    if (schema === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: `A ${block.type} block takes no options — remove \`options\`.`,
+      });
+      return;
+    }
+    const result = schema.safeParse(block.options);
+    if (result.success) return;
+    result.error.issues.forEach((issue) =>
+      ctx.addIssue({ code: 'custom', path: ['options', ...issue.path], message: issue.message }),
+    );
   });
 export type BlockConfig = z.infer<typeof BlockConfigSchema>;
 

@@ -155,6 +155,8 @@ function SpeakerDisplay({
       className={baseClass}
       style={targetStyle}
       onClick={handleClick}
+      // E62: the row-clip helper presses the row's speaker by this marker.
+      data-row-clip-speaker=""
     >
       <SpeakerSvg size={targetSize} offset={offset} isPlaying={status === 'playing'} />
     </button>

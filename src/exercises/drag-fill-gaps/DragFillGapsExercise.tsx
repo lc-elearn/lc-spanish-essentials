@@ -27,6 +27,8 @@
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §2, §5.2, §5.3, §7, §8.
  */
 import { useReducer, type DragEvent } from 'react';
+import { playRowClip, ROW_CLIP_CLASSES } from '@/audio/row-clip';
+import { cn } from '@/lib/utils';
 import { AudioClip } from '@/components/audio/AudioClip';
 import { ExerciseOptionsSchema } from '@/config/lo-schema';
 import { resolveLabel } from '@/config/ui-strings';
@@ -304,7 +306,13 @@ export default function DragFillGapsExercise({ config }: ExerciseComponentProps)
 
       <ol className="drag-fill-gaps-rows" aria-label="Sentences with blanks">
         {rows.map((row, rowIndex) => (
-          <li className="drag-fill-gaps-row" key={`row-${rowIndex}`}>
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events -- pointer-only enhancement (mouse and touch) over the speaker <button>, which is the keyboard path; see src/audio/row-clip.ts
+          <li
+            className={cn('drag-fill-gaps-row', row.audio && ROW_CLIP_CLASSES)}
+            key={`row-${rowIndex}`}
+            onClick={row.audio ? playRowClip : undefined}
+            data-row-clip={row.audio ? '' : undefined}
+          >
             {row.audio ? (
               <AudioClip className="super-compact-speaker" soundFile={row.audio} inline />
             ) : null}

@@ -291,6 +291,62 @@ two exercises.
 
 Design: [`docs/specs/2026-11-11-tab-exercises-design.md`](docs/specs/2026-11-11-tab-exercises-design.md).
 
+### Vocabulary block (word bank)
+
+A lesson's words and phrases, each written and recorded once, shown two ways: **Semantic**
+(by topic, in the order written) and **Alphabetical** (A to Z in the course language; a
+second press reverses it). `lo-00-example` has one in its Vocabulary section
+(`blocks/02-vocabulary/`).
+
+```json
+{
+  "type": "vocabulary",
+  "title": "Vocabulary",
+  "options": { "selfTest": true, "letterHeadings": true },
+  "content": {
+    "topics": [{ "id": "marriage", "heading": "Marriage" }, { "id": "attitudes" }],
+    "items": [
+      { "term": "брак", "gloss": "marriage", "audio": "…", "topic": "marriage" },
+      {
+        "term": "гражда́нский брак",
+        "gloss": "civil partnership",
+        "audio": "…",
+        "topic": "marriage",
+        "only": "topics"
+      },
+      { "term": "гражда́нский", "gloss": "civil", "audio": "…", "only": "alphabetical" },
+      { "term": "развод", "gloss": "divorce", "audio": "…", "topic": "attitudes" }
+    ]
+  }
+}
+```
+
+- `term` is the course language, `gloss` English, `audio` an optional recording of the term.
+- `only` keeps an entry to one view: `"topics"` (a phrase that belongs with its topic) or
+  `"alphabetical"` (a headword for the A–Z list). Without it, the entry shows in both.
+- `topics` (optional) groups the Semantic view, in the order listed; each entry shown
+  there names its group with `topic`; a word taught under two topics lists both
+  (`"topic": ["work", "unemployment"]`), shows under each, and shows once in A–Z. A topic without a `heading` shows as a line
+  (except the first, which shows nothing above it).
+- `options.letterHeadings` puts a letter over each run of the A–Z list. Which letters
+  share one (Russian ё with е, Spanish ñ on its own) is the course language's own
+  alphabetical order, not a rule of ours; a heading shows the base letter where the
+  language treats a marked letter as the same (German Ä under A) and keeps the mark where
+  it does not (Spanish Ñ, Russian Й).
+- `options.selfTest` adds `Hide {language}` and **Hide English**: one side of every
+  entry is replaced by a Reveal button. Both options are off by default.
+- The build fails, naming the entry, on: a `topic` not in `topics`; with `topics`, an
+  entry in the Semantic view with no `topic`; a topic nothing uses; `topic` with
+  `"only": "alphabetical"`; a topic listed twice in one entry; an empty `topic` list; in a word bank (one with
+  `topics` or `only`), the same `term` twice (a plain `items` list may repeat one); an `only` value other than
+  `"topics"` or `"alphabetical"`; a topic `id` declared twice; an empty `topics`; an
+  unknown key in `options`, on an entry or in a topic.
+- `labels` renames the buttons for one block, e.g.
+  `"labels": { "vocabularySemantic": "By topic" }`; the keys are in
+  `src/config/ui-strings.ts`.
+
+Design: [`docs/specs/2026-11-12-vocabulary-word-bank-design.md`](docs/specs/2026-11-12-vocabulary-word-bank-design.md).
+
 ### Sources block
 
 A references list: citations grouped under optional headings, each marked as a print or
@@ -632,11 +688,14 @@ course loses track of which template commits it has
 > registered in `SHOWCASE_FIXTURES` (`src/showcase/fixtures.ts`; guard e fails without
 > it), and the key needs its copy in `EXERCISE_INSTRUCTIONS`
 > (`src/exercises/lib/instructions.ts`; the build does not compile without it). See a recent engine
-> (`src/exercises/reading/`) as the reference shape.
+> (`src/exercises/reading/`) as the reference shape. An engine whose rows each carry a clip
+> plays it from anywhere on the row with `src/audio/row-clip.ts` (`docs/STYLE.md`, "A row
+> with its own clip").
 
 **Claude skills.** The recurring jobs (a lesson, an engine, a block type, the theme, a
 template sync, the check before a pull request, a build for upload, a level check
-against the CULP syllabi in [`docs/culp-syllabi/`](docs/culp-syllabi/README.md)) have
+against the CULP syllabi in [`docs/culp-syllabi/`](docs/culp-syllabi/README.md), the
+maintainer's read-only status report across the course repos) have
 recipes in [`.claude/skills/`](.claude/skills/), with a reviewer in
 [`.claude/agents/lc-reviewer.md`](.claude/agents/lc-reviewer.md). The code recipes start
 from a failing test. In a course repo they file a **Template request** issue on the
