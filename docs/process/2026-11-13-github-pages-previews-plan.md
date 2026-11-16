@@ -1581,7 +1581,7 @@ Open `https://lc-elearn.github.io/` in the built-in browser: the template card s
 
 ### Task 14: 🔒 each course, Russian first
 
-For each course, with its owner's agreement:
+For each course (the organisation Owner switches Pages on without asking the author, decided 2026-11-16):
 
 - [ ] **Step 1:** Bring the template update in with the `sync-from-template` skill (it carries `pages.yml`, `src/build/debug-pages-in.ts`, `scripts/check-no-debug-pages.ts`). The course's author opens and merges that pull request.
 - [ ] **Step 2:** Switch Pages on:

@@ -54,14 +54,18 @@ const LIST_CLASSES = [
   '@3xl:flex',
 ].join(' ');
 
-/** A folder tab; the active one joins the panel by covering the list's rule. */
+/** A folder tab; the active one joins the panel by covering the list's rule.
+ *  The `dark:` pair restates `border-b-card` after `border-primary`: the dark variant
+ *  (`&:is(.dark *)`) outranks a plain utility, so `dark:data-active:border-primary`
+ *  alone re-coloured the bottom too and drew a line under the active tab in dark mode
+ *  (e2e/tab-set.spec.ts). It must stay to override shadcn's `dark:…:border-input`. */
 const TRIGGER_CLASSES = [
   'h-auto flex-none cursor-pointer rounded-t-lg rounded-b-none border-2 border-transparent',
   'px-5 py-3',
   'text-center text-base font-normal whitespace-normal text-foreground dark:text-foreground',
   'hover:bg-card data-active:-mb-0.5 data-active:border-primary data-active:border-b-card',
   'data-active:bg-card data-active:font-semibold',
-  'dark:data-active:border-primary dark:data-active:bg-card',
+  'dark:data-active:border-primary dark:data-active:border-b-card dark:data-active:bg-card',
   'group-data-[variant=default]/tabs-list:data-active:shadow-none focus-visible:ring-0',
   FOCUS_OUTLINE,
 ].join(' ');

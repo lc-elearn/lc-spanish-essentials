@@ -169,6 +169,11 @@ it changes a file you also changed, so add your own lesson folders and media and
 the template's own files alone. If `git merge main` reports a conflict, stop and ask the
 maintainer.
 
+Once your course's preview is switched on, every merge to `main` updates
+`https://lc-elearn.github.io/<your course>/` within a few minutes, and your course shows
+on the list at `https://lc-elearn.github.io/`. It is for trying the course, not the live
+course. Details: [`DEPLOY.md`](DEPLOY.md#preview-on-github-pages).
+
 ## Claude can help
 
 The repo comes with recipes that Claude Code follows, in

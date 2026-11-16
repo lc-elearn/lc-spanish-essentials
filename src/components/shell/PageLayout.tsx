@@ -102,7 +102,12 @@ export default function PageLayout({
       const id = currentHashId();
       if (!isSection(id)) return;
       holdSection(id);
-      document.getElementById(headingId(id))?.focus();
+      // preventScroll: `hashchange` fires as the link's smooth scroll STARTS, and a
+      // plain focus() scrolls the heading into view, which cuts that scroll short and
+      // parks the section low in the viewport until a second click (e2e/section-nav).
+      // The browser's own anchor scroll — or, for Back/Forward, its restored position —
+      // already puts the section where it belongs.
+      document.getElementById(headingId(id))?.focus({ preventScroll: true });
     }
 
     document.addEventListener('click', handleClick);

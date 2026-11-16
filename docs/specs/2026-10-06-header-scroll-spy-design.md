@@ -46,9 +46,12 @@ section until the reader scrolls again. Recomputing at the moment of release was
 rejected: a followed section that cannot reach the trigger line (one near the end) would
 be replaced by the last section the instant the jump finished, which reads as a bug.
 
-**Focus and hash.** The `hashchange` handler keeps moving focus to the section's `<h2>`
-exactly as before. The spy only ever calls `setState`; it never touches focus, the hash
-or history.
+**Focus and hash.** The `hashchange` handler keeps moving focus to the section's `<h2>`,
+with `preventScroll` (fixed 2026-11-16). `hashchange` fires as the link's smooth scroll
+starts, and a plain `focus()` scrolls the heading into view, which cut that scroll short:
+the section stopped just inside the viewport and reached its scroll margin only on a
+second click. Pinned by `e2e/section-nav.spec.ts`. The spy only ever calls `setState`;
+it never touches focus, the hash or history.
 
 **First render.** State starts as `''` on the server and on the first client render. The
 hash is read in an effect. The current `useState(currentHashId)` reads
