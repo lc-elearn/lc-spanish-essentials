@@ -1,0 +1,37 @@
+{
+  "title": "Pilot test lesson",
+  "description": "A placeholder Learning Object that shows authors the page chrome \u2014 sections, accordions, blocks, exercises and a popup \u2014 with filler content only.",
+  "image": "images/lo-placeholder.svg",
+  "hero": { "src": "images/lo-00-example/hero.svg" },
+  "sections": [
+    {
+      "id": "introduction",
+      "label": "Introduction",
+      "blocks": ["00-intro", "03-outcomes"]
+    },
+    {
+      "id": "vocabulary",
+      "label": "Vocabulary",
+      "blocks": ["05-intro", "02-vocabulary"]
+    },
+    {
+      "id": "grammar",
+      "label": "Grammar: formal and informal address",
+      "navLabel": "Grammar",
+      "blocks": ["06-intro", "01-grammar", "04-tabs"]
+    },
+    {
+      "id": "exercises",
+      "label": "Exercises",
+      "blocks": ["07-intro"],
+      "exercises": ["01-select", "02-radio-quiz"]
+    },
+    {
+      "id": "sources",
+      "label": "Sources",
+      "blocks": ["08-sources"]
+    }
+  ],
+  "modals": ["example-popup", "conjugation"],
+  "hovers": ["lo-json"]
+}
