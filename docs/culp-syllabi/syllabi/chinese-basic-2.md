@@ -8,7 +8,6 @@ level_order: 20
 strand: General
 previous_level: "[[chinese-basic-1]]"
 next_level: "[[chinese-elementary-1]]"
-programme_spec: "[[chinese-basic-2-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2020-10-15

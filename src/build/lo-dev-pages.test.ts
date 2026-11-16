@@ -12,6 +12,10 @@ import { devLoFolderForPath, loDevPages } from './lo-dev-pages';
 const diskFolders = vi.hoisted(() => ({ list: [] as string[] }));
 vi.mock('../lo/lo-folders', () => ({ listLoSlugs: () => diskFolders.list }));
 
+// The dev server reads course.json's home per front-page request; these tests set it.
+const courseHome = vi.hoisted(() => ({ value: 'landing' as 'landing' | 'lesson' }));
+vi.mock('../config/course-json-disk', () => ({ readCourseHome: () => courseHome.value }));
+
 const FOLDERS = ['lo-00-example', 'lo-01-going-to-a-cafe'];
 
 describe('devLoFolderForPath', () => {
@@ -25,6 +29,25 @@ describe('devLoFolderForPath', () => {
   it('declines the site root', () => {
     expect(devLoFolderForPath('/', FOLDERS)).toBeUndefined();
     expect(devLoFolderForPath('/index.html', FOLDERS)).toBeUndefined();
+  });
+
+  // TODO §E55: a `home: "lesson"` course has no landing page, so the front page is its
+  // lesson. "landing" keeps the root for Vite, as the test above says.
+  it('resolves the site root to the one lesson when home is "lesson"', () => {
+    expect(devLoFolderForPath('/', FOLDERS, 'lesson')).toBe('lo-01-going-to-a-cafe');
+    expect(devLoFolderForPath('/index.html', FOLDERS, 'lesson')).toBe('lo-01-going-to-a-cafe');
+  });
+
+  it('refuses home "lesson" on the site root when there are two lessons', () => {
+    expect(() => devLoFolderForPath('/', [...FOLDERS, 'lo-02-food'], 'lesson')).toThrow(
+      /Set "home": "landing"/,
+    );
+  });
+
+  it('leaves lesson pages alone when home is "lesson"', () => {
+    expect(devLoFolderForPath('/going-to-a-cafe.html', FOLDERS, 'lesson')).toBe(
+      'lo-01-going-to-a-cafe',
+    );
   });
 
   // Declining hands the request back to Vite, whose SPA fallback answers an unknown
@@ -144,6 +167,20 @@ describe('loDevPages on the dev server', () => {
 
   beforeEach(() => {
     diskFolders.list = ['lo-00-example'];
+    courseHome.value = 'landing';
+  });
+
+  it('answers / with the lesson, stamped, when course.json says home "lesson"', async () => {
+    diskFolders.list = ['lo-00-example', 'lo-01-greetings'];
+    courseHome.value = 'lesson';
+    const { request } = middleware(() => ({}));
+    expect((await request('/')).body).toContain('lo-01-greetings');
+  });
+
+  it('leaves / to Vite when course.json says home "landing"', async () => {
+    const { request, server } = middleware(() => ({}));
+    expect(await request('/')).toEqual({ error: undefined });
+    expect(server.ssrLoadModule).not.toHaveBeenCalled();
   });
 
   it('answers a lesson page that loads, stamped with its folder', async () => {

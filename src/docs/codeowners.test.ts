@@ -19,6 +19,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { toPosixPath } from '../build/posix-path';
 import { ownersOf, parseCodeowners, patternToRegExp } from './codeowners';
 import { REPO_ROOT } from './docs-tree';
 
@@ -35,7 +36,7 @@ function filesUnder(folder: string): string[] {
   return readdirSync(root, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile())
     .map((entry) => path.relative(REPO_ROOT, path.join(entry.parentPath, entry.name)))
-    .map((file) => file.split(path.sep).join('/'));
+    .map((file) => toPosixPath(file));
 }
 
 const rules = parseCodeowners(readFileSync(path.join(REPO_ROOT, '.github/CODEOWNERS'), 'utf8'));

@@ -8,6 +8,11 @@
 import { describe, expect, test } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import FlashcardsExercise, { ProgressDots } from './FlashcardsExercise';
+import { TARGET_LANG } from '@/lib/lang';
+
+// The course's own language, named as the component names it: a course that teaches
+// Russian must not fail these tests for not being Spanish.
+const TARGET = new Intl.DisplayNames(['en'], { type: 'language' }).of(TARGET_LANG) ?? TARGET_LANG;
 
 const config = {
   type: 'flashcards',
@@ -50,15 +55,15 @@ describe('FlashcardsExercise study stage', () => {
     const html = render();
     expect(html).toContain('role="group" aria-label="Card direction"');
     // Full language names, not codes (maintainer, 2026-10-08).
-    expect(html).toMatch(/aria-pressed="true"[^>]*>Spanish to English</);
-    expect(html).toMatch(/aria-pressed="false"[^>]*>English to Spanish</);
+    expect(html).toMatch(new RegExp(`aria-pressed="true"[^>]*>${TARGET} to English<`));
+    expect(html).toMatch(new RegExp(`aria-pressed="false"[^>]*>English to ${TARGET}<`));
 
     expect(render({ lockDirection: true })).not.toContain('Card direction');
   });
 
   test('labels each face with its language', () => {
     const html = render();
-    expect(html).toContain('<span class="flashcards-lang">Spanish</span>');
+    expect(html).toContain(`<span class="flashcards-lang">${TARGET}</span>`);
     expect(html).toContain('<span class="flashcards-lang">English</span>');
   });
 

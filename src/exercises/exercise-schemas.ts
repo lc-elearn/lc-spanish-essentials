@@ -1,11 +1,13 @@
 /**
- * exercise-schemas.ts — maps an exercise `type` key to its full config schema.
+ * exercise-schemas.ts — maps an exercise `type` key to its full config schema, and to
+ * the load check built from it (`options` closed).
  *
  * The one place that says "this `type` is validated by this schema" (review
  * 2026-10-21, concern 1). The Node LO reader (`load-lo-disk.ts`) passes it to
  * `assembleLo`, so every exercise in every LO is checked against its own engine's schema
- * at load: a bad `content` fails the build and the dev page, naming the file and the
- * field, instead of reaching a learner as the engine's red error box. It is not in the
+ * at load: a bad `content`, or an `options` key its engine does not know, fails the build
+ * and the dev page, naming the file and the field, instead of reaching a learner as the
+ * engine's red error box or being ignored. It is not in the
  * main bundle (the browser reader skips the check). Each engine still re-parses at
  * render, for its defaults.
  *
@@ -14,7 +16,7 @@
  * component. The Record is exhaustive over `ExerciseType`, so a new engine
  * key fails to compile until its schema is added here.
  */
-import type { z } from 'zod';
+import { z } from 'zod';
 import type { ExerciseType } from '@/config/exercise-types';
 import { ConjugationExerciseConfigSchema } from './conjugation/conjugation-schema';
 import { DictationExerciseConfigSchema } from './dictation/dictation-schema';
@@ -32,8 +34,12 @@ import { TypedTransformExerciseConfigSchema } from './typed-transform/typed-tran
 import { WordOrderExerciseConfigSchema } from './word-order/word-order-schema';
 import { WordSpotExerciseConfigSchema } from './word-spot/word-spot-schema';
 
-/** Every engine's full exercise config schema, keyed by its `type`. */
-export const EXERCISE_CONFIG_SCHEMAS: Readonly<Record<ExerciseType, z.ZodType>> = {
+/**
+ * Every engine's full exercise config schema, keyed by its `type`: the schema each engine
+ * re-parses at render, which ignores an option key it does not know. The load check,
+ * `exerciseConfigSchema`, closes `options`.
+ */
+export const EXERCISE_CONFIG_SCHEMAS: Readonly<Record<ExerciseType, z.ZodObject>> = {
   select: SelectExerciseConfigSchema,
   'inline-choice': InlineChoiceExerciseConfigSchema,
   'radio-quiz': RadioQuizExerciseConfigSchema,
@@ -51,7 +57,37 @@ export const EXERCISE_CONFIG_SCHEMAS: Readonly<Record<ExerciseType, z.ZodType>> 
   reading: ReadingExerciseConfigSchema,
 };
 
-/** The schema that validates an exercise of `type`. */
+/**
+ * An engine's schema with its `options` closed: the options it declares (the shared
+ * block, or flashcards' extension of it) and no others. `safeExtend` because some
+ * engines refine the whole config, and `extend` refuses to overwrite a key there.
+ *
+ * @throws Error naming the type when its schema's `options` is not an optional object,
+ *   the shape every engine inherits from `ExerciseConfigSchema`
+ */
+export function withClosedOptions(type: string, schema: z.ZodObject): z.ZodObject {
+  const field = schema.shape.options;
+  const options = field instanceof z.ZodOptional ? field.unwrap() : undefined;
+  if (!(options instanceof z.ZodObject)) {
+    throw new Error(
+      `the ${type} schema's \`options\` must be an optional object, as ExerciseConfigSchema's is`,
+    );
+  }
+  return schema.safeExtend({ options: options.strict().optional() });
+}
+
+const LOAD_SCHEMAS = Object.fromEntries(
+  Object.entries(EXERCISE_CONFIG_SCHEMAS).map(([type, schema]) => [
+    type,
+    withClosedOptions(type, schema),
+  ]),
+) as Readonly<Record<ExerciseType, z.ZodObject>>;
+
+/**
+ * The schema that validates an exercise of `type` at load: its engine's, with `options`
+ * closed, so a typo such as `shufle` or `lockDirecton` fails the build naming the file
+ * and the key, instead of being ignored (maintainer, 2026-11-11, TODO E59).
+ */
 export function exerciseConfigSchema(type: ExerciseType): z.ZodType {
-  return EXERCISE_CONFIG_SCHEMAS[type];
+  return LOAD_SCHEMAS[type];
 }

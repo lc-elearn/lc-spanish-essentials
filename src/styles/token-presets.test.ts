@@ -23,8 +23,8 @@
  * naming a role that one preset omits is broken only for that preset, and only in
  * whatever state uses it. So this compares key sets and says nothing about values.
  *
- * WHY NOT IN src/guards/. That glob IS `bun run guards`, which means "the eight spec
- * guards (a-h)". A preset-parity check is not one of them. It runs in `bun run test`,
+ * WHY NOT IN src/guards/. That glob IS `bun run guards`, which means "the nine
+ * guards (a–i)". A preset-parity check is not one of them. It runs in `bun run test`,
  * which is the gate and what CI runs — the same reasoning as `src/docs/md-links.ts`.
  */
 import { describe, expect, it } from 'vitest';

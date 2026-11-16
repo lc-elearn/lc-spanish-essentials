@@ -5,6 +5,7 @@
  * Authored text embeds blanks inside square brackets:
  *   "Yo [soy|*es|eres] aquí."          choice blank — `*` marks the correct option
  *   "Je [mange::type here] du pain."   typed-answer blank — `expected::placeholder`
+ *   "Il est [prof|enseignant::métier]." several answers split by `|`, the first preferred
  *
  * `parseSentence` walks the string once and yields an ordered segment list:
  *   - text segments  → { key, type: 'text', value }   (HTML entities decoded)
@@ -16,10 +17,14 @@
  * schemas run at load (TODO §E34). They read a sentence through this same parser, and
  * judge each option and answer decoded and normalized as the page shows and grades it
  * (TODO §E35), so what the build accepts is exactly what the engine can render and grade.
+ * `inputBlankRepeatProblems` is the one the inline-gap envelope runs, since it needs
+ * `options.caseSensitive` (§E54).
  *
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §8.
  */
+import { emptyAlternativeProblems, repeatedAlternativeProblems } from './answer-checks';
 import { normalizeAnswer } from './answers';
+import { splitAlternatives } from './answer-alternatives';
 import { decodeHtmlEntities } from './html';
 
 /** A run of literal text between blanks (entities already decoded). */
@@ -148,11 +153,14 @@ export function parseChoiceBlank(
   };
 }
 
-/** Metadata for a typed-answer blank: the expected text, an optional hint, a width. */
+/** Metadata for a typed-answer blank: the answers it accepts, an optional hint, a width. */
 export interface InputMeta {
+  /** The preferred answer, decoded: `accepted[0]`. Show answers fills it in. */
   expected: string;
+  /** Every answer the blank accepts, decoded, in authored order (TODO §E54). */
+  accepted: string[];
   placeholder: string;
-  /** Suggested input width in `ch` (expected length, floored at 6, plus 2 padding). */
+  /** Suggested input width in `ch`: the longest answer, floored at 6, plus 2 padding. */
   widthCh: number;
 }
 
@@ -172,20 +180,23 @@ function splitInputBlank(rawInner: string): { answer: string; hint: string } {
 
 /**
  * Blank handler for typed-answer blanks: `[expected::placeholder]`. The token is split
- * on `::` into the expected answer and an optional placeholder hint, each then
- * entity-decoded and trimmed. `widthCh` sizes the input to the expected answer
- * (min 6 chars) so short and long blanks each get a sensible default width.
+ * on `::` into the answer and an optional placeholder hint; the answer is split on `|`
+ * into the answers the blank accepts (TODO §E54), and only then is each entity-decoded
+ * and trimmed, so `&#124;` is a `|` the learner types. `expected` is the first, preferred
+ * answer. `widthCh` sizes the input to the LONGEST answer (min 6 chars), so the width
+ * does not give the preferred one away.
  */
 export function parseInputBlank(
   rawInner: string,
   blankIndex: number,
 ): BlankParseResult<InputMeta, InputSegment> {
   const { answer, hint } = splitInputBlank(rawInner);
-  const expected = decodeHtmlEntities(answer).trim();
+  const accepted = splitAlternatives(answer).map((written) => decodeHtmlEntities(written).trim());
   const placeholder = decodeHtmlEntities(hint).trim();
+  const longest = Math.max(...accepted.map((alternative) => alternative.length));
 
   return {
-    meta: { expected, placeholder, widthCh: Math.max(expected.length, 6) + 2 },
+    meta: { expected: accepted[0], accepted, placeholder, widthCh: Math.max(longest, 6) + 2 },
     segment: { blankIndex, key: `input-${blankIndex}`, type: 'input' },
   };
 }
@@ -267,25 +278,50 @@ export function choiceBlankProblems(text: string): string[] {
 /**
  * What stops a learner answering the `[expected::placeholder]` blanks in `text`, one
  * plain sentence per fault; empty when every blank has an answer a learner would type.
- * The answer is judged as the engine grades it: decoded by `parseInputBlank`, then
- * normalized as typed answers are, so `[&nbsp;]` has no answer (TODO §E35). The `|` and
- * `*` of a pasted choice are syntax, so they are looked for as written.
+ * The answers are judged as the engine grades them: split on `|`, decoded by
+ * `parseInputBlank`, then normalized as typed answers are, so `[&nbsp;]` has no answer
+ * and `[a|&nbsp;]` has an empty one (TODO §E35, §E54). A pasted choice blank is caught
+ * by its `*`, looked for as written. An answer accepted twice is
+ * `inputBlankRepeatProblems`, run by the envelope schema, which knows `caseSensitive`.
  */
 export function inputBlankProblems(text: string): string[] {
   const problems: string[] = hasStrayBrackets(text) ? [STRAY_BRACKETS] : [];
   parseSentence(text, {
     parseBlank: (rawInner, blankIndex) => {
-      const { answer } = splitInputBlank(rawInner);
+      const blank = `the blank [${rawInner}]`;
       const parsed = parseInputBlank(rawInner, blankIndex);
-      if (normalizeAnswer(parsed.meta.expected) === '') {
+      const { accepted } = parsed.meta;
+      const written = splitAlternatives(splitInputBlank(rawInner).answer);
+      if (accepted.every((answer) => normalizeAnswer(answer) === '')) {
+        problems.push(`${blank} has no answer: write it before any ::, as in [llamo::llamarse]`);
+      } else if (written.some((answer) => answer.startsWith('*'))) {
         problems.push(
-          `the blank [${rawInner}] has no answer: write it before any ::, as in [llamo::llamarse]`,
+          `${blank} is written as a choice: here a blank is [answer::hint], and the learner types the answer`,
         );
-      } else if (answer.includes('|') || answer.startsWith('*')) {
-        problems.push(
-          `the blank [${rawInner}] is written as a choice: here a blank is [answer::hint], and the learner types the answer`,
-        );
+      } else {
+        problems.push(...emptyAlternativeProblems(accepted).map((end) => `${blank} ${end}`));
       }
+      return parsed;
+    },
+  });
+  return problems;
+}
+
+/**
+ * The `[a|b]` typed blanks in `text` that accept one answer twice, judged decoded and
+ * compared as grading compares them: capitals folded unless `caseSensitive` (TODO §E54).
+ */
+export function inputBlankRepeatProblems(text: string, caseSensitive: boolean): string[] {
+  const problems: string[] = [];
+  parseSentence(text, {
+    parseBlank: (rawInner, blankIndex) => {
+      const parsed = parseInputBlank(rawInner, blankIndex);
+      const repeats = repeatedAlternativeProblems(
+        parsed.meta.accepted,
+        normalizeAnswer,
+        caseSensitive,
+      );
+      problems.push(...repeats.map((end) => `the blank [${rawInner}] ${end}`));
       return parsed;
     },
   });

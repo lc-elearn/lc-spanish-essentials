@@ -86,6 +86,7 @@ export async function animationsSettled(page: Page): Promise<void> {
 export const EXERCISE_HEADINGS = {
   select: '#exercise-01-select-heading',
   radioQuiz: '#exercise-02-radio-quiz-heading',
+  set: '#exercise-set-03-drag-fill-gaps-heading',
 } as const;
 
 /**

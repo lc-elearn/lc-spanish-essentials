@@ -8,7 +8,6 @@ level_order: 50
 strand: General
 previous_level: "[[spanish-basic-2]]"
 next_level: "[[spanish-intermediate-2]]"
-programme_spec: "[[spanish-intermediate-1-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2025-08-04

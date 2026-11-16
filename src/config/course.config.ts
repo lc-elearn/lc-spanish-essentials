@@ -2,7 +2,7 @@
  * course.config.ts — the rules for course identity; the values are in `course.json`.
  *
  * WHAT: One Zod-validated object describing the whole course (title, language,
- * deploy base path, landing copy, logo/favicon). Course ORDER is deliberately absent —
+ * deploy base path, landing copy, logo/favicon, home page). Course ORDER is deliberately absent —
  * see the note on the schema below.
  *
  * SPLIT (TODO §E45): this file is core (the template's, code-owned); the course's own
@@ -24,6 +24,7 @@
  * Spec: docs/specs/2026-06-15-lc-base-template-design.md §8, decision #12.
  */
 import { z } from 'zod';
+import { CourseHomeSchema } from './course-home';
 import courseJson from '../../course.json';
 
 /** The contract: what a valid course identity MUST look like. Exported so its rules
@@ -52,6 +53,9 @@ export const CourseConfigSchema = z.strictObject({
     .min(1)
     .refine((value) => !value.startsWith('/'), { message: 'relative to %BASE_URL%' })
     .optional(),
+  /** Which page the course opens on (TODO §E55): its list of lessons, or its one lesson.
+      `"lesson"` needs exactly one lesson; the build says so otherwise. */
+  home: CourseHomeSchema,
   // NO loOrder field: course order is the `lo-NN-` ordinal in each LO's folder name,
   // and nothing else (decision B, 2026-08-06 — see the Phase D handover §5). A list
   // here would be a SECOND source for a fact the folder already states, free to drift

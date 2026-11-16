@@ -9,7 +9,6 @@ level_order: 60
 strand: General
 previous_level: "[[italian-intermediate-1]]"
 next_level: "[[italian-upper-intermediate-stories-and-film]]"
-programme_spec: "[[italian-intermediate-2-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 source_date: 2023-08-14

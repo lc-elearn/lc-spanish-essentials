@@ -40,7 +40,12 @@ A request issue from a course has them under "How are answers marked?".
    fixture, and both registry entries, view and schema ([`CONTRIBUTING.md`, the note at the end of "Adding content vs. changing the system"](../../../CONTRIBUTING.md#adding-content-vs-changing-the-system-read-before-a-pr)).
    Copy the shape of [`src/exercises/reading/`](../../../src/exercises/reading/), file
    for file. Guard e ([`src/guards/registry-completeness.ts`](../../../src/guards/registry-completeness.ts))
-   names anything still missing.
+   names anything still missing. The new engine joins the exercise showcase's "every
+   engine in a tab" card by itself (`src/showcase/exercise-sets.ts`), which proves every
+   engine works in an exercise set's tab. Its browser test,
+   `e2e/debug/exercise-set-engines.spec.ts`, hard-codes `toHaveCount(15)`: raise it by
+   one, and run the `DEBUG=1` suite
+   ([`docs/TOOLING.md` → "Browser tests"](../../../docs/TOOLING.md)).
 3. **The rules.** Keep to [`AGENTS.md`](../../../AGENTS.md) "Hard constraints" and "Code
    rules" throughout, and watch the bundle budget
    ([`docs/TOOLING.md` → "Bundle budget"](../../../docs/TOOLING.md)).

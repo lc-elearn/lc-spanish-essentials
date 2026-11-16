@@ -3,7 +3,12 @@ import { test, expect } from 'vitest';
 import { parseInputBlank, type InputMeta } from '@/exercises/lib/parsing';
 import { gradeInlineGap, fillInlineGapAnswers } from './inline-gap-grading';
 
-const meta = (expected: string): InputMeta => ({ expected, placeholder: '', widthCh: 8 });
+const meta = (expected: string): InputMeta => ({
+  expected,
+  accepted: [expected],
+  placeholder: '',
+  widthCh: 8,
+});
 
 test('gradeInlineGap: correct typed answer passes', () => {
   expect(gradeInlineGap([meta('chat')], { 0: 'chat' }, 1).checkedResults[0]).toBe(true);
@@ -57,4 +62,17 @@ test('gradeInlineGap: an encoded accented answer grades its decoded form', () =>
   const blanks = [parseInputBlank('caf&eacute;', 0).meta];
   expect(gradeInlineGap(blanks, { 0: 'café' }, 1).checkedResults[0]).toBe(true);
   expect(gradeInlineGap(blanks, { 0: 'cafe' }, 1).checkedResults[0]).toBe(false);
+});
+
+// TODO §E54: `|` means "or"; the first answer is the preferred one.
+test('gradeInlineGap: any of a blank’s answers passes', () => {
+  const blanks = [parseInputBlank('profesor|maestro|docente', 0).meta];
+  expect(gradeInlineGap(blanks, { 0: 'maestro' }, 1).checkedResults[0]).toBe(true);
+  expect(gradeInlineGap(blanks, { 0: 'docente' }, 1).checkedResults[0]).toBe(true);
+  expect(gradeInlineGap(blanks, { 0: 'pintor' }, 1).checkedResults[0]).toBe(false);
+});
+
+test('fillInlineGapAnswers: fills each blank with its preferred (first) answer', () => {
+  const blanks = [parseInputBlank('profesor|maestro|docente', 0).meta];
+  expect(fillInlineGapAnswers(blanks, 1).values).toEqual({ 0: 'profesor' });
 });

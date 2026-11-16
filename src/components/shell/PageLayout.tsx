@@ -42,6 +42,8 @@ interface PageLayoutProps {
   sections: readonly PageSection[];
   /** Dark-mode Switch slot, forwarded to the Header nav (wired in step 6). */
   themeToggle?: ReactNode;
+  /** The lesson's credits popup id, for the footer's Credits button (E56). */
+  credits?: string;
 }
 
 /** Read the current hash's section id (no-window-safe for SSR). */
@@ -63,7 +65,13 @@ function isPlainClick(event: MouseEvent): boolean {
   );
 }
 
-export default function PageLayout({ title, hero, sections, themeToggle }: PageLayoutProps) {
+export default function PageLayout({
+  title,
+  hero,
+  sections,
+  themeToggle,
+  credits,
+}: PageLayoutProps) {
   // The section on screen, from the scroll-spy (docs/specs/2026-10-06-header-scroll-
   // spy-design.md). It starts at '' on the server AND on the first client render: the
   // hash is read in the effect below, never during render, so a page loaded with
@@ -152,7 +160,7 @@ export default function PageLayout({ title, hero, sections, themeToggle }: PageL
         </div>
       </main>
 
-      <Footer />
+      <Footer credits={credits} />
     </>
   );
 }

@@ -75,9 +75,16 @@ export const EXERCISE_INSTRUCTIONS: Record<ExerciseType, string> = {
 export const SAVED_PROGRESS_INSTRUCTIONS =
   'This deck saves your progress in this browser: the cards you found hard come first next time, even after **Reset**. Select **Clear saved progress** to forget it and start fresh.';
 
-/** Whether an unknown exercise config saves progress (`options.srs === true`). */
+/**
+ * Whether an unknown exercise config saves progress: a flashcards deck with
+ * `options.srs === true`. The type is checked too, because the LO envelope keeps options
+ * it does not know (for the engine that owns them). The Node reader refuses a stray `srs`
+ * on any other exercise at load (TODO E59), but the browser reader checks no engine
+ * options, and only a deck saves anything.
+ */
 export function savesProgress(config: unknown): boolean {
   if (typeof config !== 'object' || config === null) return false;
+  if ((config as { type?: unknown }).type !== 'flashcards') return false;
   const options = (config as { options?: unknown }).options;
   if (typeof options !== 'object' || options === null) return false;
   return (options as { srs?: unknown }).srs === true;
@@ -88,23 +95,47 @@ export function savesProgress(config: unknown): boolean {
  *
  * @param type     the engine type (selects the default copy).
  * @param override the author's `content.instructions`, if any.
- * @param context  `savesProgress` adds SAVED_PROGRESS_INSTRUCTIONS to the default.
+ * @param context  `savesProgress` adds SAVED_PROGRESS_INSTRUCTIONS to the default;
+ *                 `useDefault: false` drops the default copy, leaving only an author's
+ *                 own text (an exercise in a set's tab, E57 S3).
  * @returns the text to show, or `null` to suppress the box entirely.
  */
 export function resolveInstructions(
   type: ExerciseType,
   override?: string | null,
-  context: { savesProgress?: boolean } = {},
+  context: { savesProgress?: boolean; useDefault?: boolean } = {},
 ): string | null {
   if (override === '' || override === null) return null;
   if (typeof override === 'string' && override.trim() !== '') return override;
+  if (context.useDefault === false) return null;
   const copy = EXERCISE_INSTRUCTIONS[type];
   return context.savesProgress ? `${copy} ${SAVED_PROGRESS_INSTRUCTIONS}` : copy;
 }
 
 /**
+ * The box above an exercise set's tabs (E57, spec S2): the set's own text, or, when every
+ * tab uses one engine, that engine's default copy. Tabs of different engines share no
+ * default, so this returns `null` and the loader refuses the set.
+ *
+ * `savesProgress` adds SAVED_PROGRESS_INSTRUCTIONS to the default, as above a standalone
+ * deck: a tab shows no box of its own (S3), so this box is the only place to say it.
+ */
+export function resolveSetInstructions(
+  instructions: string | undefined,
+  types: readonly ExerciseType[],
+  context: { savesProgress?: boolean } = {},
+): string | null {
+  if (instructions !== undefined) return instructions;
+  const [first, ...rest] = types;
+  if (first === undefined || rest.some((type) => type !== first)) return null;
+  const copy = EXERCISE_INSTRUCTIONS[first];
+  return context.savesProgress ? `${copy} ${SAVED_PROGRESS_INSTRUCTIONS}` : copy;
+}
+
+/**
  * Shared Zod fragment for the optional per-exercise `instructions` override.
- * Spread into each engine's `content` schema so all 12 stay consistent. `''` is
+ * Spread into each engine's `content` schema (dictation and typed-transform through
+ * `text-entry-schema.ts`) so every engine stays consistent. `''` is
  * intentionally allowed — it means "suppress the box" (handled by the resolver).
  */
 export const instructionsField = { instructions: z.string().optional() };

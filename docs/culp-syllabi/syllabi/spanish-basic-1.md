@@ -7,7 +7,6 @@ level: Basic 1
 level_order: 10
 strand: General
 next_level: "[[spanish-basic-2]]"
-programme_spec: "[[spanish-basic-programme-spec]]"
 doc_type: syllabus
 cefr: A1
 lessons: 15

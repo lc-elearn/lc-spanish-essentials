@@ -5,6 +5,7 @@
  *
  * Spec: docs/specs/2026-07-03-new-exercise-engines-design.md §5; §7 (blank-grading).
  */
+import { splitAlternatives } from '@/exercises/lib/answer-alternatives';
 import { gradeTypedAnswers, type TypedGradeResult } from '@/exercises/lib/answer-feedback';
 import type { ConjugationRow } from './conjugation-schema';
 
@@ -29,7 +30,7 @@ export function gradeConjugation(
   caseSensitive = false,
 ): ConjugationGradeResult {
   return gradeTypedAnswers(
-    rows.map((row) => row.answer),
+    rows.map((row) => splitAlternatives(row.answer)),
     values,
     misses,
     'strict',
@@ -42,7 +43,7 @@ export function fillConjugationAnswers(rows: readonly ConjugationRow[]): Conjuga
   const values: Record<number, string> = {};
   const checkedResults: Record<number, boolean> = {};
   for (let i = 0; i < rows.length; i += 1) {
-    values[i] = rows[i]?.answer ?? '';
+    values[i] = splitAlternatives(rows[i]?.answer ?? '')[0];
     checkedResults[i] = true;
   }
   return { values, checkedResults };

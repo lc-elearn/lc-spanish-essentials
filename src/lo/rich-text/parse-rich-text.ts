@@ -137,10 +137,19 @@ const BLOCK_ONLY_TAGS = new Set([
   'td',
 ]);
 
+/**
+ * Headings (E56). Not in BLOCK_ONLY_TAGS: "its own entry" would send a page-prose,
+ * hover-card or sources author to a second error, since only a popup takes one.
+ */
+const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+
 /** The guidance every misplaced block element gets. */
 const OWN_ENTRY =
   'is a block — a list, table or audio player must be its own entry in the array, ' +
   'not part of a paragraph';
+
+/** The guidance a heading anywhere inside inline rich text gets. */
+const HEADING_PLACE = 'headings are allowed only as a whole entry in a popup (modal.json), as <h3>';
 
 /** Build the `fail` a parser threads through: throws, prefixed with the source path. */
 export function failWith(source: string | undefined): (message: string) => never {
@@ -404,6 +413,7 @@ export function parseRichText(html: string, source?: string): readonly RichTextN
         break;
       default:
         if (BLOCK_ONLY_TAGS.has(tag.name)) fail(`<${tag.name}> ${OWN_ENTRY}`);
+        if (HEADING_TAGS.has(tag.name)) fail(`<${tag.name}>: ${HEADING_PLACE}`);
         fail(
           `<${tag.name}> is not in the rich-text allowlist ` +
             '(strong, em, br, a.modal-link, span[data-audio])',

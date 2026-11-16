@@ -7,7 +7,6 @@ level: Basic 1
 level_order: 10
 strand: General
 next_level: "[[french-basic-2]]"
-programme_spec: "[[french-basic-programme-spec]]"
 doc_type: syllabus
 cefr: A1
 lessons: 15

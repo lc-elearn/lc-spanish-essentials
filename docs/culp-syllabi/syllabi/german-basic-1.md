@@ -6,7 +6,6 @@ level: Basic 1
 level_order: 10
 strand: General
 next_level: "[[german-basic-2]]"
-programme_spec: "[[german-basic-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 source_date: 2018-10-19

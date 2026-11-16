@@ -29,6 +29,8 @@ export const typedTransformFixtures: ShowcaseFixture[] = [
           { prompt: 'la casa', answer: 'las casas' },
           { prompt: 'el profesor', answer: 'los profesores' },
           { prompt: 'la canción', answer: 'las canciones' },
+          // Three accepted answers (TODO §E54): `|` means "or", the first preferred.
+          { prompt: 'el coche', answer: 'los coches|los carros|los autos' },
         ],
         footnote: 'Demo hint line — type the plural; press Enter for the next row.',
       },

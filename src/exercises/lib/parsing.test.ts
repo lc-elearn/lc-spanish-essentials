@@ -8,6 +8,7 @@ import {
   choiceBlankProblems,
   countBlanks,
   inputBlankProblems,
+  inputBlankRepeatProblems,
   parseChoiceBlank,
   parseInputBlank,
   parseSentence,
@@ -66,6 +67,29 @@ describe('parseInputBlank', () => {
     expect(parseInputBlank('anticonstitutionnel', 0).meta.widthCh).toBe(21); // 19+2
   });
 
+  // TODO §E54: `|` means "or" in a typed answer; the first is the preferred one.
+  test('reads every answer split by |, the preferred first', () => {
+    const { meta } = parseInputBlank(
+      ' в семейном кругу | в кругу семьи|в семье :: in the family circle',
+      0,
+    );
+    expect(meta.accepted).toEqual(['в семейном кругу', 'в кругу семьи', 'в семье']);
+    expect(meta.expected).toBe('в семейном кругу');
+    expect(meta.placeholder).toBe('in the family circle');
+  });
+
+  test('one answer is a list of one', () => {
+    expect(parseInputBlank('mange::manger', 0).meta.accepted).toEqual(['mange']);
+  });
+
+  test('widthCh fits the longest answer, so the width does not give the preferred one away', () => {
+    expect(parseInputBlank('va|anticonstitutionnel', 0).meta.widthCh).toBe(21); // 19+2
+  });
+
+  test('decodes each answer after the split: &#124; is text, never an "or"', () => {
+    expect(parseInputBlank('a&#124;b|caf&eacute;', 0).meta.accepted).toEqual(['a|b', 'café']);
+  });
+
   test('feeds parseSentence to produce input segments', () => {
     const blanksMeta: InputMeta[] = [];
     const { segments, nextBlankIndex } = parseSentence('Je [mange::indice] du pain.', {
@@ -74,7 +98,12 @@ describe('parseInputBlank', () => {
     });
     expect(segments.map((s) => s.type)).toEqual(['text', 'input', 'text']);
     expect(nextBlankIndex).toBe(1);
-    expect(blanksMeta[0]).toEqual({ expected: 'mange', placeholder: 'indice', widthCh: 8 });
+    expect(blanksMeta[0]).toEqual({
+      expected: 'mange',
+      accepted: ['mange'],
+      placeholder: 'indice',
+      widthCh: 8,
+    });
   });
 });
 
@@ -263,6 +292,67 @@ describe('inputBlankProblems', () => {
     expect(inputBlankProblems('Yo [*soy|eres|es] de Madrid.')).toEqual([
       expect.stringContaining('[*soy|eres|es] is written as a choice'),
     ]);
+  });
+});
+
+// TODO §E54: `|` means "or" in a typed blank. A pasted choice is still caught by its `*`.
+describe('inputBlankProblems — more than one answer', () => {
+  test('accepts several answers split by |', () => {
+    expect(
+      inputBlankProblems('Vivo [в семейном кругу|в кругу семьи|в семье::in the family circle].'),
+    ).toEqual([]);
+  });
+
+  test.each(['Yo [soy||eres::ser].', 'Yo [soy|::ser].', 'Yo [|soy].', 'Yo [soy|&nbsp;].'])(
+    'names an empty answer: %s',
+    (text) => {
+      expect(inputBlankProblems(text)).toEqual([
+        expect.stringContaining('has an empty answer: remove the extra |'),
+      ]);
+    },
+  );
+
+  test('a blank of only | has no answer', () => {
+    expect(inputBlankProblems('Yo [|] Ana.')).toEqual([expect.stringContaining('has no answer')]);
+  });
+
+  test.each(['Yo [*soy|eres|es].', 'Yo [soy|*eres].'])(
+    'still names a pasted choice by its *: %s',
+    (text) => {
+      expect(inputBlankProblems(text)).toEqual([expect.stringContaining('is written as a choice')]);
+    },
+  );
+
+  test('reads &#124; and &#42; as text, never an "or" or a mark', () => {
+    expect(inputBlankProblems('[a&#124;b::hint] [&#42;a|b]')).toEqual([]);
+  });
+});
+
+describe('inputBlankRepeatProblems', () => {
+  test('names an answer accepted twice', () => {
+    expect(inputBlankRepeatProblems('Yo [soy|eres|soy].', false)).toEqual([
+      'the blank [soy|eres|soy] accepts "soy" twice: each answer must differ',
+    ]);
+  });
+
+  test.each(['[é|&eacute;]', '[l&apos;eau|l’eau]', '[a  b|a b]'])(
+    'judges each answer decoded, as grading does: %s',
+    (blank) => {
+      expect(inputBlankRepeatProblems(`Y ${blank}.`, false)).toEqual([
+        expect.stringMatching(/accepts ".+" twice/),
+      ]);
+    },
+  );
+
+  test('folds capitals unless the exercise is caseSensitive', () => {
+    expect(inputBlankRepeatProblems('[Lo|lo]', false)).toEqual([
+      expect.stringContaining('accepts "lo" twice'),
+    ]);
+    expect(inputBlankRepeatProblems('[Lo|lo]', true)).toEqual([]);
+  });
+
+  test('finds nothing in blanks with one answer each', () => {
+    expect(inputBlankRepeatProblems('[soy] y [eres|estás]', false)).toEqual([]);
   });
 });
 

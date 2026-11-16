@@ -8,6 +8,7 @@
  */
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { ModalProvider } from '@/lo/rich-text/modal/ModalProvider';
 import PageLayout from './PageLayout';
 import { headingId } from '@/lib/heading-id';
 import type { NavSection } from './nav-section';
@@ -64,6 +65,15 @@ describe('PageLayout', () => {
     expect((html.match(/<header/g) ?? []).length).toBe(1);
     expect((html.match(/<footer/g) ?? []).length).toBe(1);
     expect(html).toContain('aria-label="Main navigation"');
+  });
+
+  test('passes credits to the footer (E56)', () => {
+    const html = renderToStaticMarkup(
+      <ModalProvider modals={{ credits: { id: 'credits', title: 'Credits', content: [] } }}>
+        <PageLayout title="Lesson" sections={sections} credits="credits" />
+      </ModalProvider>,
+    );
+    expect(html).toContain('class="footer-licence-link footer-credits">Credits</button>');
   });
 
   test('renders per-section content when provided', () => {

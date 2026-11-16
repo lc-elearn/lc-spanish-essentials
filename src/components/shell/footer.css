@@ -339,6 +339,17 @@
     outline-offset: 2px;
   }
 
+  /* The Credits button (E56) wears the licence link's look; these reset the button's
+     own chrome so it reads as the link beside the © text. */
+  .footer-credits {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
   .footer-links {
     grid-area: links;
     display: flex;

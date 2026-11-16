@@ -12,6 +12,7 @@ import {
   answerKey,
   answerSegments,
   classifyMiss,
+  closestAlternative,
   feedbackFor,
   firstMarkedReveal,
   gradeTypedAnswers,
@@ -106,6 +107,7 @@ describe('feedbackFor', () => {
         { text: 'o', differs: true },
         { text: 's', differs: false },
       ],
+      alsoAccepted: [],
     });
   });
 
@@ -114,15 +116,26 @@ describe('feedbackFor', () => {
       kind: 'reveal',
       answer: 'los gatos',
       segments: [{ text: 'los gatos', differs: false }],
+      alsoAccepted: [],
+    });
+  });
+
+  test('a reveal lists the other accepted answers, light-normalized; a hint never does', () => {
+    expect(
+      feedbackFor('gtererger', 'los gatos', REVEAL_AFTER_MISSES, 'strict', false, ['las  gatas']),
+    ).toMatchObject({ kind: 'reveal', answer: 'los gatos', alsoAccepted: ['las gatas'] });
+    expect(feedbackFor('gtererger', 'los gatos', 1, 'strict', false, ['las gatas'])).toEqual({
+      kind: 'hint',
+      reason: 'far',
     });
   });
 });
 
 describe('gradeTypedAnswers — one Check over a set of typed answers', () => {
-  const expected = ['los gatos', 'está', 'come'];
+  const accepted = [['los gatos'], ['está'], ['come']];
 
   test('skips empty answers, grades the rest, counts misses per answer', () => {
-    const result = gradeTypedAnswers(expected, { 0: 'los gatas', 1: 'está', 2: ' ' }, {});
+    const result = gradeTypedAnswers(accepted, { 0: 'los gatas', 1: 'está', 2: ' ' }, {});
 
     expect(result.checkedResults).toEqual({ 0: false, 1: true });
     expect(result.misses).toEqual({ 0: 1 });
@@ -130,7 +143,7 @@ describe('gradeTypedAnswers — one Check over a set of typed answers', () => {
   });
 
   test('the second wrong Check on an answer reveals it; a right one gets no line', () => {
-    const result = gradeTypedAnswers(expected, { 0: 'los gatas', 1: 'esta' }, { 0: 1 });
+    const result = gradeTypedAnswers(accepted, { 0: 'los gatas', 1: 'esta' }, { 0: 1 });
 
     expect(result.misses).toEqual({ 0: 2, 1: 1 });
     expect(result.feedback[0]?.kind).toBe('reveal');
@@ -138,16 +151,86 @@ describe('gradeTypedAnswers — one Check over a set of typed answers', () => {
   });
 
   test('capitals do not count by default, and do when the author asks', () => {
-    expect(gradeTypedAnswers(['Los gatos'], { 0: 'los gatos' }, {}).checkedResults[0]).toBe(true);
+    expect(gradeTypedAnswers([['Los gatos']], { 0: 'los gatos' }, {}).checkedResults[0]).toBe(true);
     expect(
-      gradeTypedAnswers(['Los gatos'], { 0: 'los gatos' }, {}, 'strict', true).checkedResults[0],
+      gradeTypedAnswers([['Los gatos']], { 0: 'los gatos' }, {}, 'strict', true).checkedResults[0],
     ).toBe(false);
   });
 
   test('dictation ignores sentence punctuation, as before', () => {
     expect(
-      gradeTypedAnswers(['¿Qué tal?'], { 0: 'qué tal' }, {}, 'dictation').checkedResults[0],
+      gradeTypedAnswers([['¿Qué tal?']], { 0: 'qué tal' }, {}, 'dictation').checkedResults[0],
     ).toBe(true);
+  });
+});
+
+// TODO §E54: a typed answer may accept more than one form, split by `|`.
+describe('closestAlternative — which accepted answer a wrong one is compared with', () => {
+  test('is the alternative most like the attempt', () => {
+    expect(
+      closestAlternative('в кругу семя', ['в семейном кругу', 'в кругу семьи', 'в семье']),
+    ).toBe(1);
+  });
+
+  test('is the first on a tie', () => {
+    expect(closestAlternative('rato', ['gato', 'pato'])).toBe(0);
+  });
+
+  test('compares as grading does: dictation drops punctuation, capitals fold', () => {
+    expect(closestAlternative('HASTA LUEG', ['Adiós', '¡Hasta luego!'], 'dictation')).toBe(1);
+  });
+});
+
+describe('gradeTypedAnswers — more than one accepted answer', () => {
+  const family = [['в семейном кругу', 'в кругу семьи', 'в семье']];
+
+  test('any accepted answer is right', () => {
+    for (const value of ['в семейном кругу', 'в кругу семьи', 'В семье']) {
+      expect(gradeTypedAnswers(family, { 0: value }, {}).checkedResults[0]).toBe(true);
+    }
+  });
+
+  test('a wrong answer is hinted at against the closest answer', () => {
+    expect(gradeTypedAnswers(family, { 0: 'в кругу семя' }, {}).feedback[0]).toEqual({
+      kind: 'hint',
+      reason: 'ending',
+    });
+  });
+
+  test('the reveal shows the closest answer and lists the others in authored order', () => {
+    const { feedback } = gradeTypedAnswers(family, { 0: 'в кругу семя' }, { 0: 1 });
+    expect(feedback[0]).toMatchObject({
+      kind: 'reveal',
+      answer: 'в кругу семьи',
+      alsoAccepted: ['в семейном кругу', 'в семье'],
+    });
+  });
+
+  test('a tie between two answers goes to the first', () => {
+    const { feedback } = gradeTypedAnswers([['gato', 'pato']], { 0: 'rato' }, { 0: 1 });
+    expect(feedback[0]).toMatchObject({ kind: 'reveal', answer: 'gato', alsoAccepted: ['pato'] });
+  });
+
+  test('a single answer reveals nothing else', () => {
+    expect(gradeTypedAnswers([['chat']], { 0: 'chien' }, { 0: 1 }).feedback[0]).toMatchObject({
+      kind: 'reveal',
+      alsoAccepted: [],
+    });
+  });
+
+  test('dictation mode and caseSensitive apply to every alternative', () => {
+    const goodbye = [['Adiós', '¡Hasta luego!']];
+    expect(
+      gradeTypedAnswers(goodbye, { 0: 'hasta luego' }, {}, 'dictation').checkedResults[0],
+    ).toBe(true);
+    expect(gradeTypedAnswers(goodbye, { 0: 'hasta luego' }, {}, 'strict').checkedResults[0]).toBe(
+      false,
+    );
+    const city = [['Lima', 'Cuzco']];
+    expect(gradeTypedAnswers(city, { 0: 'cuzco' }, {}).checkedResults[0]).toBe(true);
+    expect(gradeTypedAnswers(city, { 0: 'cuzco' }, {}, 'strict', true).checkedResults[0]).toBe(
+      false,
+    );
   });
 });
 
@@ -157,11 +240,13 @@ describe('firstMarkedReveal — where the one-line key goes', () => {
       kind: 'reveal',
       answer: 'x',
       segments: [{ text: 'x', differs: false }],
+      alsoAccepted: [],
     } as const;
     const marked = {
       kind: 'reveal',
       answer: 'x',
       segments: [{ text: 'x', differs: true }],
+      alsoAccepted: [],
     } as const;
 
     expect(firstMarkedReveal({ 0: plain, 2: marked, 3: marked })).toBe(2);

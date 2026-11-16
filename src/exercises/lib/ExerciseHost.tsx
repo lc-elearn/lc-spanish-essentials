@@ -35,6 +35,11 @@ interface ExerciseHostProps {
   config: unknown;
   /** Where the exercise lives, for saved progress; passed through to the engine. */
   progressId?: string;
+  /**
+   * false in an exercise set's tab (E57 S3): the box shows only when the exercise wrote
+   * `content.instructions`, because the set's box above the tabs already says what to do.
+   */
+  defaultInstructions?: boolean;
 }
 
 /** Safely read `content.instructions` off an unknown config (author override). */
@@ -47,13 +52,19 @@ function readInstructionsOverride(config: unknown): string | null | undefined {
   return undefined;
 }
 
-export function ExerciseHost({ type, config, progressId }: ExerciseHostProps) {
+export function ExerciseHost({
+  type,
+  config,
+  progressId,
+  defaultInstructions = true,
+}: ExerciseHostProps) {
   // getExercise returns a stable, module-level lazy component from the registry —
   // it is not created per render, so the static-components rule is a false positive.
   const Engine = getExercise(type);
   const instructions = resolveInstructions(type, readInstructionsOverride(config), {
     // An engine saves only when told where it lives (E13a), so promise nothing without.
     savesProgress: savesProgress(config) && progressId !== undefined,
+    useDefault: defaultInstructions,
   });
   // Engines are lazy imports, which cannot resolve during a static render: the
   // boundary would fail server-side and the client would throw its HTML away (React

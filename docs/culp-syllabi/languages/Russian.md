@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # Russian
 
-Hub note for CULP Russian: 9 documents. Part of [[CULP Syllabi]].
+Hub note for CULP Russian: 7 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -20,10 +20,3 @@ Hub note for CULP Russian: 9 documents. Part of [[CULP Syllabi]].
 | [[russian-intermediate-2]] | Intermediate 2 | RUSSIAN INTERMEDIATE 2 |
 | [[russian-advanced]] | Advanced | RUSSIAN ADVANCED: SYLLABUS |
 | [[russian-film-and-culture]] |  | РУССКИЙ ЯЗЫК ПОСРЕДСТВОМ КИНО И КУЛЬТУРЫ - ПРОГРАММА КУРСА |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[russian-basic-programme-spec]] | Basic | CULP Basic in Russian: Programme Specification |
-| [[russian-intermediate-1-programme-spec]] | Intermediate 1 | CULP Intermediate 1 in Russian: Programme Specification |

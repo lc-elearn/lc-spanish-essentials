@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import Showcase from './Showcase';
 import { SHOWCASE_SECTIONS } from './showcase-sections';
 import { SHOWCASE_FIXTURES } from './fixtures';
+import { SHOWCASE_SETS } from './exercise-sets';
 
 const html = renderToStaticMarkup(<Showcase />);
 const nav = /<nav[^>]*aria-label="Showcase sections"[^>]*>.*?<\/nav>/s.exec(html)?.[0] ?? '';
@@ -22,11 +23,19 @@ describe('Showcase nav', () => {
     expect(nav).not.toMatch(/href="#/);
   });
 
-  test('the menu lists the rich-text card first, then every engine card, in fixture order', () => {
+  test('the menu lists the rich-text card, every engine card in fixture order, then the sets', () => {
     expect(SHOWCASE_SECTIONS.map((section) => section.id)).toEqual([
       'rich-text',
       ...SHOWCASE_FIXTURES.map((fixture) => fixture.id),
+      'exercise-set',
+      'exercise-set-every-engine',
     ]);
+  });
+
+  test('renders both exercise-set cards after the engines (E57)', () => {
+    expect(html).toContain('<article id="exercise-set"');
+    expect(html).toContain('<article id="exercise-set-every-engine"');
+    expect(SHOWCASE_SETS).toHaveLength(2);
   });
 
   test('every menu entry has a card with that id to land on', () => {

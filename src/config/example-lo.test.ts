@@ -31,6 +31,8 @@ import { z } from 'zod';
 import { LoManifestSchema, BlockConfigSchema, LoExerciseConfigSchema } from './lo-schema';
 import { SelectExerciseConfigSchema } from '@/exercises/select/select-schema';
 import { RadioQuizExerciseConfigSchema } from '@/exercises/radio-quiz/radio-quiz-schema';
+import { DragFillGapsExerciseConfigSchema } from '@/exercises/drag-fill-gaps/drag-fill-gaps-schema';
+import { InlineChoiceExerciseConfigSchema } from '@/exercises/inline-choice/inline-choice-schema';
 
 /** The example LO folder, resolved from this test file (repo-root independent). */
 const LO_DIR = path.resolve(import.meta.dirname, '../../lo-config/lo-00-example');
@@ -44,6 +46,9 @@ const LO_DIR = path.resolve(import.meta.dirname, '../../lo-config/lo-00-example'
 const EXERCISE_SCHEMA_BY_TYPE: Record<string, z.ZodTypeAny> = {
   select: SelectExerciseConfigSchema,
   'radio-quiz': RadioQuizExerciseConfigSchema,
+  // The exercise set's two tabs (E57).
+  'drag-fill-gaps': DragFillGapsExerciseConfigSchema,
+  'inline-choice': InlineChoiceExerciseConfigSchema,
 };
 
 const readJson = (filePath: string): unknown => JSON.parse(readFileSync(filePath, 'utf-8'));
@@ -93,8 +98,13 @@ describe('example LO (lo-00-example)', () => {
   const blockRefs = manifest.sections.flatMap((section) =>
     section.blocks.map((ref) => [section.id, ref] as const),
   );
+  // A set's tabs name exercise refs too (E57); each parses like a plain ref.
   const exerciseRefs = manifest.sections.flatMap((section) =>
-    section.exercises.map((ref) => [section.id, ref] as const),
+    section.exercises.flatMap((entry) =>
+      (typeof entry === 'string' ? [entry] : entry.tabs.map((tab) => tab.exercise)).map(
+        (ref) => [section.id, ref] as const,
+      ),
+    ),
   );
 
   it('declares at least one block and one exercise across its sections', () => {

@@ -7,7 +7,6 @@ level_order: 30
 strand: General
 previous_level: "[[arabic-basic-2]]"
 next_level: "[[arabic-elementary-2]]"
-programme_spec: "[[arabic-elementary-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 source_date: 2023-09-18

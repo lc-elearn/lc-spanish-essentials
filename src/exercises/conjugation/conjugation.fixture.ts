@@ -52,6 +52,8 @@ export const conjugationFixtures: ShowcaseFixture[] = [
           { person: 'nosotros', answer: 'hablamos' },
           { person: 'vosotros', answer: 'habláis' },
           { person: 'ellos/ellas', answer: 'hablan' },
+          // Three accepted answers (TODO §E54): `|` means "or", the first preferred.
+          { person: 'ustedes', answer: 'hablan|ustedes hablan|Uds. hablan' },
         ],
         footnote: 'Ojo con la tilde: «habláis» lleva acento.',
       },

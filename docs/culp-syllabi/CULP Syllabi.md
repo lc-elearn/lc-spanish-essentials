@@ -6,34 +6,34 @@ tags: [culp, index]
 
 # CULP Syllabi
 
-Cambridge University Language Programme (CULP) syllabi, converted from PDF on 2026-10-21: 124 documents (102 syllabi, 21 programme specifications, 1 assessment framework) in 20 languages.
+Cambridge University Language Programme (CULP) syllabi, converted from PDF on 2026-10-21: 103 documents (102 syllabi, 1 assessment framework) in 20 languages.
 
-Each note links to its language hub, its strand (if any), the previous and next level in the same course sequence, and its programme specification.
+Each note links to its language hub, its strand (if any), and the previous and next level in the same course sequence. What a CEFR level (A1 to C2) means is in [[european-framework-assessment]], the Council of Europe's self-assessment grid.
 
 ## Languages
 
-| Language | Syllabi | Programme specs |
-| --- | --- | --- |
-| [[Ancient Greek]] | 1 | 0 |
-| [[Arabic]] | 6 | 2 |
-| [[British Sign Language]] | 1 | 0 |
-| [[Chinese]] | 8 | 3 |
-| [[French]] | 17 | 4 |
-| [[German]] | 10 | 3 |
-| [[Hebrew]] | 1 | 0 |
-| [[Hindi]] | 1 | 0 |
-| [[Italian]] | 7 | 3 |
-| [[Japanese]] | 5 | 0 |
-| [[Korean]] | 2 | 0 |
-| [[Latin]] | 2 | 0 |
-| [[Modern Greek]] | 4 | 0 |
-| [[Persian]] | 2 | 0 |
-| [[Portuguese]] | 7 | 0 |
-| [[Russian]] | 7 | 2 |
-| [[Spanish]] | 12 | 4 |
-| [[Swahili]] | 4 | 0 |
-| [[Turkish]] | 3 | 0 |
-| [[Urdu]] | 2 | 0 |
+| Language | Syllabi |
+| --- | --- |
+| [[Ancient Greek]] | 1 |
+| [[Arabic]] | 6 |
+| [[British Sign Language]] | 1 |
+| [[Chinese]] | 8 |
+| [[French]] | 17 |
+| [[German]] | 10 |
+| [[Hebrew]] | 1 |
+| [[Hindi]] | 1 |
+| [[Italian]] | 7 |
+| [[Japanese]] | 5 |
+| [[Korean]] | 2 |
+| [[Latin]] | 2 |
+| [[Modern Greek]] | 4 |
+| [[Persian]] | 2 |
+| [[Portuguese]] | 7 |
+| [[Russian]] | 7 |
+| [[Spanish]] | 12 |
+| [[Swahili]] | 4 |
+| [[Turkish]] | 3 |
+| [[Urdu]] | 2 |
 
 ## Strands
 
@@ -47,3 +47,7 @@ Each note links to its language hub, its strand (if any), the previous and next 
 ## All languages
 
 - [[all-languages-advanced-assessment-framework]]: CULP Advanced Level Assessment Framework (2016)
+
+## CEFR
+
+- [[european-framework-assessment]]: Common European Framework of Reference (CEFR): Self-Assessment Grid, A1 to C2, by skill

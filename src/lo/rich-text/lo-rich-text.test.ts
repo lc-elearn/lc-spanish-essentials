@@ -98,6 +98,17 @@ describe('every LO', () => {
 });
 
 describe('the example LO specifically', () => {
+  // E56: the example is the authoring reference for credits, so a copied lesson starts
+  // with a popup in the 2015 shape — paragraph, Team heading, role lines, Voices list.
+  test('names a credits popup holding a heading and a list', () => {
+    const lo = loadLo('lo-00-example');
+    expect(lo.credits).toBe('credits');
+    expect(lo.modals.credits.title).toBe('Credits');
+    const kinds = lo.modals.credits.content.map((entry) => entry.kind);
+    expect(kinds).toContain('heading');
+    expect(kinds).toContain('list');
+  });
+
   test('declares a hover card and uses it in the introduction', () => {
     const lo = loadLo('lo-00-example');
     expect(lo.hovers['lo-json']?.path).toBe('lo-config/lo-00-example/lo.json');

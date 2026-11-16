@@ -9,7 +9,7 @@
  * nothing rather than erroring, so the page still "works".
  *
  * NOT IN src/guards/ ON PURPOSE, for the same reason as `src/docs/`: `bun run guards`
- * means "the eight spec guards (a–h)", and a sandbox-freshness check is not one of
+ * means "the nine guards (a–i)", and a sandbox-freshness check is not one of
  * them. It runs in `bun run test`, which is the gate and what CI runs.
  *
  * WHY IT READS THE CSS RATHER THAN IMPORTING IT: the catalog must stay browser-safe

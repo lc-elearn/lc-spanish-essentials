@@ -17,6 +17,7 @@
  *   - BlockConfigSchema  → validates each content block's `block.json`
  *   - ExerciseConfigSchema → validates each exercise's `exercise.json`
  *   - LoExerciseConfigSchema → the same envelope as referenced BY an LO (title required)
+ *   - ExerciseSetSchema  → one exercise set inside a section's exercises[] (E57)
  *
  * WHY (spec decision #2 + §8/§9): validate-at-load. The loader (step 13c) parses
  * every part AND the assembled LO with these schemas, so a malformed manifest or a
@@ -40,6 +41,8 @@
 import { z } from 'zod';
 import { UiStringsOverrideSchema } from './ui-strings';
 import { EXERCISE_TYPE_KEYS } from './exercise-types';
+// Relative, like every other import in this file.
+import { SetTabMediaSchema } from '../lo/blocks/media-schema';
 
 /**
  * Shared behavior switches for ANY exercise (spec §5/§6). One shape for all 15
@@ -161,9 +164,22 @@ export type ExerciseConfig = z.infer<typeof ExerciseConfigSchema>;
  * HAS one (the third step of the authoring contract, design spec §13 "Rare path") — it
  * deliberately does not parse content itself, which would make a registry guard fail
  * for content reasons.
+ *
+ * `options` is loose here, as `content` is: the envelope checks and defaults the options
+ * every engine shares, and keeps the rest untouched, so an engine's own (flashcards'
+ * `srs`, `direction`, `lockDirection`) reach that engine, whose schema checks them (at
+ * load in the Node reader, at render in the engine). A closed object stripped them, and
+ * what `assembleLo` hands the page is this parse, so a lesson's deck lost them before its
+ * engine saw them. The browser reader has no engine schemas, so keeping them here is what
+ * makes both readers agree. A key the exercise's engine does not know (a typo, or a deck's
+ * `srs` on a select) is refused at load by the Node reader, naming the file and the key
+ * (`exerciseConfigSchema`, TODO E59), so it never reaches a build. Only this envelope is
+ * loose: `ExerciseConfigSchema`, which every engine schema extends, stays closed, so a
+ * fixture's typo still fails to compile.
  */
 export const LoExerciseConfigSchema = ExerciseConfigSchema.extend({
   title: z.string().min(1),
+  options: ExerciseOptionsSchema.loose().optional(),
 });
 export type LoExerciseConfig = z.infer<typeof LoExerciseConfigSchema>;
 
@@ -226,6 +242,53 @@ export const HoverConfigSchema = z
 export type HoverConfig = z.infer<typeof HoverConfigSchema>;
 
 /**
+ * An EXERCISE SET (E57): one accordion, one instruction box, then tabs that each hold one
+ * exercise folder, listed in a section's `exercises` beside the plain refs so it keeps its
+ * place among them (maintainer, 2026-11-11, spec S1).
+ *
+ * `title` is the accordion's <h3> and names the tab row; a tab's label is its exercise's
+ * own `title`, checked for uniqueness by the loader, which reads the exercise files.
+ * `instructions` is optional (S2): absent, the loader uses the one engine's default copy.
+ * A tab's `media` may have audio without a transcript (S5). Strict throughout.
+ *
+ * Spec: docs/specs/2026-11-11-tab-exercises-design.md §3.
+ */
+export const ExerciseSetTabSchema = z.strictObject({
+  /** An exercise folder ref, e.g. "03-drag-fill-gaps". */
+  exercise: z.string().min(1),
+  /** Optional image and/or audio shown above the exercise. */
+  media: SetTabMediaSchema.optional(),
+});
+
+export const ExerciseSetSchema = z.strictObject({
+  title: z.string().min(1),
+  /** Plain text; trimmed, so a blank string fails rather than showing an empty box. */
+  instructions: z.string().trim().min(1).optional(),
+  tabs: z.array(ExerciseSetTabSchema).min(2),
+});
+export type ExerciseSet = z.infer<typeof ExerciseSetSchema>;
+
+/**
+ * One entry of a section's `exercises`: a folder ref, or a set of them in tabs.
+ *
+ * Not a plain `z.union`: a failed union reports "invalid input" and hides which key was
+ * misspelt. A non-string is parsed by the set schema alone, so its own issues surface.
+ */
+export const SectionExerciseSchema = z
+  .union([z.string(), z.looseObject({})])
+  .transform((entry, ctx): string | ExerciseSet => {
+    const result = (typeof entry === 'string' ? z.string().min(1) : ExerciseSetSchema).safeParse(
+      entry,
+    );
+    if (result.success) return result.data;
+    for (const issue of result.error.issues) {
+      ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });
+    }
+    return z.NEVER;
+  });
+export type SectionExercise = z.infer<typeof SectionExerciseSchema>;
+
+/**
  * One top-level section of the page, declared BY the LO (decision D1, 2026-08-04).
  *
  * The manifest owns page structure: there is no code-side `type → section` map and
@@ -239,7 +302,8 @@ export type HoverConfig = z.infer<typeof HoverConfigSchema>;
  *
  * `blocks` / `exercises` stay separate arrays (not one `items[{kind, ref}]` list)
  * because the split mirrors the on-disk folders, so a ref resolves trivially:
- * `blocks/<ref>/block.json` vs `exercises/<ref>/exercise.json`.
+ * `blocks/<ref>/block.json` vs `exercises/<ref>/exercise.json`. An `exercises` entry
+ * may also be an exercise set, whose tabs name exercise refs (E57).
  */
 export const LoSectionSchema = z
   .object({
@@ -255,8 +319,8 @@ export const LoSectionSchema = z
     navLabel: z.string().min(1).optional(),
     /** Ordered content-block refs for this section, e.g. ["01-grammar"]. */
     blocks: z.array(z.string().min(1)).default([]),
-    /** Ordered exercise refs for this section, e.g. ["01-select", "02-fill-gaps"]. */
-    exercises: z.array(z.string().min(1)).default([]),
+    /** Ordered exercise refs and exercise sets, e.g. ["01-select", { "title": …, "tabs": … }]. */
+    exercises: z.array(SectionExerciseSchema).default([]),
   })
   .refine((section) => section.blocks.length + section.exercises.length > 0, {
     message: 'section must reference at least one block or exercise',
@@ -335,6 +399,15 @@ export const LoManifestSchema = z
     hovers: z
       .array(z.string().regex(SECTION_ID_PATTERN, 'hover id must be url-safe kebab-case'))
       .default([]),
+    /**
+     * The modal the footer's Credits button opens (E56). Optional: absent, the footer
+     * has no Credits button. Must be one of `modals`, checked below.
+     * Spec: docs/specs/2026-11-11-footer-credits-design.md §3.
+     */
+    credits: z
+      .string()
+      .regex(SECTION_ID_PATTERN, 'credits must be a modal id (url-safe kebab-case)')
+      .optional(),
   })
   .superRefine((manifest, ctx) => {
     // Duplicate ids would collide as BOTH `#anchor` targets and `{id}-heading` ids.
@@ -350,6 +423,32 @@ export const LoManifestSchema = z
       seen.add(section.id);
     });
 
+    // An exercise is used once per lesson (E57, S7): twice repeats its DOM ids and shares
+    // its saved progress. In a section or in one tab of a set, never both.
+    const usedExercises = new Set<string>();
+    manifest.sections.forEach((section, sectionIndex) => {
+      section.exercises.forEach((entry, entryIndex) => {
+        const at = ['sections', sectionIndex, 'exercises', entryIndex];
+        const uses =
+          typeof entry === 'string'
+            ? [{ ref: entry, path: at }]
+            : entry.tabs.map((tab, tabIndex) => ({
+                ref: tab.exercise,
+                path: [...at, 'tabs', tabIndex, 'exercise'],
+              }));
+        for (const { ref, path } of uses) {
+          if (usedExercises.has(ref)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: `exercise "${ref}" is used twice in this lesson — use it once, in a section or in one tab of a set`,
+              path,
+            });
+          }
+          usedExercises.add(ref);
+        }
+      });
+    });
+
     // A duplicate modal id would silently shadow one modal's content with another's.
     const seenModals = new Set<string>();
     manifest.modals.forEach((id, index) => {
@@ -362,5 +461,14 @@ export const LoManifestSchema = z
       }
       seenModals.add(id);
     });
+
+    // A Credits button that opens nothing would be a dead control in every page footer.
+    if (manifest.credits !== undefined && !manifest.modals.includes(manifest.credits)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `credits names modal "${manifest.credits}", which modals does not declare — add it to modals`,
+        path: ['credits'],
+      });
+    }
   });
 export type LoManifest = z.infer<typeof LoManifestSchema>;

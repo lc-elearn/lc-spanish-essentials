@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # Arabic
 
-Hub note for CULP Arabic: 8 documents. Part of [[CULP Syllabi]].
+Hub note for CULP Arabic: 6 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -26,10 +26,3 @@ Strand: [[Medics]]
 | Note | Level | Title |
 | --- | --- | --- |
 | [[arabic-medics-basic-1]] | Basic 1 | SSC Arabic for Medics Basic 1 Syllabus |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[arabic-basic-2-programme-spec]] | Basic 2 | CULP Basic 2 in Arabic: Programme Specification |
-| [[arabic-elementary-programme-spec]] | Elementary 1 | CULP Elementary 1 in Arabic: Programme Specification |

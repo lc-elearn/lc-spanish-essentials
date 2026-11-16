@@ -10,9 +10,16 @@
  * spacing, Unicode form and apostrophe shape fold; capitals and accents stay, so `Sí` and
  * `si` are real choices, as they are for `[a|*b]` blanks.
  *
+ * TYPED ANSWERS WITH MORE THAN ONE FORM (TODO §E54). `|` splits a typed answer into the
+ * forms it accepts (answer-alternatives.ts). None may be empty, and no two may grade the
+ * same: compared with the engine's own normalizing, capitals folded unless the exercise
+ * is `caseSensitive`, as `answerKey` (answer-feedback.ts) compares them. These checks
+ * return the END of a sentence; the schema names the row or blank that starts it.
+ *
  * Each check returns plain sentences for a course author, numbering from 1, so the build
  * error reads "question 2 offers …", beside the file and field path Zod already names.
  */
+import { splitAlternatives } from './answer-alternatives';
 import { normalizeAnswer } from './answers';
 
 /** One option a learner chooses between, and whether the author marked it correct. */
@@ -92,4 +99,50 @@ export function hasTwoDifferent(labels: readonly string[]): boolean {
  */
 export function hasTypedAnswer(answer: string, normalize: (text: string) => string): boolean {
   return normalize(answer) !== '';
+}
+
+/** How an engine normalizes a typed answer before grading it. */
+export type NormalizeAnswer = (text: string) => string;
+
+/**
+ * An answer with two or more alternatives where one is empty (`a||b`, `a|`). A lone
+ * empty answer is the schema's own "has no answer", so it is not reported here.
+ */
+export function emptyAlternativeProblems(alternatives: readonly string[]): string[] {
+  const hasEmpty = alternatives.some((alternative) => normalizeAnswer(alternative) === '');
+  return alternatives.length > 1 && hasEmpty ? ['has an empty answer: remove the extra |'] : [];
+}
+
+/**
+ * The first alternative that grades the same as an earlier one: `normalize`d, capitals
+ * folded unless `caseSensitive`. Named as the engine shows it, normalized.
+ */
+export function repeatedAlternativeProblems(
+  alternatives: readonly string[],
+  normalize: NormalizeAnswer,
+  caseSensitive: boolean,
+): string[] {
+  const keys = alternatives.map((alternative) => {
+    const normalized = normalize(alternative);
+    return caseSensitive ? normalized : normalized.toLowerCase();
+  });
+  const again = keys.findIndex((key, index) => key !== '' && keys.indexOf(key) !== index);
+  if (again === -1) return [];
+  return [`accepts "${normalize(alternatives[again])}" twice: each answer must differ`];
+}
+
+/**
+ * The faults in a typed answer written in its own field (typed-transform, dictation,
+ * conjugation), judged as written: an empty alternative, and one accepted twice.
+ */
+export function typedAnswerProblems(
+  answer: string,
+  normalize: NormalizeAnswer,
+  caseSensitive = false,
+): string[] {
+  const alternatives = splitAlternatives(answer);
+  return [
+    ...emptyAlternativeProblems(alternatives),
+    ...repeatedAlternativeProblems(alternatives, normalize, caseSensitive),
+  ];
 }

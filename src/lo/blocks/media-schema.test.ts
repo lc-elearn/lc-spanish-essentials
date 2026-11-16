@@ -5,7 +5,7 @@
  * Spec: docs/specs/2026-10-07-tabs-media-design.md §3.
  */
 import { expect, test } from 'vitest';
-import { MediaSchema } from './media-schema';
+import { MediaSchema, SetTabMediaSchema } from './media-schema';
 
 const portrait = { kind: 'portrait', src: 'images/x/speaker.svg', alt: '' };
 const figure = {
@@ -67,4 +67,21 @@ test('an unknown kind and a misspelt key both fail', () => {
 test('the transcript arrives as parsed rich-text entries', () => {
   const parsed = MediaSchema.parse({ audio, transcript });
   expect(parsed.transcript?.[1]?.kind).toBe('paragraph');
+});
+
+const setAudio = { src: 'audio/lo-00-example/placeholder.m4a' };
+
+test('a set tab takes audio without a transcript; a tabs-block tab does not (E57 S5)', () => {
+  expect(SetTabMediaSchema.safeParse({ audio: setAudio }).success).toBe(true);
+  expect(MediaSchema.safeParse({ audio: setAudio }).success).toBe(false);
+});
+
+test('a set tab keeps every other media rule', () => {
+  // A transcript still needs audio.
+  expect(SetTabMediaSchema.safeParse({ image: figure, transcript: ['Words.'] }).success).toBe(
+    false,
+  );
+  // An empty group, and a figure without alt, still fail.
+  expect(SetTabMediaSchema.safeParse({}).success).toBe(false);
+  expect(SetTabMediaSchema.safeParse({ image: { ...figure, alt: '' } }).success).toBe(false);
 });

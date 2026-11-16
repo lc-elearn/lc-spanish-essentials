@@ -8,6 +8,14 @@
 > Markdown files and a test checks them
 > ([README, "Adding or updating notes"](../culp-syllabi/README.md#adding-or-updating-notes)).
 > Where this design says "generated", read "supplied by the maintainer".
+>
+> **Since 2026-11-09 there are no programme specifications:** the 21 were removed as out
+> of date, and the Council of Europe's CEFR self-assessment grid
+> ([`european-framework-assessment.md`](../culp-syllabi/european-framework-assessment.md))
+> took their place as the description of a level. Where this design reads a note's
+> `programme_spec`, or compares a syllabus's CEFR level with its specification's, the
+> skill now reads the grid's rows for the note's `cefr` level instead
+> ([README, "The `culp-syllabus` skill"](../culp-syllabi/README.md#the-culp-syllabus-skill)).
 
 ## 1. Why
 

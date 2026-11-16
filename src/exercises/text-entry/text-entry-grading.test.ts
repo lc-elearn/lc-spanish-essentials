@@ -100,9 +100,20 @@ test('fillAnswers: reveals every expected answer, all marked correct', () => {
   expect(checkedResults).toEqual({ 0: true, 1: true });
 });
 
-test('fillAnswers: reveals the raw answer verbatim as the value', () => {
+test('fillAnswers: reveals the raw answer as written, trimmed, as the value', () => {
   // The revealed *value* is the raw answer (what the learner sees typed in), even
   // though grading compares the normalized form.
   const { values } = fillAnswers(rows('Bonjour, ça va ?'));
   expect(values[0]).toBe('Bonjour, ça va ?');
+});
+
+// TODO §E54: `|` means "or"; the first answer is the preferred one.
+test('gradeTextEntry: any accepted answer passes', () => {
+  const cars = rows('los coches|los carros|los autos');
+  expect(gradeTextEntry(cars, { 0: 'los autos' }, 'strict').checkedResults[0]).toBe(true);
+  expect(gradeTextEntry(cars, { 0: 'los coches' }, 'strict').checkedResults[0]).toBe(true);
+});
+
+test('fillAnswers: fills each row with its preferred (first) answer', () => {
+  expect(fillAnswers(rows('los coches | los carros')).values).toEqual({ 0: 'los coches' });
 });

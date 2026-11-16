@@ -7,11 +7,14 @@
  * | `[a|*b]` choice in a sentence    | select, inline-choice, reading passage         | E34/E35: parsing.ts, judged decoded          |
  * | `[answer::hint]` in a sentence   | inline-gap                                     | E34/E35: parsing.ts, judged decoded          |
  * | choice labels in their own field | radio-quiz, reading radio, line-match, memory  | non-empty, distinct, judged as written       |
- * | typed answer in its own field    | typed-transform, conjugation                   | non-empty after normalizeAnswer              |
- * |                                  | dictation                                      | non-empty after normalizeForDictation        |
+ * | typed answer in its own field    | typed-transform, conjugation                   | non-empty after normalizeAnswer; `|` alts    |
+ * |                                  | dictation                                      | non-empty after normalizeForDictation; alts  |
  * | ordered or dragged tiles         | word-order, phrase-reorder, drag-fill-gaps     | non-empty; repeats allowed, graded by text   |
  * | `[target]` to click              | word-spot                                      | non-empty                                    |
  * | no grading                       | flashcards                                     | none needed                                  |
+ *
+ * A typed answer's `|` alternatives (E54) may not be empty or repeat, compared as grading
+ * compares them.
  *
  * Fields in their own JSON property are shown as written (React prints them; nothing
  * decodes an entity), so they are judged as written, never decoded. Two labels are the
@@ -22,8 +25,12 @@ import { describe, expect, it } from 'vitest';
 import { exerciseConfigSchema } from './exercise-schemas';
 import type { ExerciseType } from '@/config/exercise-types';
 
-function problems(type: ExerciseType, content: unknown): string[] {
-  const result = exerciseConfigSchema(type).safeParse({ type, content });
+function problems(type: ExerciseType, content: unknown, options?: object): string[] {
+  const result = exerciseConfigSchema(type).safeParse({
+    type,
+    content,
+    ...(options && { options }),
+  });
   return result.success ? [] : result.error.issues.map((issue) => issue.message);
 }
 
@@ -133,6 +140,59 @@ describe('typed answers mean something after the engine normalizes them', () => 
       ],
     };
     expect(problems('conjugation', content).join()).toMatch(/row 2 \(tú\) has no answer/);
+  });
+});
+
+// TODO §E54: `|` means "or" in a typed answer, the first preferred.
+describe('typed answers with more than one form', () => {
+  const rows = (answer: string) => ({ rows: [{ prompt: 'x', answer, audio: 'audio/a.m4a' }] });
+  const conjugation = (answer: string) => ({
+    verb: 'ser',
+    rows: [
+      { person: 'yo', answer: 'soy' },
+      { person: 'tú', answer },
+    ],
+  });
+
+  it('accepts several answers in every table engine', () => {
+    expect(problems('typed-transform', rows('los coches|los carros|los autos'))).toEqual([]);
+    expect(problems('dictation', rows('Adiós|Hasta luego|Chao'))).toEqual([]);
+    expect(problems('conjugation', conjugation('eres|sos'))).toEqual([]);
+  });
+
+  it.each(['soy|', 'soy||eres', '|soy'])('refuses an empty answer: %s', (answer) => {
+    expect(problems('typed-transform', rows(answer))).toEqual([
+      'row 1 has an empty answer: remove the extra |',
+    ]);
+    expect(problems('dictation', rows(answer))).toEqual([
+      'row 1 has an empty answer: remove the extra |',
+    ]);
+    expect(problems('conjugation', conjugation(answer))).toEqual([
+      'row 2 (tú) has an empty answer: remove the extra |',
+    ]);
+  });
+
+  it('refuses the same answer twice, compared as that engine grades', () => {
+    expect(problems('typed-transform', rows('los autos|Los  autos'))).toEqual([
+      'row 1 accepts "Los autos" twice: each answer must differ',
+    ]);
+    expect(problems('dictation', rows('Hola|¡Hola!'))).toEqual([
+      'row 1 accepts "Hola" twice: each answer must differ',
+    ]);
+    expect(problems('typed-transform', rows('Hola|¡Hola!'))).toEqual([]);
+  });
+
+  it('lets two answers differ by a capital only when capitals count', () => {
+    expect(problems('conjugation', conjugation('Eres|eres'))).toEqual([
+      'row 2 (tú) accepts "eres" twice: each answer must differ',
+    ]);
+    expect(problems('conjugation', conjugation('Eres|eres'), { caseSensitive: true })).toEqual([]);
+    expect(problems('typed-transform', rows('Eres|eres'), { caseSensitive: true })).toEqual([]);
+  });
+
+  it("refuses a dictation alternative that is only what dictation's grading ignores", () => {
+    expect(problems('dictation', rows('Hola|¿?')).join()).toMatch(/row 1 has nothing to type/);
+    expect(problems('typed-transform', rows('Hola|¿?'))).toEqual([]);
   });
 });
 

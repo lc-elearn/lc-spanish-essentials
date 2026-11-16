@@ -16,10 +16,14 @@
  * who cannot hear it; a transcript without audio transcribes nothing. Both fail the
  * build with the path named, as does an empty group.
  *
+ * A SET TAB'S MEDIA (E57, spec S5) keeps every rule but one: audio may come without a
+ * transcript, because the exercise's own lines are the text and Show answers fills the gaps.
+ *
  * Every path is under the key `src`, which guard d already collects, so a missing
  * file fails the build too. STRICT throughout: a misspelt key fails.
  *
- * Spec: docs/specs/2026-10-07-tabs-media-design.md §3.
+ * Specs: docs/specs/2026-10-07-tabs-media-design.md §3;
+ *        docs/specs/2026-11-11-tab-exercises-design.md §3.
  */
 import { z } from 'zod';
 import { TextBlockContentSchema } from './text-block-schema';
@@ -47,45 +51,53 @@ export const MediaAudioSchema = z.strictObject({
 });
 export type MediaAudio = z.infer<typeof MediaAudioSchema>;
 
-export const MediaSchema = z
-  .strictObject({
-    image: MediaImageSchema.optional(),
-    audio: MediaAudioSchema.optional(),
-    /** What the audio says, one entry per paragraph. */
-    transcript: RichTextEntriesSchema.optional(),
-  })
-  .superRefine((media, ctx) => {
-    const { image, audio, transcript } = media;
-    if (image === undefined && audio === undefined) {
-      ctx.addIssue({ code: 'custom', path: [], message: 'media needs an image, audio or both' });
-    }
-    if (audio !== undefined && transcript === undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['transcript'],
-        message: 'audio needs a transcript — a learner who cannot hear the clip reads it',
-      });
-    }
-    if (audio === undefined && transcript !== undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['transcript'],
-        message: 'a transcript needs audio to transcribe',
-      });
-    }
-    if (image?.kind === 'figure' && image.alt.trim() === '') {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['image', 'alt'],
-        message: 'a figure carries information — its alt must state the takeaway',
-      });
-    }
-    if (image?.kind === 'portrait' && image.caption !== undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['image', 'caption'],
-        message: 'only a figure takes a caption',
-      });
-    }
-  });
+const MediaShape = z.strictObject({
+  image: MediaImageSchema.optional(),
+  audio: MediaAudioSchema.optional(),
+  /** What the audio says, one entry per paragraph. */
+  transcript: RichTextEntriesSchema.optional(),
+});
+
+interface MediaIssue {
+  readonly path: (string | number)[];
+  readonly message: string;
+}
+
+/** Every rule a media group keeps; `transcriptRequired` is the tabs block's audio rule. */
+function mediaIssues(media: z.infer<typeof MediaShape>, transcriptRequired: boolean): MediaIssue[] {
+  const { image, audio, transcript } = media;
+  const issues: MediaIssue[] = [];
+  if (image === undefined && audio === undefined) {
+    issues.push({ path: [], message: 'media needs an image, audio or both' });
+  }
+  if (transcriptRequired && audio !== undefined && transcript === undefined) {
+    issues.push({
+      path: ['transcript'],
+      message: 'audio needs a transcript — a learner who cannot hear the clip reads it',
+    });
+  }
+  if (audio === undefined && transcript !== undefined) {
+    issues.push({ path: ['transcript'], message: 'a transcript needs audio to transcribe' });
+  }
+  if (image?.kind === 'figure' && image.alt.trim() === '') {
+    issues.push({
+      path: ['image', 'alt'],
+      message: 'a figure carries information — its alt must state the takeaway',
+    });
+  }
+  if (image?.kind === 'portrait' && image.caption !== undefined) {
+    issues.push({ path: ['image', 'caption'], message: 'only a figure takes a caption' });
+  }
+  return issues;
+}
+
+/** A tabs-block tab's media: audio always comes with its transcript. */
+export const MediaSchema = MediaShape.superRefine((media, ctx) => {
+  for (const issue of mediaIssues(media, true)) ctx.addIssue({ code: 'custom', ...issue });
+});
 export type Media = z.infer<typeof MediaSchema>;
+
+/** An exercise-set tab's media (E57 S5): audio may come without a transcript. */
+export const SetTabMediaSchema = MediaShape.superRefine((media, ctx) => {
+  for (const issue of mediaIssues(media, false)) ctx.addIssue({ code: 'custom', ...issue });
+});

@@ -3,10 +3,9 @@
  * it is for, passes the shapes the real notes use, and passes the real folder.
  *
  * The fixtures are a small made-up folder in the real notes' shape: an index, a
- * language hub, a strand hub, a level chain with its programme specification, a strand
- * course, a theme course with no level and the all-languages framework. Each fault
- * test breaks one thing in it. Not in src/guards/ — see the header of
- * `culp-syllabi.ts`.
+ * language hub, a strand hub, a level chain, a strand course, a theme course with no
+ * level, the all-languages framework and the CEFR self-assessment grid. Each fault test
+ * breaks one thing in it. Not in src/guards/ — see the header of `culp-syllabi.ts`.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -14,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type Note,
   SYLLABI_DIR,
+  checkCefrGrid,
   checkHubs,
   checkLinks,
   checkPrivacy,
@@ -49,13 +49,44 @@ const syllabus = (name: string, meta: string, body = `# ${name}\n`): Note =>
 const french = (extra: string) =>
   `language: "[[French]]"\nlanguage_code: fr\nstrand: General\ndoc_type: syllabus\n${extra}`;
 
+const CEFR_SKILLS = ['Listening', 'Reading', 'Spoken Interaction', 'Spoken Production', 'Writing'];
+
+/** The CEFR grid's body: one `###` table per skill, one row per level. */
+const cefrGridBody = (): string =>
+  [
+    '# Common European Framework of Reference (CEFR): Self-Assessment Grid',
+    '',
+    "© Council of Europe / Conseil de l'Europe — see <https://www.coe.int/> and a < b.",
+    ...CEFR_SKILLS.flatMap((skill) => [
+      '',
+      `### ${skill}`,
+      '',
+      '| Level | Descriptor |',
+      '|-------|------------|',
+      ...['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((level) => `| **${level}** | I can ${skill}. |`),
+    ]),
+  ].join('\n');
+
 /** A small folder in the real notes' shape, with nothing wrong in it. */
 function folder(): Note[] {
   return [
     note(
       'CULP Syllabi.md',
       'title: CULP Syllabi\ndoc_type: index\ntags: [culp, index]',
-      '# CULP Syllabi\n\n| [[French]] | 4 |\n\n- [[Medics]]: medical students\n',
+      [
+        '# CULP Syllabi',
+        '',
+        '| [[French]] | 4 |',
+        '',
+        '- [[Medics]]: medical students',
+        '- [[european-framework-assessment]]: the CEFR self-assessment grid',
+        '',
+      ].join('\n'),
+    ),
+    note(
+      'european-framework-assessment.md',
+      'title: "CEFR: Self-Assessment Grid"\ndoc_type: cefr-grid\ntags: [culp, cefr]',
+      cefrGridBody(),
     ),
     note(
       'languages/French.md',
@@ -64,7 +95,7 @@ function folder(): Note[] {
         '# French',
         '',
         '| [[french-basic-1]] | [[french-basic-2]] | [[french-pronunciation]] |',
-        '| [[french-medics-intermediate-1]] | [[french-basic-programme-spec]] |',
+        '| [[french-medics-intermediate-1]] |',
       ].join('\n'),
     ),
     note(
@@ -74,34 +105,14 @@ function folder(): Note[] {
     ),
     syllabus(
       'french-basic-1',
-      french(
-        'level: Basic 1\nlevel_order: 10\nnext_level: "[[french-basic-2]]"\nprogramme_spec: "[[french-basic-programme-spec]]"',
-      ),
+      french('level: Basic 1\nlevel_order: 10\nnext_level: "[[french-basic-2]]"\ncefr: A1'),
     ),
     syllabus(
       'french-basic-2',
       french(
-        'level: Basic 2\nlevel_order: 20\nprevious_level: "[[french-basic-1]]"\nprogramme_spec: "[[french-basic-programme-spec]]"\ndocument_date: 2022-03',
+        'level: Basic 2\nlevel_order: 20\nprevious_level: "[[french-basic-1]]"\ndocument_date: 2022-03',
       ),
       '# Basic 2\n\nAfter [[french-basic-1|Basic 1]]; see [[french-basic-1#Lesson 3]].\n\n> [!important] Assessment\n> Orals\n',
-    ),
-    note(
-      'syllabi/french-basic-programme-spec.md',
-      [
-        'title: "CULP Basic in French: Programme Specification"',
-        'language: "[[French]]"',
-        'language_code: fr',
-        'level: Basic',
-        'level_order: 10',
-        'strand: General',
-        'syllabi:',
-        '  - "[[french-basic-1]]"',
-        '  - "[[french-basic-2]]"',
-        'doc_type: programme-spec',
-        'source_date: 2012-03-19',
-        'tags: [culp, programme-spec]',
-      ].join('\n'),
-      '# Spec\n\nSee <https://www.admin.cam.ac.uk/> and a < b.\n',
     ),
     syllabus(
       'french-medics-intermediate-1',
@@ -130,13 +141,25 @@ function edited(file: string, edit: (text: string) => string): Note[] {
 
 describe('parseNote', () => {
   it('reads plain, quoted, flow-list and block-list values', () => {
-    const spec = folder().find((n) => n.name === 'french-basic-programme-spec');
-    expect(spec?.meta).toMatchObject({
-      title: 'CULP Basic in French: Programme Specification',
+    const parsed = note(
+      'syllabi/x.md',
+      [
+        'title: "CULP Basic 1: Syllabus"',
+        'language: "[[French]]"',
+        'level_order: 10',
+        'related:',
+        '  - "[[french-basic-1]]"',
+        '  - "[[french-basic-2]]"',
+        'tags: [culp, syllabus]',
+      ].join('\n'),
+      '# X\n',
+    );
+    expect(parsed.meta).toMatchObject({
+      title: 'CULP Basic 1: Syllabus',
       language: '[[French]]',
       level_order: '10',
-      syllabi: ['[[french-basic-1]]', '[[french-basic-2]]'],
-      tags: ['culp', 'programme-spec'],
+      related: ['[[french-basic-1]]', '[[french-basic-2]]'],
+      tags: ['culp', 'syllabus'],
     });
   });
 
@@ -173,6 +196,7 @@ describe('a correct folder', () => {
       ...checkShape(notes, LEVELS),
       ...checkLinks(notes),
       ...checkHubs(notes),
+      ...checkCefrGrid(notes),
       ...checkPrivacy(notes),
     ]).toEqual([]);
   });
@@ -215,11 +239,11 @@ describe('checkShape catches', () => {
     ).toMatch(/french-basic-1\.md: doc_type "notes"/);
   });
 
-  it('a programme specification whose name does not say so, and the other way round', () => {
+  it('a programme specification, which the folder no longer holds', () => {
     const notes = edited('syllabi/french-basic-1.md', (t) =>
       t.replace('doc_type: syllabus', 'doc_type: programme-spec'),
     );
-    expect(shape(notes)).toMatch(/french-basic-1\.md: .*programme-spec/);
+    expect(shape(notes)).toMatch(/french-basic-1\.md: doc_type "programme-spec" is not one of/);
   });
 
   it('a level without a level_order', () => {
@@ -310,22 +334,17 @@ describe('checkLinks catches', () => {
     ).toMatch(/french-basic-2: previous_level is french-basic-1, whose next_level is none/);
   });
 
-  it('a programme_spec that does not list the syllabus back', () => {
+  it('a programme_spec left behind, which names a note no longer there', () => {
     expect(
       links(
-        edited('syllabi/french-basic-programme-spec.md', (t) =>
-          t.replace('  - "[[french-basic-2]]"\n', ''),
+        edited('syllabi/french-basic-2.md', (t) =>
+          t.replace(
+            'strand: General',
+            'strand: General\nprogramme_spec: "[[french-basic-programme-spec]]"',
+          ),
         ),
       ),
-    ).toMatch(
-      /french-basic-2: programme_spec is french-basic-programme-spec, which does not list it/,
-    );
-  });
-
-  it('a programme specification listing a syllabus that points elsewhere', () => {
-    expect(
-      links(edited('syllabi/french-basic-2.md', (t) => t.replace(/^programme_spec: .*\n/m, ''))),
-    ).toMatch(/french-basic-programme-spec: lists french-basic-2, whose programme_spec is none/);
+    ).toMatch(/french-basic-2\.md: \[\[french-basic-programme-spec\]\] is not a note/);
   });
 
   it('a one-way related link', () => {
@@ -382,6 +401,52 @@ describe('checkHubs catches', () => {
   });
 });
 
+describe('checkCefrGrid catches', () => {
+  const grid = (notes: readonly Note[]) => checkCefrGrid(notes).join('\n');
+
+  it('a missing grid', () => {
+    expect(grid(folder().filter((n) => n.name !== 'european-framework-assessment'))).toMatch(
+      /no european-framework-assessment\.md in docs\/culp-syllabi\//,
+    );
+  });
+
+  it('a skill the grid leaves out', () => {
+    expect(
+      grid(
+        edited('european-framework-assessment.md', (t) =>
+          t.replace('### Spoken Production', '### Spoken Output'),
+        ),
+      ),
+    ).toMatch(/european-framework-assessment\.md: no ### Spoken Production section/);
+  });
+
+  it('a level a skill leaves out', () => {
+    expect(
+      grid(
+        edited('european-framework-assessment.md', (t) =>
+          t.replace('| **B2** | I can Reading. |\n', ''),
+        ),
+      ),
+    ).toMatch(/european-framework-assessment\.md: no B2 row under Reading/);
+  });
+
+  it('an index that does not list the grid', () => {
+    expect(
+      grid(
+        edited('CULP Syllabi.md', (t) =>
+          t.replace('- [[european-framework-assessment]]: the CEFR self-assessment grid\n', ''),
+        ),
+      ),
+    ).toMatch(/CULP Syllabi does not list \[\[european-framework-assessment\]\]/);
+  });
+
+  it('a cefr value that is not a level in the grid', () => {
+    expect(
+      grid(edited('syllabi/french-basic-1.md', (t) => t.replace('cefr: A1', 'cefr: A1+'))),
+    ).toMatch(/french-basic-1\.md: cefr "A1\+" is not a CEFR level/);
+  });
+});
+
 describe('checkPrivacy', () => {
   const privacy = (notes: readonly Note[]) => checkPrivacy(notes).join('\n');
 
@@ -404,11 +469,11 @@ describe('checkPrivacy', () => {
 
 describe('checkReadmeCounts', () => {
   const README = [
-    '…converted on 2026-10-21: 6 documents in 1 languages.',
-    '| `syllabi/` | 6 notes, one per document: 4 syllabi, 1 programme specifications (`x`) |',
+    '…converted on 2026-10-21: 5 documents in 1 languages.',
+    '| `syllabi/` | 5 notes, one per document: 4 syllabi and one assessment framework |',
     '| `languages/` | 1 hubs, one per language |',
     '| `strands/` | 1 hubs: Medics |',
-    '| `document_date` | printed date, where it prints one (5 of 6 do not), and … |',
+    '| `document_date` | printed date, where it prints one (4 of 5 do not), and … |',
   ].join('\n');
 
   it('passes when every number matches the folder', () => {
@@ -432,9 +497,9 @@ describe('the CULP syllabi in docs/culp-syllabi', () => {
   const notes = loadNotes();
   const readme = readFileSync(path.join(SYLLABI_DIR, 'README.md'), 'utf8');
 
-  it('are all read (floor: 124 documents, 26 hubs and the index)', () => {
-    expect(notes.filter((n) => n.file.startsWith('syllabi/')).length).toBeGreaterThanOrEqual(124);
-    expect(notes.filter((n) => !n.file.startsWith('syllabi/')).length).toBeGreaterThanOrEqual(27);
+  it('are all read (floor: 103 documents, 26 hubs, the index and the CEFR grid)', () => {
+    expect(notes.filter((n) => n.file.startsWith('syllabi/')).length).toBeGreaterThanOrEqual(103);
+    expect(notes.filter((n) => !n.file.startsWith('syllabi/')).length).toBeGreaterThanOrEqual(28);
   });
 
   it('are each in the right shape', () => {
@@ -447,6 +512,10 @@ describe('the CULP syllabi in docs/culp-syllabi', () => {
 
   it('are each listed in their hubs, and every hub in the index', () => {
     expect(checkHubs(notes)).toEqual([]);
+  });
+
+  it('hold a whole CEFR grid, which the index lists and every cefr value names', () => {
+    expect(checkCefrGrid(notes)).toEqual([]);
   });
 
   it('hold no email address and no HTML', () => {

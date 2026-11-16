@@ -14,9 +14,9 @@
  * THREE OPTIONS WERE ON THE TABLE, AND THIS TAKES THE FIRST:
  *
  *   1. A TEST that regenerates the tree and asserts it matches what STRUCTURE.md
- *      commits. CHOSEN. It fails loudly in CI, in the same shape as the eight guards,
+ *      commits. CHOSEN. It fails loudly in CI, in the same shape as the nine guards,
  *      and `bun run test` is what CI already runs — so it needs no new CI step and
- *      cannot be skipped. This repo already trusts exactly this pattern eight times.
+ *      cannot be skipped. This repo already trusts exactly this pattern nine times.
  *   2. A pre-commit step in lint-staged.config.mjs. Rejected: it is bypassable with
  *      `--no-verify`, and it would silently REWRITE a file the author did not stage,
  *      which is a surprising thing for a formatter hook to do.
@@ -25,7 +25,7 @@
  *
  * WHERE THE TEST LIVES, AND WHY NOT `src/guards/`. `docs-tree.test.ts` sits beside this
  * file. It is deliberately NOT in src/guards/: that glob is `bun run guards`, and that
- * command means "the eight spec guards (a–h)". A docs-freshness check is not one of
+ * command means "the nine guards (a–i)". A docs-freshness check is not one of
  * them, and filing it there would make `bun run guards` report a count that no longer
  * matches the thing it claims to run. It still runs in `bun run test`, which is the
  * gate that matters.

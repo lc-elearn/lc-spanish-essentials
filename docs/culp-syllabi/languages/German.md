@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # German
 
-Hub note for CULP German: 13 documents. Part of [[CULP Syllabi]].
+Hub note for CULP German: 10 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -44,11 +44,3 @@ Strand: [[Medics]]
 | Note | Level | Title |
 | --- | --- | --- |
 | [[german-medics-intermediate-1]] | Intermediate 1 | German for Medics Intermediate 1 |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[german-basic-programme-spec]] | Basic | CULP Basic in German: Programme Specification |
-| [[german-intermediate-1-programme-spec]] | Intermediate 1 | CULP Intermediate 1 in German: Programme Specification |
-| [[german-intermediate-2-programme-spec]] | Intermediate 2 | CULP Intermediate 2 in German: Programme Specification |

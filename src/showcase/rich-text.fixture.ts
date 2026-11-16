@@ -3,7 +3,7 @@
  *
  * AUTHORED strings, exactly as they would appear in a `block.json` `text[]` or a
  * `modal.json` `content[]`, parsed here by the same `parseRichTextEntry` the loader
- * uses — so the showcase renders what an author's file would, and a typo here fails
+ * uses (as page prose: without the popup-only `<h3>`, E56) — so the showcase renders what an author's file would, and a typo here fails
  * at import like a bad LO file fails at load.
  *
  * Audio stays in the showcase quarantine, `audio/showcase-demo/` (see
@@ -37,7 +37,12 @@ export const RICH_TEXT_SHOWCASE_HOVER_SOURCE = {
   },
 } as const;
 
-/** One per entry kind, in the order an author would most likely meet them. */
+/**
+ * One per entry kind that page prose accepts, in the order an author would most likely
+ * meet them. A popup may also hold an `<h3>` (E56); it is left out here because this
+ * list also renders as page prose, which refuses one. `lo-00-example`'s credits popup
+ * shows it.
+ */
 export const RICH_TEXT_SHOWCASE_SOURCE: readonly string[] = [
   `A paragraph holds inline rich text: <strong>strong</strong>, <em>em</em>, a line break,<br>and a speaker icon mid-sentence <span data-audio="${CLIP}" data-audio-label="Play the demo clip"></span>`,
   '<ul><li>An unordered list for loose points.</li><li>Items hold inline rich text — <strong>strong</strong>, <em>em</em>, popup links and speakers.</li></ul>',

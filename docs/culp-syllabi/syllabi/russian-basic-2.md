@@ -8,7 +8,6 @@ level_order: 20
 strand: General
 previous_level: "[[russian-basic-1]]"
 next_level: "[[russian-intermediate-1]]"
-programme_spec: "[[russian-basic-programme-spec]]"
 doc_type: syllabus
 weeks: 15
 document_date: 2023-10-09

@@ -212,6 +212,13 @@ show-after-wrong-check reveal are implicit (always on), so they are **not** fiel
 > capitals count when true; accents always count; maintainer 2026-10-08). Reset is still
 > implicit; the reveal is still always on unless `allowShowAnswers: false`.
 
+> **Amended 2026-11-11 (TODO §E58, §E59).** Flashcards extends the shared block with
+> three options of its own (`FlashcardsOptionsSchema` in
+> `src/exercises/flashcards/flashcards-schema.ts`). A lesson's envelope keeps them for
+> the engine, and the load check refuses any key the exercise's engine does not declare,
+> naming the file and the key. The author-facing rule:
+> [`CONTRIBUTING.md` → "Exercise options"](../../CONTRIBUTING.md#exercise-options).
+
 **`sampleSize` example** — a 20-word vocab bank, quiz a random 5 each visit:
 
 ```jsonc

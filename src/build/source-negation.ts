@@ -21,10 +21,10 @@
  * There is no error to notice. That is precisely the failure a test has to convert into
  * a red one.
  *
- * WHY IT IS NOT IN `src/guards/`. That folder means "the eight spec guards" and
+ * WHY IT IS NOT IN `src/guards/`. That folder means "the nine guards" and
  * `bun run guards` is that glob. This is a staleness check over a config list, not a
  * clause of spec §17/§136/§138 — the same reasoning that put the docs-freshness test in
- * `src/docs/` rather than making the guard count read as nine. It still runs in
+ * `src/docs/` rather than counting it as a tenth guard. It still runs in
  * `bun run test`, which is the gate.
  *
  * WHY THE DEADNESS WALK IS A FIXED POINT AND NOT A GREP. "Has no importer" is the wrong
@@ -43,6 +43,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { stripComments } from '../guards/asset-path';
+import { toPosixPath } from './posix-path';
 
 /** Repo-relative folder holding the vendored shadcn wrappers. */
 export const UI_DIR = 'src/components/ui';
@@ -99,7 +100,7 @@ export function readAppSources(rootDir: string = repoRoot()): SourceFile[] {
       if (!SOURCE_EXTENSIONS.includes(path.extname(entry.name))) continue;
       const full = path.join(dir, entry.name);
       out.push({
-        path: path.relative(rootDir, full).split(path.sep).join('/'),
+        path: toPosixPath(path.relative(rootDir, full)),
         text: readFileSync(full, 'utf8'),
       });
     }

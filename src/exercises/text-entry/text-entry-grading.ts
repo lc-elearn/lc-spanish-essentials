@@ -10,6 +10,7 @@
  *
  * Spec: docs/specs/2026-06-19-exercise-engines-design.md §7, §8, §9.
  */
+import { splitAlternatives } from '@/exercises/lib/answer-alternatives';
 import {
   gradeTypedAnswers,
   type ComparisonMode,
@@ -42,7 +43,7 @@ export function gradeTextEntry(
   caseSensitive = false,
 ): TextEntryGradeResult {
   return gradeTypedAnswers(
-    rows.map((row) => row.answer),
+    rows.map((row) => splitAlternatives(row.answer)),
     values,
     misses,
     mode,
@@ -50,12 +51,15 @@ export function gradeTextEntry(
   );
 }
 
-/** Reveal every answer: fill each row's value with its expected answer, all correct. */
+/**
+ * Reveal every answer: fill each row with its preferred (first) answer, trimmed
+ * (`splitAlternatives`), all correct.
+ */
 export function fillAnswers(rows: readonly TextEntryRow[]): TextEntryFillResult {
   const values: Record<number, string> = {};
   const checkedResults: Record<number, boolean> = {};
   rows.forEach((row, index) => {
-    values[index] = row.answer;
+    values[index] = splitAlternatives(row.answer)[0];
     checkedResults[index] = true;
   });
   return { values, checkedResults };

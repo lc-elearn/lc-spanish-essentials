@@ -1,0 +1,4 @@
+# New issue offers only the forms in this folder (Bug report, Template request), so every
+# issue shows the "issues here are public" warning. Decided 2026-11-09 by the maintainer.
+# It changes the web page only: `gh issue create` (the Claude skills) still works.
+blank_issues_enabled: false

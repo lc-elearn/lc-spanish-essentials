@@ -9,10 +9,26 @@
  */
 import { z } from 'zod';
 import { ExerciseConfigSchema } from '@/config/lo-schema';
+import { typedAnswerProblems } from '../lib/answer-checks';
+import { normalizeAnswer } from '../lib/answers';
 import { TextEntryContentSchema } from '../text-entry/text-entry-schema';
 
 export const TypedTransformExerciseConfigSchema = ExerciseConfigSchema.extend({
   type: z.literal('typed-transform'),
   content: TextEntryContentSchema,
-});
+})
+  // An answer's `|` alternatives (TODO §E54): none empty, none twice. Checked here, on
+  // the envelope, the one schema that sees `options.caseSensitive`.
+  .superRefine((config, ctx) => {
+    const caseSensitive = config.options?.caseSensitive ?? false;
+    config.content.rows.forEach((row, index) => {
+      for (const end of typedAnswerProblems(row.answer, normalizeAnswer, caseSensitive)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `row ${index + 1} ${end}`,
+          path: ['content', 'rows', index, 'answer'],
+        });
+      }
+    });
+  });
 export type TypedTransformExerciseConfig = z.infer<typeof TypedTransformExerciseConfigSchema>;

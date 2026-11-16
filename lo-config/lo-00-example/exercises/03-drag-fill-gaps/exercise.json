@@ -1,0 +1,12 @@
+{
+  "type": "drag-fill-gaps",
+  "title": "Part 1",
+  "content": {
+    "items": [
+      { "text": "Yo [soy] de Madrid y ella [vive] en París." },
+      { "text": "Nosotros [tenemos] hambre y vosotros [tenéis] sed." }
+    ],
+    "footnote": "Demo hint line — drag each word to its gap."
+  },
+  "options": { "shuffle": true }
+}

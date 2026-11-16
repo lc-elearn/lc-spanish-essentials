@@ -16,6 +16,8 @@
  * The player is `AudioClip`'s native variant inside `.rich-text-player`, the same
  * element a rich-text audio player renders, so the two look identical.
  *
+ * In an exercise-set tab the transcript may be absent (E57); the player then renders alone.
+ *
  * Spec: docs/specs/2026-10-07-tabs-media-design.md §4.
  */
 import { Eye, EyeOff } from 'lucide-react';
@@ -79,7 +81,8 @@ function Listening({
   wide,
 }: {
   audio: MediaAudio;
-  transcript: readonly RichTextEntry[];
+  /** Absent only in an exercise-set tab, where the exercise's lines are the text (E57). */
+  transcript: readonly RichTextEntry[] | undefined;
   /** Lift the player's 28rem cap so it spans a figure above it. */
   wide: boolean;
 }) {
@@ -88,18 +91,18 @@ function Listening({
       <div className={cn('rich-text-player', wide && '[&_audio]:max-w-none')}>
         <AudioClip soundFile={audio.src} listenText={audio.label ?? ''} />
       </div>
-      <Transcript entries={transcript} />
+      {transcript === undefined ? null : <Transcript entries={transcript} />}
     </div>
   );
 }
 
 export function MediaPanel({ media, className }: { media: Media; className?: string }) {
   const { image, audio, transcript } = media;
-  // The schema pairs audio with a transcript; the types cannot, so check both.
+  // The schemas decide whether audio needs a transcript; the panel shows what it is given.
   const listening =
-    audio !== undefined && transcript !== undefined ? (
+    audio === undefined ? null : (
       <Listening audio={audio} transcript={transcript} wide={image?.kind === 'figure'} />
-    ) : null;
+    );
 
   if (image?.kind === 'portrait') {
     return (

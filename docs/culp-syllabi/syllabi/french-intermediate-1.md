@@ -8,7 +8,6 @@ level_order: 50
 strand: General
 previous_level: "[[french-basic-2]]"
 next_level: "[[french-intermediate-2]]"
-programme_spec: "[[french-intermediate-1-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2021-09-20

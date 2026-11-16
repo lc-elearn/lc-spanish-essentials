@@ -7,7 +7,7 @@ tags: [culp, language]
 
 # Italian
 
-Hub note for CULP Italian: 10 documents. Part of [[CULP Syllabi]].
+Hub note for CULP Italian: 7 documents. Part of [[CULP Syllabi]].
 
 ## Syllabi
 
@@ -20,11 +20,3 @@ Hub note for CULP Italian: 10 documents. Part of [[CULP Syllabi]].
 | [[italian-upper-intermediate-stories-and-film]] | Upper Intermediate | Italian Through Stories & Film (Pilot) |
 | [[italian-advanced]] | Advanced | CULP Italian Advanced |
 | [[italian-literature-and-film]] |  | Italian Through Literature and Film |
-
-## Programme specifications
-
-| Note | Level | Title |
-| --- | --- | --- |
-| [[italian-basic-programme-spec]] | Basic | CULP Basic in Italian: Programme Specification |
-| [[italian-intermediate-1-programme-spec]] | Intermediate 1 | CULP Intermediate 1 in Italian: Programme Specification |
-| [[italian-intermediate-2-programme-spec]] | Intermediate 2 | CULP Intermediate 2 in Italian: Programme Specification |

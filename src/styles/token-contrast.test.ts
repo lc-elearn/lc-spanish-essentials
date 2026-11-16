@@ -10,7 +10,7 @@
  * surface would have shipped it.
  *
  * WHY HERE AND NOT IN src/guards/: the same reasoning as `token-presets.test.ts` — that
- * glob is `bun run guards`, the eight spec guards. This runs in `bun run test`.
+ * glob is `bun run guards`, the nine guards. This runs in `bun run test`.
  *
  * The resolver is calibrated against Chromium, not just against itself: the dark
  * `--muted` mix must come out as the `#494d55` axe read off the rendered page.

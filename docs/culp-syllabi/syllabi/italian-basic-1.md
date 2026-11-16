@@ -7,7 +7,6 @@ level: Basic 1
 level_order: 10
 strand: General
 next_level: "[[italian-basic-2]]"
-programme_spec: "[[italian-basic-programme-spec]]"
 doc_type: syllabus
 document_date: 2023-08-14
 source_date: 2023-08-14

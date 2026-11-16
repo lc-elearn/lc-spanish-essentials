@@ -52,3 +52,16 @@ describe('fillConjugationAnswers', () => {
     expect(checkedResults[1]).toBe(true);
   });
 });
+
+// TODO §E54: `|` means "or"; the first answer is the preferred one.
+describe('more than one accepted form', () => {
+  const plural: ConjugationRow[] = [{ person: 'ustedes', answer: 'hablan|ustedes hablan' }];
+
+  test('any accepted form is right', () => {
+    expect(gradeConjugation(plural, { 0: 'ustedes hablan' }).checkedResults[0]).toBe(true);
+  });
+
+  test('Show answers fills the preferred (first) form', () => {
+    expect(fillConjugationAnswers(plural).values).toEqual({ 0: 'hablan' });
+  });
+});

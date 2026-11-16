@@ -34,6 +34,7 @@ function App({ lo }: AppProps) {
           hero={lo.hero}
           sections={sections}
           themeToggle={<ThemeToggle />}
+          credits={lo.credits}
         />
       </HoverProvider>
     </ModalProvider>

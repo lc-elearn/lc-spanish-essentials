@@ -84,3 +84,41 @@ describe('InlineGapExerciseConfigSchema', () => {
     ).toThrow();
   });
 });
+
+// TODO §E54: "twice" depends on options.caseSensitive, which only the envelope sees.
+describe('InlineGapExerciseConfigSchema — an answer accepted twice', () => {
+  const config = (text: string, options?: { caseSensitive: boolean }) => ({
+    type: 'inline-gap',
+    content: { items: [{ text: 'Yo [soy::ser].' }, { text }] },
+    ...(options ? { options } : {}),
+  });
+
+  test('accepts several different answers', () => {
+    expect(
+      InlineGapExerciseConfigSchema.safeParse(config('Mi padre es [profesor|maestro|docente].'))
+        .success,
+    ).toBe(true);
+  });
+
+  test('refuses a repeat, on its own sentence', () => {
+    const result = InlineGapExerciseConfigSchema.safeParse(config('Yo [soy|Soy::ser].'));
+    expect(result.error?.issues.map((issue) => issue.path)).toEqual([
+      ['content', 'items', 1, 'text'],
+    ]);
+    expect(result.error?.issues[0].message).toBe(
+      'the blank [soy|Soy::ser] accepts "Soy" twice: each answer must differ',
+    );
+  });
+
+  test('keeps two answers that differ by a capital when capitals count', () => {
+    expect(
+      InlineGapExerciseConfigSchema.safeParse(config('Yo [soy|Soy::ser].', { caseSensitive: true }))
+        .success,
+    ).toBe(true);
+  });
+
+  test('refuses an empty answer at the content level', () => {
+    const result = InlineGapContentSchema.safeParse({ items: [{ text: 'Yo [soy|::ser].' }] });
+    expect(result.error?.issues[0].message).toContain('has an empty answer: remove the extra |');
+  });
+});

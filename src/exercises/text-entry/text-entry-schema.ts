@@ -9,7 +9,8 @@
  *   - rows[]     one gradeable row each:
  *       - prompt?   the cue shown to the learner (a base form to transform); omit for
  *                   audio-only rows (dictation).
- *       - answer    the expected typed response (the transformed form / transcription).
+ *       - answer    the expected typed response (the transformed form / transcription);
+ *                   several accepted forms split by `|`, the first preferred (TODO §E54).
  *       - audio?    optional per-row clip (click-to-play speaker).
  *   - columns?   optional header labels { prompt, answer } for the two text columns.
  *   - footnote?  optional plain-text note under the table.

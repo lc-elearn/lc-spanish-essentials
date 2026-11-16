@@ -9,7 +9,6 @@ level_order: 60
 strand: General
 previous_level: "[[spanish-intermediate-1]]"
 next_level: "[[spanish-upper-intermediate-stories-and-film]]"
-programme_spec: "[[spanish-intermediate-2-programme-spec]]"
 doc_type: syllabus
 lessons: 15
 document_date: 2025-08-04

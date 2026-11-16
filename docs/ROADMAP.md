@@ -102,7 +102,8 @@ rejects existing content is a major version); a `CHANGELOG.md`; the sync skill r
 it and says what changed.
 
 **Start when** the organisation move is done (TODO §E2) and a second course repo syncs
-from the template.
+from the template. The second half has happened: French and Russian merged a template
+update on 2026-11-09.
 
 ## 4. Packaging for Moodle or another learning platform
 
@@ -150,9 +151,10 @@ imported by 17 source files). Content in any variety can already be written and
 recorded, and a title can say which variety it is, but all of it carries the course's
 code. Modals and hover cards take their own `lang`
 ([`src/config/lo-schema.ts`](../src/config/lo-schema.ts)); exercises and blocks do not.
-A typed answer has one expected form (`answer` in
-[`text-entry-schema.ts`](../src/exercises/text-entry/text-entry-schema.ts),
-`[expected::hint]` in the typed gap), so `fato` and `facto` cannot both be right. Region
+A typed answer can accept more than one form, split by `|`, the preferred first
+(`[fato|facto::hint]` in the typed gap, `"answer": "fato|facto"` in
+[`text-entry-schema.ts`](../src/exercises/text-entry/text-entry-schema.ts); TODO §E54), but
+every learner is offered the same forms, whatever their variety. Region
 codes already read well: the flashcards name the language with `Intl.DisplayNames`,
 which gives "Brazilian Portuguese" for `pt-BR`, "European Portuguese" for `pt-PT` and
 "Arabic (Syria)" for `ar-SY`.
@@ -175,8 +177,10 @@ which gives "Brazilian Portuguese" for `pt-BR`, "European Portuguese" for `pt-PT
 - **The prerender.** Pages are built with the first variety, so a remembered other
   choice applies after hydration. The spec decides whether that swap is acceptable or
   the choice is applied before the first paint.
-- **Typed answers that accept more than one form** (`fato` or `facto`), useful with or
-  without the switch. The separator cannot be `|`: choice blanks already use it.
+- **Typed answers that accept more than one form** (`fato` or `facto`): taken out of this
+  item and shipped on its own with `|` as the separator (`[fato|facto]`, TODO §E54,
+  [`docs/specs/2026-11-10-typed-answer-alternatives-design.md`](specs/2026-11-10-typed-answer-alternatives-design.md)).
+  Each exercise type reads its own blanks, so choice blanks keep `|` too.
 - **Budget.** The headroom is 2.82 kB of JS and 1.04 kB of CSS
   ([`docs/TOOLING.md`](TOOLING.md), "Bundle budget"), so the switch loads only in a
   course that lists varieties.
@@ -192,3 +196,27 @@ side by side? That is a comparison view, more work than a switch.
 **Start when** the first course that needs a switch is planned (Portuguese, Spanish, or
 an Arabic course across dialects), after the organisation move (TODO §E2). An Arabic
 course needs item 1 first, so build the switch with text direction in mind.
+
+## 8. The checks on Windows in CI
+
+**Why.** CI runs on Linux only (`runs-on: ubuntu-latest` in
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml)), but authors also work on
+Windows. Template issue 85 showed the gap: on Windows, Node's `path.relative` and
+`path.join` return backslashes, so a path compared with a `/` string passes on Linux and
+fails there.
+
+**Today.** E53 added `toPosixPath()` ([`src/build/posix-path.ts`](../src/build/posix-path.ts)),
+and every place that compares such a path now goes through it. Its own test builds a
+Windows path with `path.win32`, so the helper is checked on any OS. The call sites are
+not. A removed `toPosixPath()` call, or a new comparison written without one, keeps
+Linux CI green and breaks `bun run guards`, and so the pre-push hook, on Windows only.
+
+**What it touches.** A `windows-latest` job in `ci.yml` that runs what the pre-push hook
+runs (`bun run guards`, `bun run test`). Browser tests stay on Linux. Ruleset A
+requires five named checks in every course (ORGANIZATION step 6), so the new job runs
+beside them, not required, until it has proved stable; making it required means
+changing ruleset A in every course too. It adds a Windows runner's minutes to every
+run.
+
+**Start when** another Windows-only failure reaches an author, or before more authors
+start on Windows.

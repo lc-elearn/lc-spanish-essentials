@@ -3,7 +3,8 @@
  *
  * Spec §14. An entry that starts with `<ul>`, `<ol>`, `<table>` or a
  * `<span data-audio-player>` is a block and must span the whole entry; anything else
- * is a paragraph, parsed exactly as before by `parseRichText`. The same closed-allowlist,
+ * is a paragraph, parsed exactly as before by `parseRichText`. In a popup only
+ * (`options.headings`, E56), an `<h3>` entry is a heading block too. The same closed-allowlist,
  * loud-failure contract as the inline parser (R2): every structural rule below throws
  * with a message an author can act on, and nothing is ever silently flattened.
  *
@@ -205,14 +206,65 @@ function parsePlayer(cursor: Cursor, tag: Tag): RichTextEntry {
   return { kind: 'audioPlayer', soundFile, label };
 }
 
+/** Options for `parseRichTextEntry`. */
+export interface RichTextEntryOptions {
+  /**
+   * Accept one `<h3>` as a whole entry. Only popups pass `true`: the dialog title is
+   * the h2, while the page's headings come from its sections
+   * (docs/specs/2026-11-11-footer-credits-design.md §4).
+   */
+  readonly headings?: boolean;
+}
+
+const HEADING_TAG = /^h[1-6]$/;
+
+/** True when `nodes` hold no visible text at any depth; a line break is not text. */
+function isBlank(nodes: readonly RichTextNode[]): boolean {
+  return nodes.every((node) => {
+    if (node.kind === 'text') return node.value.trim() === '';
+    if (node.kind === 'break') return true;
+    return 'children' in node && isBlank(node.children);
+  });
+}
+
+function parseHeading(
+  cursor: Cursor,
+  name: string,
+  headings: boolean,
+  source?: string,
+): RichTextEntry {
+  if (!headings) {
+    cursor.fail(
+      `<${name}>: headings are allowed only in popups (modal.json) — the page's headings ` +
+        'come from its sections',
+    );
+  }
+  if (name !== 'h3') {
+    cursor.fail(
+      `<${name}>: use <h3> — the popup's title is its heading, so a heading inside it is ` +
+        'one level below',
+    );
+  }
+  cursor.readBareTag();
+  const children = parseRichText(cursor.readBodyUntilClose('h3'), source);
+  if (isBlank(children)) cursor.fail('<h3> needs text');
+  cursor.expectEnd('h3');
+  return { kind: 'heading', children };
+}
+
 /**
  * Parse one authored rich-text array entry.
  *
  * @param html the authored string
  * @param source optional author-facing path, prefixed onto any error message
+ * @param options `headings: true` in a popup only
  * @throws Error on any structural rule in spec §14, and on anything `parseRichText` rejects
  */
-export function parseRichTextEntry(html: string, source?: string): RichTextEntry {
+export function parseRichTextEntry(
+  html: string,
+  source?: string,
+  options: RichTextEntryOptions = {},
+): RichTextEntry {
   const fail = failWith(source);
   const start = html.length - html.trimStart().length;
   if (html[start] === '<') {
@@ -220,6 +272,14 @@ export function parseRichTextEntry(html: string, source?: string): RichTextEntry
     if (!first.isClosing) {
       if (first.name === 'span' && first.attributes['data-audio-player'] !== undefined) {
         return parsePlayer(new Cursor(html, first.end, fail), first);
+      }
+      if (HEADING_TAG.test(first.name)) {
+        return parseHeading(
+          new Cursor(html, start, fail),
+          first.name,
+          options.headings === true,
+          source,
+        );
       }
       if (first.name === 'ul' || first.name === 'ol' || first.name === 'table') {
         const cursor = new Cursor(html, start, fail);

@@ -9,6 +9,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { claudeSkillPaths } from './claude-skills-docs';
+import { toPosixPath } from './posix-path';
 import { SANDBOX_DOCS_MODULE_ID, sandboxDocs } from './sandbox-docs-plugin';
 
 /** The plugin's hooks are declared as object properties; call them with a `this`. */
@@ -48,11 +49,15 @@ describe('sandboxDocs plugin', () => {
     const load = plugin.load as (this: unknown, id: string) => string;
     load.call({ addWatchFile }, `\0${SANDBOX_DOCS_MODULE_ID}`);
 
-    const watched = addWatchFile.mock.calls.map((call) => String(call[0]));
+    // Forward slashes on every OS, so the `endsWith` checks below hold on Windows too
+    // (issue #85); Vite itself is handed the native paths.
+    const watched = addWatchFile.mock.calls.map((call) => toPosixPath(String(call[0])));
     // The hub's four, docs/STYLE.md and the CULP syllabi README for their pages, the
     // skills README, and every SKILL.md for the Claude skills page.
     expect(watched).toHaveLength(7 + claudeSkillPaths().length);
-    expect(watched).toEqual(expect.arrayContaining(claudeSkillPaths()));
+    expect(watched).toEqual(
+      expect.arrayContaining(claudeSkillPaths().map((file) => toPosixPath(file))),
+    );
     expect(watched.some((file) => file.endsWith('.claude/skills/README.md'))).toBe(true);
     expect(watched.some((file) => file.endsWith('DESIGNER.md'))).toBe(true);
     expect(watched.some((file) => file.endsWith('AGENTS.md'))).toBe(true);

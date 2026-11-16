@@ -2,7 +2,7 @@
  * docs-tree.test.ts — the freshness check that makes the generated tree worth having,
  * plus unit tests for the pure parts (buildlist 30).
  *
- * NOT IN src/guards/ ON PURPOSE. `bun run guards` means "the eight spec guards (a–h)";
+ * NOT IN src/guards/ ON PURPOSE. `bun run guards` means "the nine guards (a–i)";
  * a docs-freshness check is not one of them, and filing it there would make that
  * command's name a half-truth. It runs in `bun run test`, which is what CI runs and
  * what the verify gate requires — see the header of `docs-tree.ts` for the full

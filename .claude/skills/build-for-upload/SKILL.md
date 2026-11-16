@@ -12,8 +12,9 @@ user, one step at a time, and do not skip its checks.
 
 - **The Feijoa fonts** are the user's own licensed files, copied into
   `public/fonts/feijoa/`. Never commit them
-  ([`AGENTS.md` → "Hard constraints"](../../../AGENTS.md)). If they are missing, the
-  build warns and uses the fallback font; say so, and ask whether to go on.
+  ([`AGENTS.md` → "Hard constraints"](../../../AGENTS.md)). If some are missing, the
+  build warns; if all are missing, it says nothing. Either way headings fall back to
+  Open Sans, so check the folder yourself, say so, and ask whether to go on.
 - **The folder.** Ask where on the server the course will live: that is where the files
   go, not something the build needs. Leave `BASE_URL` unset, so one build works in any
   folder (DEPLOY.md, "Any folder, by default"), and walk step 8's final-slash check after
