@@ -1,7 +1,7 @@
 # GitHub Pages previews: every course online, one landing page (E65)
 
-**Date:** 2026-11-13 · **Status:** template part built on branch docs/github-pages-previews; landing repo built
-locally; not yet published · **Plan:**
+**Date:** 2026-11-13 · **Status:** template preview and landing page live 2026-11-13 (PR 122, `3371438`); course
+previews follow each course's template update (Spanish and Russian live 2026-11-16) · **Plan:**
 [`2026-11-13-github-pages-previews-plan.md`](../process/2026-11-13-github-pages-previews-plan.md)
 **TODO:** §E65 · **Touches:** `.github/workflows/` (new `pages.yml`),
 `src/build/debug-pages-in.ts` (+ test), `scripts/check-no-debug-pages.ts`, `DEPLOY.md`,
@@ -137,8 +137,10 @@ hour.
 `publish.yml` runs **every hour** (`cron`, at a minute past the hour other than `:00`),
 on `workflow_dispatch`, and on a push to its own `main`. Hourly instead of "when a course
 publishes": a course repo cannot start another repo's workflow without a token stored in
-every course, and an hourly run is free for a public repo. A new course appears within an
-hour of its first publish, or at once with "Run workflow".
+every course, and an hourly run is free for a public repo. A new course appears at the
+next scheduled run, or at once with "Run workflow". **In practice (2026-11-16):** GitHub
+delays scheduled runs on a quiet repo; from 14 to 16 Nov they came every 4 to 9 hours, so
+"within the hour" did not hold, and switching a course on is followed by a run by hand.
 
 ## 5. Kept out of search engines (P1)
 
@@ -183,8 +185,8 @@ Each step that changes something on GitHub waits for the maintainer's yes.
    switch Pages on for the template; check its site.
 2. **Landing repo:** create `lc-elearn.github.io` (public), push it, switch Pages on (it
    publishes through Actions too); check it. At first it lists only the template card.
-3. **Courses:** each gets `pages.yml` at its next template update, then switches Pages on
-   with its owner's agreement. Russian first.
+3. **Courses:** each gets `pages.yml` at its next template update, then the organisation Owner
+   switches Pages on, without asking the author (decided 2026-11-16). Russian first.
 
 ## 9. Not in this design
 
@@ -192,3 +194,18 @@ Each step that changes something on GitHub waits for the maintainer's yes.
 - Who builds each course on the card (P5; needs a token for the private `lc-hub`).
 - A login or any access control (not possible on the free plan).
 - Any change to how the live course is built and uploaded (`DEPLOY.md` steps 1–9).
+
+## 10. As built (2026-11-13)
+
+- **Skip and fail rules (refines §6).** Only a repo's own data problem skips it: a missing
+  or invalid `course.json`, no commits on the default branch, or a second template repo.
+  Any other API failure (403, 429, 5xx, network) fails the run, so the last good page
+  stays up. If no course is readable and some were skipped, the build fails
+  (`src/guard.ts`) instead of publishing an empty page. 40 tests.
+- **Scheduled runs pause.** GitHub pauses a scheduled workflow after 60 days without
+  commits to the repo; the landing repo's README says so.
+- **Legacy-mode gotcha.** GitHub switches Pages on by itself for an `<org>.github.io` repo,
+  in legacy (branch) mode, and published the README. Its build finished after the first
+  Actions deploy and overwrote it. Fix: set the source to Actions
+  (`gh api -X PUT repos/lc-elearn/lc-elearn.github.io/pages -f build_type=workflow`) and run
+  `publish.yml` again.

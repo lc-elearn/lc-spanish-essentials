@@ -381,7 +381,8 @@ Right after creating it, in the new course repo:
 
 6. **Switch on its preview:** Settings → Pages → Source: **GitHub Actions**. The course
    then publishes to `https://lc-elearn.github.io/<repo>/` on every merge to `main` and
-   appears on `https://lc-elearn.github.io/` within the hour
+   appears on `https://lc-elearn.github.io/` at the landing page's next refresh, which can
+   take hours; run its **Publish** workflow to see it at once
    ([`DEPLOY.md` → "Preview on GitHub Pages"](../DEPLOY.md#preview-on-github-pages)).
 
 **Done 2026-11-05** (work iMac, as `pedbad`), from template `main` at `c2e6cbe` (its push
@@ -622,6 +623,9 @@ A sync touches code, so it needs a code owner's approval, by the path chosen und
 approves core changes": path 1, so the maintainer reviews and approves the author's PR.
 Merging it does not publish anything: the
 course goes live only when it is next built and uploaded ([`DEPLOY.md`](../DEPLOY.md)).
+The first update that brings `pages.yml` into a course is followed by the organisation
+Owner switching on that course's preview (**Settings → Pages → Source: GitHub Actions**).
+The author is not asked (decided 2026-11-16): see [`DEPLOY.md`](../DEPLOY.md#preview-on-github-pages).
 
 Then every clone updates `main`:
 
