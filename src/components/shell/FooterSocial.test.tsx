@@ -21,7 +21,7 @@ import type { FooterSocial as FooterSocialEntry } from '@/config/footer.config';
 
 const accounts: readonly FooterSocialEntry[] = [
   { href: 'https://example.org/fb', label: 'Facebook', icon: 'brand-facebook' },
-  { href: 'https://example.org/x', label: 'X (Twitter)', icon: 'brand-x' },
+  { href: 'https://example.org/x', label: 'X', icon: 'brand-x' },
 ];
 
 describe('FooterSocial', () => {
@@ -45,7 +45,7 @@ describe('FooterSocial', () => {
   test('every icon-only link carries its label as accessible text', () => {
     const html = renderToStaticMarkup(<FooterSocial accounts={accounts} />);
     expect(html).toContain('Facebook');
-    expect(html).toContain('X (Twitter)');
+    expect(html).toContain('>X<');
   });
 
   test('every icon is aria-hidden — the label is the name, not the picture', () => {

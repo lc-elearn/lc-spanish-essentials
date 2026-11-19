@@ -1,7 +1,8 @@
 # GitHub Pages previews: every course online, one landing page (E65)
 
 **Date:** 2026-11-13 · **Status:** template preview and landing page live 2026-11-13 (PR 122, `3371438`); course
-previews follow each course's template update (Spanish and Russian live 2026-11-16) · **Plan:**
+previews follow each course's template update (Spanish and Russian live 2026-11-16, German 2026-11-17;
+French deferred until Russian is complete) · **Plan:**
 [`2026-11-13-github-pages-previews-plan.md`](../process/2026-11-13-github-pages-previews-plan.md)
 **TODO:** §E65 · **Touches:** `.github/workflows/` (new `pages.yml`),
 `src/build/debug-pages-in.ts` (+ test), `scripts/check-no-debug-pages.ts`, `DEPLOY.md`,

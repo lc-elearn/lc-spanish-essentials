@@ -62,6 +62,13 @@ interface ChoicePillGroupProps {
    * a row. Layout in `choice-pill-group.css`.
    */
   stacksWhenNarrow?: boolean;
+  /**
+   * With `stacksWhenNarrow`: keep the vertical list at every width (2026-11-18).
+   * Sentence-length answers in a row each wrapped onto two lines inside their segment
+   * (Russian lesson 1's reading). The engine sets it for every question at once, from
+   * `hasLongOption` (`long-options.ts`), so one exercise never mixes rows and lists.
+   */
+  stacked?: boolean;
 }
 
 /** One outer border, outer corners rounded; the separators come with the layout. */
@@ -79,6 +86,12 @@ const GROUP_ROW = 'inline-flex divide-x divide-border';
 const PILL_BASE =
   'inline-flex min-h-8 cursor-pointer items-center px-3 py-1 text-sm font-medium transition-colors duration-200 ease-out select-none focus-visible:relative focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring';
 
+/** The group's layout classes: utilities for a row, or the stylesheet's own. */
+function stackingClasses(stacksWhenNarrow: boolean, stacked: boolean): string {
+  if (!stacksWhenNarrow) return GROUP_ROW;
+  return stacked ? 'choice-pills-group choice-pills-stacked' : 'choice-pills-group';
+}
+
 export function ChoicePillGroup({
   options,
   selectedIndex,
@@ -88,6 +101,7 @@ export function ChoicePillGroup({
   onSelect,
   contentLang,
   stacksWhenNarrow = false,
+  stacked = false,
 }: ChoicePillGroupProps) {
   // One button per option, so a key press can move focus along with the selection.
   const pillRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -134,7 +148,7 @@ export function ChoicePillGroup({
   const group = (
     <div
       aria-label={groupLabel}
-      className={`${stacksWhenNarrow ? 'choice-pills-group' : GROUP_ROW} ${GROUP_BASE}`}
+      className={`${stackingClasses(stacksWhenNarrow, stacked)} ${GROUP_BASE}`}
       role="radiogroup"
     >
       {options.map((option, optionIndex) => {

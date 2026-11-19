@@ -172,21 +172,23 @@ const raw = {
   // `social-`, because `social-*` collides with the sprite's existing `social-icon`.
   social: [
     { href: 'https://www.facebook.com/uclangcen/', label: 'Facebook', icon: 'brand-facebook' },
-    { href: 'https://x.com/uclangcen', label: 'X (Twitter)', icon: 'brand-x' },
+    { href: 'https://x.com/uclangcen', label: 'X', icon: 'brand-x' },
     {
       href: 'https://www.youtube.com/cambridgeuniversity',
-      label: 'YouTube',
+      label: 'YouTube (University of Cambridge)',
       icon: 'brand-youtube',
     },
     {
-      // The reference's href carried a trailing `/posts/?feedView=all`, which is a
-      // view state rather than the account. Linked to the company page instead.
-      href: 'https://www.linkedin.com/company/university-of-cambridge-language-centre/',
-      label: 'LinkedIn',
+      // The University's page, not a Language Centre one: the Language Centre runs no
+      // LinkedIn account (langcen.cam.ac.uk links none), and the Language Centre
+      // company page that used to sit here is unmanaged.
+      href: 'https://www.linkedin.com/school/university-of-cambridge/',
+      label: 'LinkedIn (University of Cambridge)',
       icon: 'brand-linkedin',
     },
     {
-      href: 'https://www.instagram.com/cambridgeuniversity/',
+      // CULP's account, which the Language Centre's Facebook page names as its own.
+      href: 'https://www.instagram.com/camb_uni_language_programmes/',
       label: 'Instagram',
       icon: 'brand-instagram',
     },

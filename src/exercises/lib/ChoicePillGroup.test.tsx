@@ -72,4 +72,31 @@ describe('ChoicePillGroup layout', () => {
     expect(separator).toContain('border-block-end: 0;');
     expect(separator).toContain('border-inline-end: 1px solid var(--border);');
   });
+
+  // 2026-11-18, Russian lesson 1 reading: sentence-length answers squeezed into a row
+  // each wrapped onto two lines inside its segment. A stacked group is a list at every
+  // width; the container query below never turns it back into a row.
+  test('stacked: the group is a vertical list at every width', () => {
+    const html = renderToStaticMarkup(<ChoicePillGroup {...props} stacked stacksWhenNarrow />);
+
+    expect(groupClasses(html)).toEqual(
+      expect.arrayContaining(['choice-pills-group', 'choice-pills-stacked']),
+    );
+  });
+
+  test('not stacked: no stacked modifier', () => {
+    const html = renderToStaticMarkup(<ChoicePillGroup {...props} stacksWhenNarrow />);
+
+    expect(groupClasses(html)).not.toContain('choice-pills-stacked');
+  });
+
+  test('choice-pill-group.css: the stacked list outranks the row, outside the container query', () => {
+    const outside = css.replace(wide, '');
+    const list = rule('.choice-pills-group.choice-pills-stacked', outside);
+    expect(list).toContain('display: flex;');
+    expect(list).toContain('flex-direction: column;');
+    const separator = rule('.choice-pills-group.choice-pills-stacked > :not(:last-child)', outside);
+    expect(separator).toContain('border-block-end: 1px solid var(--border);');
+    expect(separator).toContain('border-inline-end: 0;');
+  });
 });
