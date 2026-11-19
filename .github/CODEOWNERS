@@ -10,7 +10,6 @@
 # or the build/CI/guard setup that keeps every course consistent.
 
 # Everything defaults to the maintainer unless a more specific rule below wins.
-*                       @pedbad
 
 # --- Lesson content: NO owner, so a lesson-only PR merges once CI is green ---
 # By path AND purpose (TODO §E41): a course's own lessons and their media, one folder
