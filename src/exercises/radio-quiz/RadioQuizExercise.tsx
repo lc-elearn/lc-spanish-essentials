@@ -49,6 +49,7 @@ import {
 } from '@/exercises/lib/scoring';
 import { mulberry32, shuffle } from '@/exercises/lib/shuffle';
 import { ChoicePillGroup } from '@/exercises/lib/ChoicePillGroup';
+import { hasLongOption } from '@/exercises/lib/long-options';
 import { ExerciseFooter } from '@/exercises/lib/ExerciseFooter';
 import { ResultSlot } from '@/exercises/lib/ResultSlot';
 import { useExerciseScaffold } from '@/exercises/lib/exercise-scaffold';
@@ -183,6 +184,9 @@ export default function RadioQuizExercise({ config }: ExerciseComponentProps) {
     dispatch({ values, ...commitReveal(state, checkedResults) });
   };
 
+  // One long answer stacks every question, so the exercise never mixes rows and lists.
+  const stacked = hasLongOption(state.preparedQuestions.map((question) => question.options));
+
   const cards: ReactNode[] = state.preparedQuestions.map((question, questionIndex) => {
     const selectedIndex = state.values[questionIndex] ?? -1;
     const result = state.checkedResults[questionIndex];
@@ -211,6 +215,7 @@ export default function RadioQuizExercise({ config }: ExerciseComponentProps) {
                 onSelect={(optionIndex) => handleChoiceChange(questionIndex, optionIndex)}
                 options={question.options}
                 selectedIndex={selectedIndex}
+                stacked={stacked}
                 stacksWhenNarrow
                 verdict={verdict}
               />

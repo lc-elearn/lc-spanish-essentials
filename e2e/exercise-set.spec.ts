@@ -7,6 +7,7 @@
  */
 import { expect, test } from '@playwright/test';
 import {
+  animationsInside,
   EXERCISE_HEADINGS,
   exampleReady,
   expectNoAxeViolations,
@@ -43,6 +44,12 @@ test('an answer survives a switch to the other tab and back', async ({ page }) =
   const row = set.getByRole('tablist', { name: SET_NAME });
   await row.getByRole('tab', { name: 'Part 2' }).click();
   const pick = set.getByRole('tabpanel', { name: 'Part 2' }).getByRole('radio', { name: 'días' });
+  // The tab switch starts the triggers' transitions as Part 2's panel appears. In WebKit a
+  // click landing within milliseconds of that was sometimes lost under full-suite load
+  // (twice in four full runs, 2026-11-16 and 18: pick stayed unchecked; alone, 40 of 40
+  // passed). Wait for them, as openExercise does for the accordion (support.ts).
+  await expect(pick).toBeVisible();
+  await animationsInside(set);
 
   await pick.click();
   await expect(pick).toBeChecked();

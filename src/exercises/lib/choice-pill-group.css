@@ -5,6 +5,9 @@
  * options become a vertical list, one per line, separated by the same hairline the
  * row draws between segments; from 30rem they are the connected row again.
  *
+ * A `stacked` group (any answer in the exercise over 30 characters, 2026-11-18) stays
+ * the list at every width: sentence-length answers in a row wrapped inside themselves.
+ *
  * Only for `stacksWhenNarrow` groups (radio-quiz, reading). inline-choice's group sits
  * inside a sentence and keeps its utilities. A stacking group carries no layout
  * utility at all: a utility would beat these `components` rules whatever their
@@ -40,5 +43,17 @@
       border-block-end: 0;
       border-inline-end: 1px solid var(--border);
     }
+  }
+
+  /* Long answers (2026-11-18): a list at every width. Two classes outrank the
+     container query's one, so the row never comes back. */
+  .choice-pills-group.choice-pills-stacked {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .choice-pills-group.choice-pills-stacked > :not(:last-child) {
+    border-block-end: 1px solid var(--border);
+    border-inline-end: 0;
   }
 }

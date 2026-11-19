@@ -39,6 +39,7 @@ import {
   type ScoringState,
 } from '@/exercises/lib/scoring';
 import { ChoicePillGroup } from '@/exercises/lib/ChoicePillGroup';
+import { hasLongOption } from '@/exercises/lib/long-options';
 import { ExerciseFooter } from '@/exercises/lib/ExerciseFooter';
 import { ResultSlot } from '@/exercises/lib/ResultSlot';
 import { createExerciseReducer } from '@/exercises/lib/exercise-scaffold';
@@ -145,6 +146,9 @@ export default function ReadingExercise({ config }: ExerciseComponentProps) {
 
   const paragraphs = toParagraphs(content.passage);
 
+  // One long answer stacks every question, so the exercise never mixes rows and lists.
+  const stacked = hasLongOption(prepared.map((question) => question.options));
+
   const cards: ReactNode[] = prepared.map((question, questionIndex) => {
     const selectedIndex = state.values[questionIndex] ?? -1;
     const result = state.checkedResults[questionIndex];
@@ -173,6 +177,7 @@ export default function ReadingExercise({ config }: ExerciseComponentProps) {
                 onSelect={(optionIndex) => handleChoiceChange(questionIndex, optionIndex)}
                 options={question.options}
                 selectedIndex={selectedIndex}
+                stacked={stacked}
                 stacksWhenNarrow
                 verdict={verdict}
               />

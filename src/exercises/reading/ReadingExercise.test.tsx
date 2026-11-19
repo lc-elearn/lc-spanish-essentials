@@ -169,3 +169,35 @@ test("stacks every question's pills while its column is narrow", () => {
   expect(groups.length).toBeGreaterThan(0);
   for (const [, classes] of groups) expect(classes.split(' ')).toContain('choice-pills-group');
 });
+
+// 2026-11-18 (Russian lesson 1): when any answer is long, every question's group is a
+// vertical list at every width, so one exercise never mixes rows and lists.
+test('stacks every question at every width when any answer is long', () => {
+  const longAnswer = 'девушку практически продавали её супругу';
+  const config = {
+    ...baseConfig,
+    content: {
+      ...baseConfig.content,
+      questions: [
+        {
+          type: 'radio',
+          prompt: '¿Dónde vive Ana?',
+          options: ['Madrid', longAnswer],
+          answer: 'Madrid',
+        },
+        ...baseConfig.content.questions.slice(1),
+      ],
+    },
+  };
+  const html = renderToStaticMarkup(<ReadingExercise config={config} />);
+  const groups = [...html.matchAll(/<div[^>]*class="([^"]*)"[^>]*role="radiogroup"/g)];
+
+  expect(groups).toHaveLength(2);
+  for (const [, classes] of groups) expect(classes.split(' ')).toContain('choice-pills-stacked');
+});
+
+test('keeps short answers as a row from 30rem', () => {
+  const html = renderToStaticMarkup(<ReadingExercise config={baseConfig} />);
+
+  expect(html).not.toContain('choice-pills-stacked');
+});
